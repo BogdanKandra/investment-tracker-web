@@ -1,0 +1,3325 @@
+{
+    "updated_at": "24-03-2026",
+    "target_asset_class_distribution": {
+        "Cash": 10,
+        "Crypto": 10,
+        "ETF": 10,
+        "International Stocks": 10,
+        "US Stocks": 60
+    },
+    "accounts": [
+        {
+            "account_name": "xtb_usd",
+            "cash": 2.80,
+            "currency": "$",
+            "transactions": [
+                {
+                    "date": "03-03-2025",
+                    "type": "Buy",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 5,
+                    "price": 161.72,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "03-03-2025",
+                    "type": "Buy",
+                    "symbol": "OKLO",
+                    "name": "Oklo Inc",
+                    "shares": 20,
+                    "price": 32.12,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "03-03-2025",
+                    "type": "Buy",
+                    "symbol": "AMD",
+                    "name": "AMD",
+                    "shares": 5,
+                    "price": 97.93,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "13-03-2025",
+                    "type": "Buy",
+                    "symbol": "ISRG",
+                    "name": "Intuitive",
+                    "shares": 0.5,
+                    "price": 499.93,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "18-03-2025",
+                    "type": "Buy",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 3,
+                    "price": 159.65,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "25-03-2025",
+                    "type": "Buy",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 0.7095,
+                    "price": 190.13,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "25-03-2025",
+                    "type": "Buy",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 1,
+                    "price": 190.12,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "OKLO",
+                    "name": "Oklo Inc",
+                    "shares": 20,
+                    "price": 22.18,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 0.3,
+                    "price": 160.80,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 1,
+                    "price": 160.74,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 5,
+                    "price": 153.45,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 20,
+                    "price": 14.17,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 199.02,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "ACHR",
+                    "name": "Archer Aviation",
+                    "shares": 20,
+                    "price": 6.89,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 0.8728,
+                    "price": 23.28,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 6,
+                    "price": 23.27,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Buy",
+                    "symbol": "CLS",
+                    "name": "Celestica Inc",
+                    "shares": 2,
+                    "price": 119.43,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Buy",
+                    "symbol": "ISRG",
+                    "name": "Intuitive",
+                    "shares": 1,
+                    "price": 552.90,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Buy",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 5,
+                    "price": 183.15,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Buy",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 2,
+                    "price": 173.58,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Buy",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 4,
+                    "price": 33.40,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "06-06-2025",
+                    "type": "Dividend",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 0.39,
+                    "currency": "$",
+                    "fee": 0.12,
+                    "note": ""
+                },
+                {
+                    "date": "09-06-2025",
+                    "type": "Buy",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 5,
+                    "price": 195.37,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "09-06-2025",
+                    "type": "Buy",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 3,
+                    "price": 177.06,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "09-06-2025",
+                    "type": "Buy",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 20,
+                    "price": 31.29,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "09-06-2025",
+                    "type": "Buy",
+                    "symbol": "CPRX",
+                    "name": "Catalyst Pharmaceuticals",
+                    "shares": 20,
+                    "price": 25.96,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "11-06-2025",
+                    "type": "Buy",
+                    "symbol": "IBKR",
+                    "name": "Interactive Brokers",
+                    "shares": 8,
+                    "price": 51.32,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "11-06-2025",
+                    "type": "Buy",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 6,
+                    "price": 33.46,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "12-06-2025",
+                    "type": "Sell",
+                    "symbol": "OKLO",
+                    "name": "Oklo Inc",
+                    "shares": 40,
+                    "price": 67.06,
+                    "currency": "$",
+                    "fee": 47.89,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "12-06-2025",
+                    "type": "Sell",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 20,
+                    "price": 42.06,
+                    "currency": "$",
+                    "fee": 16.73,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "12-06-2025",
+                    "type": "Buy",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 20,
+                    "price": 32.87,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "16-06-2025",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 2.10,
+                    "currency": "$",
+                    "fee": 0.64,
+                    "note": ""
+                },
+                {
+                    "date": "18-06-2025",
+                    "type": "Dividend",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 1,
+                    "price": 1.34,
+                    "currency": "$",
+                    "fee": 0.40,
+                    "note": ""
+                },
+                {
+                    "date": "24-06-2025",
+                    "type": "Buy",
+                    "symbol": "OSCR",
+                    "name": "Oscar Health",
+                    "shares": 20,
+                    "price": 18.52,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "27-06-2025",
+                    "type": "Buy",
+                    "symbol": "OKLO",
+                    "name": "Oklo Inc",
+                    "shares": 20,
+                    "price": 54.67,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "27-06-2025",
+                    "type": "Buy",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 25,
+                    "price": 33.71,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "30-06-2025",
+                    "type": "Dividend",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 1,
+                    "price": 1.78,
+                    "currency": "$",
+                    "fee": 0.54,
+                    "note": ""
+                },
+                {
+                    "date": "09-07-2025",
+                    "type": "Buy",
+                    "symbol": "ISRG",
+                    "name": "Intuitive",
+                    "shares": 1,
+                    "price": 525.08,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "09-07-2025",
+                    "type": "Buy",
+                    "symbol": "CPRX",
+                    "name": "Catalyst Pharmaceuticals",
+                    "shares": 20,
+                    "price": 21.08,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "09-07-2025",
+                    "type": "Buy",
+                    "symbol": "OSCR",
+                    "name": "Oscar Health",
+                    "shares": 20,
+                    "price": 16.62,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "18-07-2025",
+                    "type": "Buy",
+                    "symbol": "OSCR",
+                    "name": "Oscar Health",
+                    "shares": 20,
+                    "price": 13.57,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "22-07-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 2,
+                    "price": 216.30,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "29-07-2025",
+                    "type": "Buy",
+                    "symbol": "ACHR",
+                    "name": "Archer Aviation",
+                    "shares": 20,
+                    "price": 10.45,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "30-07-2025",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 7,
+                    "price": 39.61,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "31-07-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 3,
+                    "price": 215.52,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "01-08-2025",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 30,
+                    "price": 13.87,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "05-08-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 3,
+                    "price": 208.05,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-08-2025",
+                    "type": "Buy",
+                    "symbol": "HOVR",
+                    "name": "New Horizon Aircraft",
+                    "shares": 200,
+                    "price": 1.5492,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "13-08-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 5,
+                    "price": 194.67,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "13-08-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 36.99,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "05-09-2025",
+                    "type": "Dividend",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 0.39,
+                    "currency": "$",
+                    "fee": 0.12,
+                    "note": ""
+                },
+                {
+                    "date": "08-09-2025",
+                    "type": "Buy",
+                    "symbol": "ACHR",
+                    "name": "Archer Aviation",
+                    "shares": 20,
+                    "price": 8.49,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "12-09-2025",
+                    "type": "Dividend",
+                    "symbol": "IBKR",
+                    "name": "Interactive Brokers",
+                    "shares": 1,
+                    "price": 0.64,
+                    "currency": "$",
+                    "fee": 0.19,
+                    "note": ""
+                },
+                {
+                    "date": "15-09-2025",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 2.73,
+                    "currency": "$",
+                    "fee": 0.83,
+                    "note": ""
+                },
+                {
+                    "date": "16-09-2025",
+                    "type": "Buy",
+                    "symbol": "JOBY",
+                    "name": "Joby Aviation",
+                    "shares": 20,
+                    "price": 14.01,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "17-09-2025",
+                    "type": "Dividend",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 1,
+                    "price": 4.02,
+                    "currency": "$",
+                    "fee": 1.20,
+                    "note": ""
+                },
+                {
+                    "date": "18-09-2025",
+                    "type": "Sell",
+                    "symbol": "CLS",
+                    "name": "Celestica Inc",
+                    "shares": 2,
+                    "price": 250.02,
+                    "currency": "$",
+                    "fee": 7.48,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "18-09-2025",
+                    "type": "Sell",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 13.8728,
+                    "price": 66.53,
+                    "currency": "$",
+                    "fee": 13.80,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "18-09-2025",
+                    "type": "Sell",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 5,
+                    "price": 307.50,
+                    "currency": "$",
+                    "fee": 17.53,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "18-09-2025",
+                    "type": "Sell",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 4,
+                    "price": 37.78,
+                    "currency": "$",
+                    "fee": 0.47,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "18-09-2025",
+                    "type": "Sell",
+                    "symbol": "OSCR",
+                    "name": "Oscar Health",
+                    "shares": 60,
+                    "price": 19.11,
+                    "currency": "$",
+                    "fee": 4.68,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "19-09-2025",
+                    "type": "Sell",
+                    "symbol": "OKLO",
+                    "name": "Oklo Inc",
+                    "shares": 10,
+                    "price": 114.85,
+                    "currency": "$",
+                    "fee": 17.98,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "23-09-2025",
+                    "type": "Sell",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 30,
+                    "price": 31.22,
+                    "currency": "$",
+                    "fee": 15.31,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "30-09-2025",
+                    "type": "Dividend",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 1,
+                    "price": 1.78,
+                    "currency": "$",
+                    "fee": 0.54,
+                    "note": ""
+                },
+                {
+                    "date": "15-10-2025",
+                    "type": "Buy",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 2,
+                    "price": 321.28,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "21-10-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 40.29,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "22-10-2025",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 10,
+                    "price": 28.27,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "22-10-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 36.38,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "22-10-2025",
+                    "type": "Buy",
+                    "symbol": "INOD",
+                    "name": "Innodata",
+                    "shares": 3,
+                    "price": 70.51,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "30-10-2025",
+                    "type": "Buy",
+                    "symbol": "EOSE",
+                    "name": "Eos Energy Enterprises Inc",
+                    "shares": 20,
+                    "price": 13.63,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "31-10-2025",
+                    "type": "Buy",
+                    "symbol": "MU",
+                    "name": "Micron",
+                    "shares": 2,
+                    "price": 221.59,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "06-11-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 3,
+                    "price": 286.15,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "06-11-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 3,
+                    "price": 274.99,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "06-11-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 33.91,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "06-11-2025",
+                    "type": "Buy",
+                    "symbol": "LTBR",
+                    "name": "Lightbridge",
+                    "shares": 10,
+                    "price": 18.18,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "07-11-2025",
+                    "type": "Buy",
+                    "symbol": "ACHR",
+                    "name": "Archer Aviation",
+                    "shares": 40,
+                    "price": 7.86,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "07-11-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 28.26,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "07-11-2025",
+                    "type": "Buy",
+                    "symbol": "LTBR",
+                    "name": "Lightbridge",
+                    "shares": 10,
+                    "price": 16.94,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "07-11-2025",
+                    "type": "Buy",
+                    "symbol": "ACHR",
+                    "name": "Archer Aviation",
+                    "shares": 20,
+                    "price": 7.31,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "07-11-2025",
+                    "type": "Buy",
+                    "symbol": "INOD",
+                    "name": "Innodata",
+                    "shares": 3,
+                    "price": 63.69,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "07-11-2025",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 10,
+                    "price": 25.99,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "10-11-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 28.50,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "12-11-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 26.00,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "13-11-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 23.16,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "13-11-2025",
+                    "type": "Buy",
+                    "symbol": "INOD",
+                    "name": "Innodata",
+                    "shares": 3,
+                    "price": 56.77,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "14-11-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 2,
+                    "price": 249.99,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "24-11-2025",
+                    "type": "Sell",
+                    "symbol": "ISRG",
+                    "name": "Intuitive",
+                    "shares": 0.5,
+                    "price": 563.34,
+                    "currency": "$",
+                    "fee": 0.45,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "24-11-2025",
+                    "type": "Sell",
+                    "symbol": "ISRG",
+                    "name": "Intuitive",
+                    "shares": 2,
+                    "price": 562.12,
+                    "currency": "$",
+                    "fee": 1.81,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "24-11-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 3,
+                    "price": 239.95,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "24-11-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 19.01,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "24-11-2025",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 10,
+                    "price": 24.44,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "24-11-2025",
+                    "type": "Buy",
+                    "symbol": "QUBT",
+                    "name": "Quantum Computing Inc",
+                    "shares": 10,
+                    "price": 10.48,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "25-11-2025",
+                    "type": "Buy",
+                    "symbol": "LTBR",
+                    "name": "Lightbridge",
+                    "shares": 10,
+                    "price": 14.54,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "28-11-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 19.74,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-12-2025",
+                    "type": "Dividend",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 0.39,
+                    "currency": "$",
+                    "fee": 0.12,
+                    "note": ""
+                },
+                {
+                    "date": "12-12-2025",
+                    "type": "Dividend",
+                    "symbol": "IBKR",
+                    "name": "Interactive Brokers",
+                    "shares": 1,
+                    "price": 0.64,
+                    "currency": "$",
+                    "fee": 0.19,
+                    "note": ""
+                },
+                {
+                    "date": "12-12-2025",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 10,
+                    "price": 26.46,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "12-12-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 18.80,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "15-12-2025",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 2.73,
+                    "currency": "$",
+                    "fee": 0.83,
+                    "note": ""
+                },
+                {
+                    "date": "15-12-2025",
+                    "type": "Buy",
+                    "symbol": "INOD",
+                    "name": "Innodata",
+                    "shares": 5,
+                    "price": 50.63,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "15-12-2025",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 2,
+                    "price": 234.87,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "17-12-2025",
+                    "type": "Dividend",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 1,
+                    "price": 3.22,
+                    "currency": "$",
+                    "fee": 0.96,
+                    "note": ""
+                },
+                {
+                    "date": "18-12-2025",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 15,
+                    "price": 16.16,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "18-12-2025",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 10,
+                    "price": 23.03,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "31-12-2025",
+                    "type": "Dividend",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 1,
+                    "price": 1.96,
+                    "currency": "$",
+                    "fee": 0.60,
+                    "note": ""
+                },
+                {
+                    "date": "05-01-2026",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 20,
+                    "price": 18.76,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "06-01-2026",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 10,
+                    "price": 26.30,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "12-01-2026",
+                    "type": "Sell",
+                    "symbol": "AMD",
+                    "name": "AMD",
+                    "shares": 5,
+                    "price": 206.89,
+                    "currency": "$",
+                    "fee": 29.98,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "14-01-2026",
+                    "type": "Dividend",
+                    "symbol": "MU",
+                    "name": "Micron Technology",
+                    "shares": 1,
+                    "price": 0.23,
+                    "currency": "$",
+                    "fee": 0.07,
+                    "note": ""
+                },
+                {
+                    "date": "16-01-2026",
+                    "type": "Sell",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 5,
+                    "price": 443.59,
+                    "currency": "$",
+                    "fee": 70.19,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "20-01-2026",
+                    "type": "Buy",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 298.18,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "21-01-2026",
+                    "type": "Buy",
+                    "symbol": "HIMS",
+                    "name": "Hims & Hers Health",
+                    "shares": 5,
+                    "price": 29.33,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "21-01-2026",
+                    "type": "Buy",
+                    "symbol": "JOBY",
+                    "name": "Joby Aviation",
+                    "shares": 20,
+                    "price": 13.92,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "21-01-2026",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 10,
+                    "price": 22.73,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "21-01-2026",
+                    "type": "Buy",
+                    "symbol": "HIMS",
+                    "name": "Hims & Hers Health",
+                    "shares": 10,
+                    "price": 28.06,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "21-01-2026",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 10,
+                    "price": 24.98,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "26-01-2026",
+                    "type": "Buy",
+                    "symbol": "DUOL",
+                    "name": "Duolingo",
+                    "shares": 3,
+                    "price": 150.49,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "26-01-2026",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 10,
+                    "price": 21.99,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "26-01-2026",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 5,
+                    "price": 43.77,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "27-01-2026",
+                    "type": "Buy",
+                    "symbol": "SOPH",
+                    "name": "Sophia Genetics",
+                    "shares": 20,
+                    "price": 5.25,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "29-01-2026",
+                    "type": "Buy",
+                    "symbol": "JOBY",
+                    "name": "Joby Aviation",
+                    "shares": 40,
+                    "price": 11.26,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "29-01-2026",
+                    "type": "Sell",
+                    "symbol": "MU",
+                    "name": "Micron",
+                    "shares": 2,
+                    "price": 443.26,
+                    "currency": "$",
+                    "fee": 25.89,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "29-01-2026",
+                    "type": "Buy",
+                    "symbol": "QUBT",
+                    "name": "Quantum Computing Inc",
+                    "shares": 10,
+                    "price": 10.45,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "29-01-2026",
+                    "type": "Buy",
+                    "symbol": "MSFT",
+                    "name": "Microsoft",
+                    "shares": 1,
+                    "price": 423.34,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "30-01-2026",
+                    "type": "Buy",
+                    "symbol": "DUOL",
+                    "name": "Duolingo",
+                    "shares": 3,
+                    "price": 134.99,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "30-01-2026",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 25,
+                    "price": 23.00,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "30-01-2026",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 10,
+                    "price": 17.86,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "30-01-2026",
+                    "type": "Buy",
+                    "symbol": "HIMS",
+                    "name": "Hims & Hers Health",
+                    "shares": 10,
+                    "price": 26.95,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "30-01-2026",
+                    "type": "Buy",
+                    "symbol": "QUBT",
+                    "name": "Quantum Computing Inc",
+                    "shares": 10,
+                    "price": 9.14,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "30-01-2026",
+                    "type": "Buy",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 280.75,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "02-02-2026",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 5,
+                    "price": 38.81,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "02-02-2026",
+                    "type": "Sell",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 5,
+                    "price": 465.00,
+                    "currency": "$",
+                    "fee": 75.10,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "03-02-2026",
+                    "type": "Buy",
+                    "symbol": "DUOL",
+                    "name": "Duolingo",
+                    "shares": 3,
+                    "price": 122.18,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Sell",
+                    "symbol": "POWL",
+                    "name": "Powell Industries",
+                    "shares": 2,
+                    "price": 545.00,
+                    "currency": "$",
+                    "fee": 40.03,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "INOD",
+                    "name": "Innodata",
+                    "shares": 5,
+                    "price": 49.70,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 25,
+                    "price": 20.91,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "HOOD",
+                    "name": "Robinhood",
+                    "shares": 2,
+                    "price": 80.63,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "RDW",
+                    "name": "Redwire",
+                    "shares": 1,
+                    "price": 10.02,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "LEU",
+                    "name": "Centrus Energy",
+                    "shares": 2,
+                    "price": 247.74,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "CLS",
+                    "name": "Celestica Inc",
+                    "shares": 1,
+                    "price": 270.12,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 5,
+                    "price": 34.86,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "EOSE",
+                    "name": "Eos Energy Enterprises Inc",
+                    "shares": 20,
+                    "price": 11.94,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "HIMS",
+                    "name": "Hims & Hers Health",
+                    "shares": 10,
+                    "price": 24.39,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "JOBY",
+                    "name": "Joby Aviation",
+                    "shares": 20,
+                    "price": 9.92,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "QBTS",
+                    "name": "D-Wave Quantum Inc",
+                    "shares": 10,
+                    "price": 18.88,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "04-02-2026",
+                    "type": "Buy",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 249.50,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-02-2026",
+                    "type": "Buy",
+                    "symbol": "INOD",
+                    "name": "Innodata",
+                    "shares": 6,
+                    "price": 43.99,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-02-2026",
+                    "type": "Buy",
+                    "symbol": "ACHR",
+                    "name": "Archer Aviation",
+                    "shares": 20,
+                    "price": 6.63,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-02-2026",
+                    "type": "Buy",
+                    "symbol": "MSFT",
+                    "name": "Microsoft",
+                    "shares": 1,
+                    "price": 400.39,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-02-2026",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 20,
+                    "price": 16.01,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-02-2026",
+                    "type": "Buy",
+                    "symbol": "QUBT",
+                    "name": "Quantum Computing Inc",
+                    "shares": 10,
+                    "price": 8.16,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-02-2026",
+                    "type": "Buy",
+                    "symbol": "SMR",
+                    "name": "Nuscale Power",
+                    "shares": 20,
+                    "price": 14.72,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-02-2026",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 10,
+                    "price": 30.94,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-03-2026",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 25,
+                    "price": 18.81,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "12-03-2026",
+                    "type": "Dividend",
+                    "symbol": "MSFT",
+                    "name": "Microsoft",
+                    "shares": 1,
+                    "price": 1.82,
+                    "currency": "$",
+                    "fee": 0.54,
+                    "note": ""
+                },
+                {
+                    "date": "13-03-2026",
+                    "type": "Dividend",
+                    "symbol": "IBKR",
+                    "name": "Interactive Brokers",
+                    "shares": 1,
+                    "price": 0.64,
+                    "currency": "$",
+                    "fee": 0.19,
+                    "note": ""
+                },
+                {
+                    "date": "16-03-2026",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 2.73,
+                    "currency": "$",
+                    "fee": 0.83,
+                    "note": ""
+                },
+                {
+                    "date": "17-03-2026",
+                    "type": "Buy",
+                    "symbol": "SOFI",
+                    "name": "SoFi",
+                    "shares": 6,
+                    "price": 16.76,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "20-03-2026",
+                    "type": "Dividend",
+                    "symbol": "CEG",
+                    "name": "Constellation",
+                    "shares": 1,
+                    "price": 1.72,
+                    "currency": "$",
+                    "fee": 0.52,
+                    "note": ""
+                }
+            ]
+        },
+        {
+            "account_name": "xtb_eur",
+            "cash": 27.70,
+            "currency": "€",
+            "transactions": [
+                {
+                    "date": "19-02-2024",
+                    "type": "Buy",
+                    "symbol": "MC.PA",
+                    "name": "LVMH",
+                    "shares": 0.1223,
+                    "price": 807.60,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "21-02-2024",
+                    "type": "Buy",
+                    "symbol": "CCEP",
+                    "name": "Coca-Cola EP",
+                    "shares": 0.5672,
+                    "price": 68.88,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "21-02-2024",
+                    "type": "Buy",
+                    "symbol": "CCEP",
+                    "name": "Coca-Cola EP",
+                    "shares": 1,
+                    "price": 68.82,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "19-03-2024",
+                    "type": "Buy",
+                    "symbol": "KER.PA",
+                    "name": "Kering",
+                    "shares": 0.2361,
+                    "price": 423.55,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "19-03-2024",
+                    "type": "Buy",
+                    "symbol": "U",
+                    "name": "Unity Software",
+                    "shares": 4.1986,
+                    "price": 25.74,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "19-03-2024",
+                    "type": "Buy",
+                    "symbol": "PATH",
+                    "name": "UiPath",
+                    "shares": 4.7408,
+                    "price": 22.77,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "21-03-2024",
+                    "type": "Buy",
+                    "symbol": "BA",
+                    "name": "Boeing",
+                    "shares": 0.5735,
+                    "price": 188.48,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "25-04-2024",
+                    "type": "Dividend",
+                    "symbol": "MC.PA",
+                    "name": "LVMH",
+                    "shares": 1,
+                    "price": 0.92,
+                    "currency": "€",
+                    "fee": 0.23,
+                    "note": ""
+                },
+                {
+                    "date": "06-05-2024",
+                    "type": "Dividend",
+                    "symbol": "KER.PA",
+                    "name": "Kering",
+                    "shares": 1,
+                    "price": 2.24,
+                    "currency": "€",
+                    "fee": 0.56,
+                    "note": ""
+                },
+                {
+                    "date": "23-05-2024",
+                    "type": "Dividend",
+                    "symbol": "CCEP",
+                    "name": "Coca-Cola EP",
+                    "shares": 1,
+                    "price": 1.16,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": ""
+                },
+                {
+                    "date": "06-06-2024",
+                    "type": "Buy",
+                    "symbol": "PATH",
+                    "name": "UiPath",
+                    "shares": 8.9386,
+                    "price": 12.11,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "14-06-2024",
+                    "type": "Buy",
+                    "symbol": "U",
+                    "name": "Unity Software",
+                    "shares": 6.4561,
+                    "price": 16.44,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-12-2024",
+                    "type": "Dividend",
+                    "symbol": "CCEP",
+                    "name": "Coca-Cola EP",
+                    "shares": 1,
+                    "price": 1.93,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": ""
+                },
+                {
+                    "date": "04-12-2024",
+                    "type": "Dividend",
+                    "symbol": "MC.PA",
+                    "name": "LVMH",
+                    "shares": 1,
+                    "price": 0.67,
+                    "currency": "€",
+                    "fee": 0.17,
+                    "note": ""
+                },
+                {
+                    "date": "14-01-2025",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 100,
+                    "price": 8.39,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "16-01-2025",
+                    "type": "Dividend",
+                    "symbol": "KER.PA",
+                    "name": "Kering",
+                    "shares": 1,
+                    "price": 0.47,
+                    "currency": "€",
+                    "fee": 0.12,
+                    "note": ""
+                },
+                {
+                    "date": "26-02-2025",
+                    "type": "Sell",
+                    "symbol": "U",
+                    "name": "Unity Software",
+                    "shares": 0.6547,
+                    "price": 27.21,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "26-02-2025",
+                    "type": "Sell",
+                    "symbol": "U",
+                    "name": "Unity Software",
+                    "shares": 10,
+                    "price": 27.24,
+                    "currency": "$",
+                    "fee": 2.26,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "03-03-2025",
+                    "type": "Buy",
+                    "symbol": "XAIX.DE",
+                    "name": "Artifical Intelligence and Big Data ETF",
+                    "shares": 6,
+                    "price": 136.80,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "18-03-2025",
+                    "type": "Buy",
+                    "symbol": "XAIX.DE",
+                    "name": "Artifical Intelligence and Big Data ETF",
+                    "shares": 4,
+                    "price": 122.80,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "XAIX.DE",
+                    "name": "Artifical Intelligence and Big Data ETF",
+                    "shares": 4,
+                    "price": 115.32,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-04-2025",
+                    "type": "Buy",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 582.90,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "28-04-2025",
+                    "type": "Dividend",
+                    "symbol": "MC.PA",
+                    "name": "LVMH",
+                    "shares": 1,
+                    "price": 0.92,
+                    "currency": "€",
+                    "fee": 0.23,
+                    "note": ""
+                },
+                {
+                    "date": "06-05-2025",
+                    "type": "Dividend",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 1.84,
+                    "currency": "€",
+                    "fee": 0.28,
+                    "note": ""
+                },
+                {
+                    "date": "07-05-2025",
+                    "type": "Dividend",
+                    "symbol": "KER.PA",
+                    "name": "Kering",
+                    "shares": 1,
+                    "price": 0.94,
+                    "currency": "€",
+                    "fee": 0.24,
+                    "note": ""
+                },
+                {
+                    "date": "12-05-2025",
+                    "type": "Sell",
+                    "symbol": "BA",
+                    "name": "Boeing",
+                    "shares": 0.5735,
+                    "price": 195.77,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "26-05-2025",
+                    "type": "Sell",
+                    "symbol": "XAIX.DE",
+                    "name": "Artifical Intelligence and Big Data ETF",
+                    "shares": 0.5,
+                    "price": 128.64,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "26-05-2025",
+                    "type": "Sell",
+                    "symbol": "XAIX.DE",
+                    "name": "Artifical Intelligence and Big Data ETF",
+                    "shares": 3,
+                    "price": 128.74,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "26-05-2025",
+                    "type": "Buy",
+                    "symbol": "XAIX.DE",
+                    "name": "Artifical Intelligence and Big Data ETF",
+                    "shares": 7,
+                    "price": 128.76,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "26-05-2025",
+                    "type": "Buy",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 658.70,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Dividend",
+                    "symbol": "CCEP",
+                    "name": "Coca-Cola EP",
+                    "shares": 1,
+                    "price": 1.24,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": ""
+                },
+                {
+                    "date": "12-06-2025",
+                    "type": "Buy",
+                    "symbol": "NOVO-B.CO",
+                    "name": "Novo Nordisk",
+                    "shares": 7,
+                    "price": 515.20,
+                    "currency": "DKK",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "20-06-2025",
+                    "type": "Buy",
+                    "symbol": "ETL.PA",
+                    "name": "Eutelsat",
+                    "shares": 10,
+                    "price": 3.615,
+                    "currency": "€",
+                    "fee": 0.14,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "17-07-2025",
+                    "type": "Sell",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 100,
+                    "price": 16.64,
+                    "currency": "$",
+                    "fee": 18.34,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "21-07-2025",
+                    "type": "Sell",
+                    "symbol": "CCEP",
+                    "name": "Coca-Cola EP",
+                    "shares": 0.5672,
+                    "price": 97.29,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "21-07-2025",
+                    "type": "Sell",
+                    "symbol": "CCEP",
+                    "name": "Coca-Cola EP",
+                    "shares": 1,
+                    "price": 97.22,
+                    "currency": "$",
+                    "fee": 0.30,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "25-07-2025",
+                    "type": "Buy",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 609.45,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-08-2025",
+                    "type": "Buy",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 602.30,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "06-08-2025",
+                    "type": "Dividend",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 4.80,
+                    "currency": "€",
+                    "fee": 0.72,
+                    "note": ""
+                },
+                {
+                    "date": "11-08-2025",
+                    "type": "Sell",
+                    "symbol": "MC.PA",
+                    "name": "LVMH",
+                    "shares": 0.1223,
+                    "price": 457.25,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "11-08-2025",
+                    "type": "Sell",
+                    "symbol": "KER.PA",
+                    "name": "Kering",
+                    "shares": 0.2361,
+                    "price": 213.05,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "11-08-2025",
+                    "type": "Sell",
+                    "symbol": "PATH",
+                    "name": "UiPath",
+                    "shares": 13.6794,
+                    "price": 10.56,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "12-08-2025",
+                    "type": "Sell",
+                    "symbol": "NOVO-B.CO",
+                    "name": "Novo Nordisk",
+                    "shares": 7,
+                    "price": 323.75,
+                    "currency": "DKK",
+                    "fee": 0,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "06-11-2025",
+                    "type": "Dividend",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 6.40,
+                    "currency": "€",
+                    "fee": 0.96,
+                    "note": ""
+                },
+                {
+                    "date": "27-11-2025",
+                    "type": "Dividend",
+                    "symbol": "ETL.PA",
+                    "name": "Eutelsat",
+                    "shares": 1,
+                    "price": 4.38,
+                    "currency": "€",
+                    "fee": 0.20,
+                    "note": ""
+                },
+                {
+                    "date": "12-01-2026",
+                    "type": "Sell",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 1084.40,
+                    "currency": "€",
+                    "fee": 28.49,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "12-01-2026",
+                    "type": "Buy",
+                    "symbol": "ETL.PA",
+                    "name": "Eutelsat",
+                    "shares": 10,
+                    "price": 2.105,
+                    "currency": "€",
+                    "fee": 0.08,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "13-01-2026",
+                    "type": "Sell",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 1105.20,
+                    "currency": "€",
+                    "fee": 29.86,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "14-01-2026",
+                    "type": "Buy",
+                    "symbol": "ETL.PA",
+                    "name": "Eutelsat",
+                    "shares": 20,
+                    "price": 2.185,
+                    "currency": "€",
+                    "fee": 0.17,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "15-01-2026",
+                    "type": "Sell",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 1150.40,
+                    "currency": "€",
+                    "fee": 32.61,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "16-01-2026",
+                    "type": "Sell",
+                    "symbol": "ASML.AS",
+                    "name": "ASML",
+                    "shares": 1,
+                    "price": 1183.40,
+                    "currency": "€",
+                    "fee": 34.58,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "27-01-2026",
+                    "type": "Buy",
+                    "symbol": "ETL.PA",
+                    "name": "Eutelsat",
+                    "shares": 20,
+                    "price": 2.125,
+                    "currency": "€",
+                    "fee": 0.17,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "27-01-2026",
+                    "type": "Buy",
+                    "symbol": "PRX.AS",
+                    "name": "Prosus",
+                    "shares": 10,
+                    "price": 50.220,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "30-01-2026",
+                    "type": "Buy",
+                    "symbol": "SAP.DE",
+                    "name": "SAP",
+                    "shares": 3,
+                    "price": 170.76,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "06-02-2026",
+                    "type": "Buy",
+                    "symbol": "ETL.PA",
+                    "name": "Eutelsat",
+                    "shares": 40,
+                    "price": 2.070,
+                    "currency": "€",
+                    "fee": 0.33,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "06-02-2026",
+                    "type": "Buy",
+                    "symbol": "PRX.AS",
+                    "name": "Prosus",
+                    "shares": 10,
+                    "price": 45.545,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "10-02-2026",
+                    "type": "Buy",
+                    "symbol": "PRX.AS",
+                    "name": "Prosus",
+                    "shares": 5,
+                    "price": 44.765,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "10-02-2026",
+                    "type": "Buy",
+                    "symbol": "SAP.DE",
+                    "name": "SAP",
+                    "shares": 2,
+                    "price": 175.10,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-03-2026",
+                    "type": "Buy",
+                    "symbol": "PRX.AS",
+                    "name": "Prosus",
+                    "shares": 10,
+                    "price": 41.755,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "10-03-2026",
+                    "type": "Buy",
+                    "symbol": "SAP.DE",
+                    "name": "SAP",
+                    "shares": 1,
+                    "price": 168.64,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "19-03-2026",
+                    "type": "Buy",
+                    "symbol": "PRX.AS",
+                    "name": "Prosus",
+                    "shares": 2,
+                    "price": 40.945,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                }
+            ]
+        },
+        {
+            "account_name": "xtb_bursucel",
+            "cash": 0.00,
+            "currency": "$",
+            "transactions": [
+                {
+                    "date": "09-05-2025",
+                    "type": "Buy",
+                    "symbol": "META",
+                    "name": "Meta",
+                    "shares": 1,
+                    "price": 596.72,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "09-05-2025",
+                    "type": "Buy",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 3,
+                    "price": 154.60,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "12-05-2025",
+                    "type": "Buy",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 5,
+                    "price": 33.39,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "12-05-2025",
+                    "type": "Buy",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 8,
+                    "price": 25.05,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "16-06-2025",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 0.63,
+                    "currency": "$",
+                    "fee": 0.19,
+                    "note": ""
+                },
+                {
+                    "date": "26-06-2025",
+                    "type": "Dividend",
+                    "symbol": "META",
+                    "name": "Meta",
+                    "shares": 1,
+                    "price": 0.53,
+                    "currency": "$",
+                    "fee": 0.16,
+                    "note": ""
+                },
+                {
+                    "date": "16-07-2025",
+                    "type": "Buy",
+                    "symbol": "AMZN",
+                    "name": "Amazon",
+                    "shares": 1,
+                    "price": 224.31,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "07-08-2025",
+                    "type": "Buy",
+                    "symbol": "AMZN",
+                    "name": "Amazon",
+                    "shares": 1,
+                    "price": 223.36,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "15-09-2025",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 0.63,
+                    "currency": "$",
+                    "fee": 0.19,
+                    "note": ""
+                },
+                {
+                    "date": "19-09-2025",
+                    "type": "Sell",
+                    "symbol": "IONQ",
+                    "name": "IonQ",
+                    "shares": 5,
+                    "price": 68.56,
+                    "currency": "$",
+                    "fee": 5.14,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "19-09-2025",
+                    "type": "Sell",
+                    "symbol": "NNE",
+                    "name": "Nano Nuclear Energy",
+                    "shares": 8,
+                    "price": 42.11,
+                    "currency": "$",
+                    "fee": 2.10,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "29-09-2025",
+                    "type": "Dividend",
+                    "symbol": "META",
+                    "name": "Meta",
+                    "shares": 1,
+                    "price": 0.53,
+                    "currency": "$",
+                    "fee": 0.16,
+                    "note": ""
+                },
+                {
+                    "date": "30-10-2025",
+                    "type": "Buy",
+                    "symbol": "META",
+                    "name": "Meta",
+                    "shares": 1,
+                    "price": 656.42,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "04-11-2025",
+                    "type": "Buy",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 2,
+                    "price": 279.29,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "15-12-2025",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 1.05,
+                    "currency": "$",
+                    "fee": 0.32,
+                    "note": ""
+                },
+                {
+                    "date": "23-12-2025",
+                    "type": "Dividend",
+                    "symbol": "META",
+                    "name": "Meta",
+                    "shares": 1,
+                    "price": 1.06,
+                    "currency": "$",
+                    "fee": 0.32,
+                    "note": ""
+                },
+                {
+                    "date": "08-01-2026",
+                    "type": "Sell",
+                    "symbol": "AMZN",
+                    "name": "Amazon",
+                    "shares": 2,
+                    "price": 244.16,
+                    "currency": "$",
+                    "fee": 2.30,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "08-01-2026",
+                    "type": "Buy",
+                    "symbol": "NFLX",
+                    "name": "Netflix",
+                    "shares": 5,
+                    "price": 90.10,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "21-01-2026",
+                    "type": "Buy",
+                    "symbol": "NFLX",
+                    "name": "Netflix",
+                    "shares": 5,
+                    "price": 83.68,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "16-03-2026",
+                    "type": "Dividend",
+                    "symbol": "GOOG",
+                    "name": "Alphabet",
+                    "shares": 1,
+                    "price": 1.05,
+                    "currency": "$",
+                    "fee": 0.32,
+                    "note": ""
+                }
+            ]
+        },
+        {
+            "account_name": "tradeville",
+            "cash": 18.62,
+            "currency": "RON",
+            "transactions": [
+                {
+                    "date": "23-12-2024",
+                    "type": "Buy",
+                    "symbol": "TVBETETF.RO",
+                    "name": "ETF BET Patria Tradeville",
+                    "shares": 100,
+                    "price": 27.085,
+                    "currency": "RON",
+                    "fee": 12.05,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "28-02-2025",
+                    "type": "Buy",
+                    "symbol": "TLV.RO",
+                    "name": "Banca Transilvania",
+                    "shares": 20,
+                    "price": 29.10,
+                    "currency": "RON",
+                    "fee": 4.35,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "28-02-2025",
+                    "type": "Buy",
+                    "symbol": "SNP.RO",
+                    "name": "OMV Petrom",
+                    "shares": 120,
+                    "price": 0.7595,
+                    "currency": "RON",
+                    "fee": 1.94,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "07-04-2025",
+                    "type": "Buy",
+                    "symbol": "SNP.RO",
+                    "name": "OMV Petrom",
+                    "shares": 1380,
+                    "price": 0.7100,
+                    "currency": "RON",
+                    "fee": 6.30,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "08-04-2025",
+                    "type": "Buy",
+                    "symbol": "TLV.RO",
+                    "name": "Banca Transilvania",
+                    "shares": 80,
+                    "price": 27.08,
+                    "currency": "RON",
+                    "fee": 12.11,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "08-04-2025",
+                    "type": "Buy",
+                    "symbol": "TEL.RO",
+                    "name": "Transelectrica",
+                    "shares": 20,
+                    "price": 40.50,
+                    "currency": "RON",
+                    "fee": 5.47,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "08-04-2025",
+                    "type": "Buy",
+                    "symbol": "SNG.RO",
+                    "name": "Romgaz",
+                    "shares": 170,
+                    "price": 5.91,
+                    "currency": "RON",
+                    "fee": 6.41,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "22-04-2025",
+                    "type": "Buy",
+                    "symbol": "TLV.RO",
+                    "name": "Banca Transilvania",
+                    "shares": 20,
+                    "price": 28.08,
+                    "currency": "RON",
+                    "fee": 4.25,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "22-04-2025",
+                    "type": "Buy",
+                    "symbol": "SNP.RO",
+                    "name": "OMV Petrom",
+                    "shares": 1000,
+                    "price": 0.7155,
+                    "currency": "RON",
+                    "fee": 5,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "22-04-2025",
+                    "type": "Buy",
+                    "symbol": "SNN.RO",
+                    "name": "Nuclearelectrica",
+                    "shares": 10,
+                    "price": 40.15,
+                    "currency": "RON",
+                    "fee": 3.46,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Buy",
+                    "symbol": "TLV.RO",
+                    "name": "Banca Transilvania",
+                    "shares": 50,
+                    "price": 29.58,
+                    "currency": "RON",
+                    "fee": 8.77,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "27-05-2025",
+                    "type": "Buy",
+                    "symbol": "SNP.RO",
+                    "name": "OMV Petrom",
+                    "shares": 2100,
+                    "price": 0.7100,
+                    "currency": "RON",
+                    "fee": 8.82,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "03-06-2025",
+                    "type": "Dividend",
+                    "symbol": "SNP.RO",
+                    "name": "OMV Petrom",
+                    "shares": 1,
+                    "price": 100,
+                    "currency": "RON",
+                    "fee": 1.01,
+                    "note": ""
+                },
+                {
+                    "date": "24-06-2025",
+                    "type": "Dividend",
+                    "symbol": "SNN.RO",
+                    "name": "Nuclearelectrica",
+                    "shares": 1,
+                    "price": 24.02,
+                    "currency": "RON",
+                    "fee": 1.01,
+                    "note": ""
+                },
+                {
+                    "date": "30-06-2025",
+                    "type": "Dividend",
+                    "symbol": "TLV.RO",
+                    "name": "Banca Transilvania",
+                    "shares": 1,
+                    "price": 265.20,
+                    "currency": "RON",
+                    "fee": 2.65,
+                    "note": ""
+                },
+                {
+                    "date": "25-07-2025",
+                    "type": "Dividend",
+                    "symbol": "SNG.RO",
+                    "name": "Romgaz",
+                    "shares": 1,
+                    "price": 23.66,
+                    "currency": "RON",
+                    "fee": 1.01,
+                    "note": ""
+                },
+                {
+                    "date": "31-07-2025",
+                    "type": "Dividend",
+                    "symbol": "TEL.RO",
+                    "name": "Transelectrica",
+                    "shares": 1,
+                    "price": 68.20,
+                    "currency": "RON",
+                    "fee": 1.02,
+                    "note": ""
+                },
+                {
+                    "date": "10-09-2025",
+                    "type": "Sell",
+                    "symbol": "TLV.RO",
+                    "name": "Banca Transilvania",
+                    "shares": 202,
+                    "price": 27.98,
+                    "currency": "RON",
+                    "fee": 25.83,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "10-09-2025",
+                    "type": "Sell",
+                    "symbol": "TEL.RO",
+                    "name": "Transelectrica",
+                    "shares": 20,
+                    "price": 56.10,
+                    "currency": "RON",
+                    "fee": 6.35,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "10-09-2025",
+                    "type": "Sell",
+                    "symbol": "SNP.RO",
+                    "name": "OMV Petrom",
+                    "shares": 4600,
+                    "price": 0.849,
+                    "currency": "RON",
+                    "fee": 18.32,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "10-09-2025",
+                    "type": "Sell",
+                    "symbol": "SNN.RO",
+                    "name": "Nuclearelectrica",
+                    "shares": 10,
+                    "price": 46.30,
+                    "currency": "RON",
+                    "fee": 3.51,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "10-09-2025",
+                    "type": "Sell",
+                    "symbol": "SNG.RO",
+                    "name": "Romgaz",
+                    "shares": 170,
+                    "price": 7.83,
+                    "currency": "RON",
+                    "fee": 7.25,
+                    "note": "Total Sell"
+                },
+                {
+                    "date": "10-09-2025",
+                    "type": "Buy",
+                    "symbol": "TVBETETF.RO",
+                    "name": "ETF BET Patria Tradeville",
+                    "shares": 375,
+                    "price": 34.195,
+                    "currency": "RON",
+                    "fee": 51.53,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "05-01-2026",
+                    "type": "Buy",
+                    "symbol": "TVBETETF.RO",
+                    "name": "ETF BET Patria Tradeville",
+                    "shares": 124,
+                    "price": 41.45,
+                    "currency": "RON",
+                    "fee": 21.58,
+                    "note": "Accumulation"
+                }
+            ]
+        },
+        {
+            "account_name": "tokero",
+            "cash": 0.00,
+            "currency": "€",
+            "transactions": [
+                {
+                    "date": "03-03-2025",
+                    "type": "Buy",
+                    "symbol": "BTC-EUR",
+                    "name": "Bitcoin",
+                    "shares": 0.011218,
+                    "price": 86111.6063,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "10-03-2025",
+                    "type": "Buy",
+                    "symbol": "BTC-EUR",
+                    "name": "Bitcoin",
+                    "shares": 0.013146,
+                    "price": 73482.4281,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "09-04-2025",
+                    "type": "Buy",
+                    "symbol": "BTC-EUR",
+                    "name": "Bitcoin",
+                    "shares": 0.013921,
+                    "price": 69391.5666,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "26-08-2025",
+                    "type": "Buy",
+                    "symbol": "BTC-EUR",
+                    "name": "Bitcoin",
+                    "shares": 0.010231,
+                    "price": 94418.9228,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Accumulation"
+                }
+            ]
+        },
+        {
+            "account_name": "binance",
+            "cash": 0.73,
+            "currency": "€",
+            "transactions": [
+                {
+                    "date": "17-12-2025",
+                    "type": "Buy",
+                    "symbol": "BTC-EUR",
+                    "name": "Bitcoin",
+                    "shares": 0.02691,
+                    "price": 74294.8317,
+                    "currency": "€",
+                    "fee": 0.00002557,
+                    "note": "Initiation"
+                }
+            ]
+        }
+    ],
+    "watchlist": [
+        {
+            "symbol": "NET",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "IBM",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "IDCC",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "LMND",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "QLYS",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "UBER",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "ARM",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "MRVL",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "QCOM",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "TSM",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "ASTS",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "RKLB",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "CGNX",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "GD",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "IRBT",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "KTOS",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "LHX",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "LECO",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "LMT",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "MDT",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "NOC",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "OII",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "OUST",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "SERV",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "SYM",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "TER",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "TXT",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "ZBRA",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "BWXT",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "COIN",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "UPST",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "EH",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "CORZ",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "FSLR",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "GEV",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "IREN",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "PEG",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "PWR",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "STRL",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "WULF",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "VST",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "AVAV",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "ANET",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "CIEN",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "CRDO",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "DELL",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "HPE",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "ORCL",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "SMCI",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "VRT",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "CCEP",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "DDOG",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "FFIV",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "GTLB",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "MDB",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "NICE",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "SNOW",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "EXEL",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "RIGL",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "TEVA",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "TGTX",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "PARRO.PA",
+            "currency": "€",
+            "note": "Earnings growth potential"
+        }
+    ]
+}
