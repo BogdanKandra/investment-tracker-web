@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: "/dividends", label: "Dividends", icon: "💰" },
   { to: "/performance", label: "Performance", icon: "📈" },
   { to: "/watchlist", label: "Watchlist", icon: "👁" },
+  { to: "/taxes", label: "Taxes", icon: "🧾" },
 ];
 
 export default function Sidebar() {

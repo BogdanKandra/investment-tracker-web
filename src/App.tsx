@@ -7,6 +7,7 @@ import TransactionsPage from "./pages/TransactionsPage";
 import DividendsPage from "./pages/DividendsPage";
 import PerformancePage from "./pages/PerformancePage";
 import WatchlistPage from "./pages/WatchlistPage";
+import TaxesPage from "./pages/TaxesPage";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/dividends" element={<DividendsPage />} />
             <Route path="/performance" element={<PerformancePage />} />
             <Route path="/watchlist" element={<WatchlistPage />} />
+            <Route path="/taxes" element={<TaxesPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>
