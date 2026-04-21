@@ -1,0 +1,133 @@
+{
+    "updated_at": "01-01-2026",
+    "target_asset_class_distribution": {
+        "Cash": 20,
+        "Crypto": 10,
+        "ETF": 15,
+        "International Stocks": 15,
+        "US Stocks": 40
+    },
+    "accounts": [
+        {
+            "account_name": "xtb_usd",
+            "cash": 1000,
+            "currency": "$",
+            "transactions": [
+                {
+                    "date": "16-12-2025",
+                    "type": "Buy",
+                    "symbol": "RGTI",
+                    "name": "Rigetti Computing",
+                    "shares": 10,
+                    "price": 23.03,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Accumulation"
+                },
+                {
+                    "date": "31-12-2025",
+                    "type": "Dividend",
+                    "symbol": "AVGO",
+                    "name": "Broadcom",
+                    "shares": 1,
+                    "price": 1.96,
+                    "currency": "$",
+                    "fee": 0.60,
+                    "note": ""
+                },
+                {
+                    "date": "01-01-2026",
+                    "type": "Sell",
+                    "symbol": "AMD",
+                    "name": "AMD",
+                    "shares": 5,
+                    "price": 206.89,
+                    "currency": "$",
+                    "fee": 29.98,
+                    "note": "Total Sell"
+                }
+            ]
+        },
+        {
+            "account_name": "xtb_eur",
+            "cash": 2000,
+            "currency": "€",
+            "transactions": [
+                {
+                    "date": "19-02-2024",
+                    "type": "Buy",
+                    "symbol": "MC.PA",
+                    "name": "LVMH",
+                    "shares": 0.1223,
+                    "price": 807.60,
+                    "currency": "€",
+                    "fee": 0,
+                    "note": "Initiation"
+                },
+                {
+                    "date": "25-04-2024",
+                    "type": "Dividend",
+                    "symbol": "MC.PA",
+                    "name": "LVMH",
+                    "shares": 1,
+                    "price": 0.92,
+                    "currency": "€",
+                    "fee": 0.23,
+                    "note": ""
+                },
+                {
+                    "date": "26-02-2025",
+                    "type": "Sell",
+                    "symbol": "U",
+                    "name": "Unity Software",
+                    "shares": 0.6547,
+                    "price": 27.21,
+                    "currency": "$",
+                    "fee": 0,
+                    "note": "Partial Sell"
+                },
+                {
+                    "date": "26-02-2025",
+                    "type": "Sell",
+                    "symbol": "U",
+                    "name": "Unity Software",
+                    "shares": 10,
+                    "price": 27.24,
+                    "currency": "$",
+                    "fee": 2.26,
+                    "note": "Total Sell"
+                }
+            ]
+        },
+        {
+            "account_name": "binance",
+            "cash": 3000,
+            "currency": "€",
+            "transactions": [
+                {
+                    "date": "25-12-2025",
+                    "type": "Buy",
+                    "symbol": "BTC-EUR",
+                    "name": "Bitcoin",
+                    "shares": 0.03156,
+                    "price": 74294.8317,
+                    "currency": "€",
+                    "fee": 0.00004217,
+                    "note": "Initiation"
+                }
+            ]
+        }
+    ],
+    "watchlist": [
+        {
+            "symbol": "NFLX",
+            "currency": "$",
+            "note": "Earnings growth potential"
+        },
+        {
+            "symbol": "PARRO.PA",
+            "currency": "€",
+            "note": "Earnings growth potential"
+        }
+    ]
+}
