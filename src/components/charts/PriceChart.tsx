@@ -17,7 +17,7 @@ import { formatPercent } from "../../utils/numbers";
 import StatsCard from "../common/StatsCard";
 
 const DEFAULT_TIME_RANGES: TimeRange[] = [
-  "1D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y", "3Y", "5Y", "ALL",
+  "1D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "ALL",
 ];
 
 interface PriceChartProps {
@@ -51,7 +51,7 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
       },
       timeScale: {
         borderColor: "rgba(255,255,255,0.1)",
-        timeVisible: range === "1D" || range === "1W",
+        timeVisible: range === "1D" || range === "1W" || range === "2W",
       },
       width: chartContainerRef.current.clientWidth,
       height: 400,
@@ -199,30 +199,48 @@ function buildMarkers(
 ): SeriesMarker<Time>[] {
   if (chartData.length === 0) return [];
 
-  const chartDates = new Set(chartData.map((d) => d.time));
+  const isIntraday = typeof chartData[0]!.time === "number";
+
+  const chartTimes = chartData.map((d) => d.time);
   const markers: MarkerData[] = [];
 
   for (const tx of holding.transactions) {
     if (tx.type === "Dividend") continue;
-    const txDate = toChartDate(tx.date);
 
-    let closestDate = txDate;
-    if (!chartDates.has(txDate)) {
+    let snappedTime: string | number;
+
+    if (isIntraday) {
+      const txMs = new Date(toChartDate(tx.date)).getTime();
       let minDiff = Infinity;
-      for (const cd of chartDates) {
-        const diff = Math.abs(
-          new Date(cd).getTime() - new Date(txDate).getTime()
-        );
+      snappedTime = chartTimes[0]!;
+      for (const ct of chartTimes) {
+        const diff = Math.abs((ct as number) * 1000 - txMs);
         if (diff < minDiff) {
           minDiff = diff;
-          closestDate = cd;
+          snappedTime = ct;
+        }
+      }
+    } else {
+      const txDate = toChartDate(tx.date);
+      const chartDateSet = new Set(chartTimes as string[]);
+      snappedTime = txDate;
+      if (!chartDateSet.has(txDate)) {
+        let minDiff = Infinity;
+        for (const cd of chartTimes) {
+          const diff = Math.abs(
+            new Date(cd as string).getTime() - new Date(txDate).getTime()
+          );
+          if (diff < minDiff) {
+            minDiff = diff;
+            snappedTime = cd;
+          }
         }
       }
     }
 
     if (tx.type === "Buy") {
       markers.push({
-        time: closestDate,
+        time: snappedTime as string,
         position: "belowBar",
         color: "#16a34a",
         shape: "arrowUp",
@@ -230,7 +248,7 @@ function buildMarkers(
       });
     } else if (tx.type === "Sell") {
       markers.push({
-        time: closestDate,
+        time: snappedTime as string,
         position: "aboveBar",
         color: "#dc2626",
         shape: "arrowDown",

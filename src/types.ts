@@ -90,7 +90,7 @@ export type TimeRange =
   | "ALL";
 
 export interface OhlcData {
-  time: string;
+  time: string | number;
   open: number;
   high: number;
   low: number;

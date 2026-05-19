@@ -5,11 +5,12 @@ import CurrencySelect from "../components/common/CurrencySelect";
 import HoldingsList from "../components/holdings/HoldingsList";
 import FormerHoldings from "../components/holdings/FormerHoldings";
 import PriceChart from "../components/charts/PriceChart";
+import HoldingsPieChart from "../components/charts/HoldingsPieChart";
 import { fetchCurrentPrices } from "../api/marketData";
 import type { TimeRange } from "../types";
 
 const HOLDINGS_TIME_RANGES: TimeRange[] = [
-  "1M", "2M", "3M", "6M", "1Y", "3Y", "5Y", "ALL",
+  "1D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "ALL",
 ];
 
 export default function HoldingsPage() {
@@ -75,7 +76,7 @@ export default function HoldingsPage() {
       </div>
 
       {/* Right Panel */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col gap-4 overflow-y-auto">
         {selectedHolding ? (
           <div className="bg-card rounded-xl p-5 border border-white/5">
             <PriceChart
@@ -85,7 +86,7 @@ export default function HoldingsPage() {
             />
           </div>
         ) : (
-          <div className="bg-card rounded-xl border border-white/5 h-full min-h-[400px] flex items-center justify-center">
+          <div className="bg-card rounded-xl border border-white/5 min-h-[200px] flex items-center justify-center">
             <div className="text-center text-muted">
               <div className="text-4xl mb-3">📈</div>
               <div className="text-sm">
@@ -94,6 +95,15 @@ export default function HoldingsPage() {
             </div>
           </div>
         )}
+
+        <div className="bg-card rounded-xl p-5 border border-white/5">
+          <HoldingsPieChart
+            holdings={currentHoldings}
+            prices={prices}
+            displayCurrency={displayCurrency}
+            rates={rates}
+          />
+        </div>
       </div>
     </div>
   );

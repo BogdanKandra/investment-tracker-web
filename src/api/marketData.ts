@@ -8,28 +8,50 @@ const CORS_PROXY = "https://corsproxy.io/?url=";
  * Yahoo intervals: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo
  * Yahoo ranges: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
  */
-function yahooRange(range: TimeRange): { range: string; interval: string } {
-  const map: Record<TimeRange, { range: string; interval: string }> = {
-    "1D": { range: "1d", interval: "5m" },
-    "1W": { range: "5d", interval: "30m" },
-    "2W": { range: "1mo", interval: "1h" },
-    "1M": { range: "1mo", interval: "1d" },
-    "2M": { range: "3mo", interval: "1d" },
-    "3M": { range: "3mo", interval: "1d" },
-    "6M": { range: "6mo", interval: "1d" },
-    "1Y": { range: "1y", interval: "1d" },
-    "3Y": { range: "5y", interval: "1wk" },
-    "5Y": { range: "5y", interval: "1wk" },
-    ALL: { range: "max", interval: "1mo" },
+interface YahooParams {
+  range: string;
+  interval: string;
+  intraday: boolean;
+}
+
+function yahooRange(range: TimeRange): YahooParams {
+  const map: Record<TimeRange, YahooParams> = {
+    "1D": { range: "1d", interval: "5m", intraday: true },
+    "1W": { range: "5d", interval: "30m", intraday: true },
+    "2W": { range: "1mo", interval: "1h", intraday: true },
+    "1M": { range: "1mo", interval: "1d", intraday: false },
+    "2M": { range: "3mo", interval: "1d", intraday: false },
+    "3M": { range: "3mo", interval: "1d", intraday: false },
+    "6M": { range: "6mo", interval: "1d", intraday: false },
+    "1Y": { range: "1y", interval: "1d", intraday: false },
+    "2Y": { range: "2y", interval: "1wk", intraday: false },
+    "3Y": { range: "5y", interval: "1wk", intraday: false },
+    "5Y": { range: "5y", interval: "1wk", intraday: false },
+    ALL: { range: "max", interval: "1mo", intraday: false },
   };
   return map[range];
+}
+
+function trimToRange(data: OhlcData[], range: TimeRange): OhlcData[] {
+  const days = timeRangeToDays(range);
+  if (days == null || data.length === 0) return data;
+
+  const now = Date.now();
+  const cutoff = now - days * 24 * 60 * 60 * 1000;
+
+  return data.filter((d) => {
+    const t = typeof d.time === "number"
+      ? d.time * 1000
+      : new Date(d.time).getTime();
+    return t >= cutoff;
+  });
 }
 
 export async function fetchHistoricalData(
   symbol: string,
   range: TimeRange
 ): Promise<OhlcData[]> {
-  const { range: yRange, interval } = yahooRange(range);
+  const { range: yRange, interval, intraday } = yahooRange(range);
   const url = `${CORS_PROXY}${encodeURIComponent(
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${yRange}&interval=${interval}`
   )}`;
@@ -54,19 +76,30 @@ export async function fetchHistoricalData(
       const c = quote.close?.[i];
       if (o == null || h == null || l == null || c == null) continue;
 
-      const d = new Date(ts * 1000);
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
-      data.push({
-        time: dateStr,
-        open: o,
-        high: h,
-        low: l,
-        close: c,
-        volume: quote.volume?.[i] ?? undefined,
-      });
+      if (intraday) {
+        data.push({
+          time: ts,
+          open: o,
+          high: h,
+          low: l,
+          close: c,
+          volume: quote.volume?.[i] ?? undefined,
+        });
+      } else {
+        const d = new Date(ts * 1000);
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        data.push({
+          time: dateStr,
+          open: o,
+          high: h,
+          low: l,
+          close: c,
+          volume: quote.volume?.[i] ?? undefined,
+        });
+      }
     }
-    return data;
+
+    return trimToRange(data, range);
   } catch {
     return generateMockData(range);
   }
@@ -110,28 +143,53 @@ export async function fetchCurrentPrices(
 
 /** Generate mock price data when the API is unavailable */
 function generateMockData(range: TimeRange): OhlcData[] {
+  const { intraday } = yahooRange(range);
   const days = timeRangeToDays(range) ?? 365;
   const data: OhlcData[] = [];
   let price = 100 + Math.random() * 200;
-  const now = new Date();
+  const now = Date.now();
 
-  for (let i = days; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const change = (Math.random() - 0.48) * 3;
-    price = Math.max(10, price + change);
-    const open = price;
-    const close = price + (Math.random() - 0.5) * 2;
-    const high = Math.max(open, close) + Math.random() * 2;
-    const low = Math.min(open, close) - Math.random() * 2;
+  if (intraday) {
+    const intervalMinutes = range === "1D" ? 5 : range === "1W" ? 30 : 60;
+    const totalBars = Math.floor((days * 24 * 60) / intervalMinutes);
+    const startTs = Math.floor(now / 1000) - totalBars * intervalMinutes * 60;
 
-    data.push({
-      time: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
-      open: +open.toFixed(2),
-      high: +high.toFixed(2),
-      low: +Math.max(1, low).toFixed(2),
-      close: +close.toFixed(2),
-    });
+    for (let i = 0; i < totalBars; i++) {
+      const change = (Math.random() - 0.48) * 3;
+      price = Math.max(10, price + change);
+      const open = price;
+      const close = price + (Math.random() - 0.5) * 2;
+      const high = Math.max(open, close) + Math.random() * 2;
+      const low = Math.min(open, close) - Math.random() * 2;
+
+      data.push({
+        time: startTs + i * intervalMinutes * 60,
+        open: +open.toFixed(2),
+        high: +high.toFixed(2),
+        low: +Math.max(1, low).toFixed(2),
+        close: +close.toFixed(2),
+      });
+    }
+  } else {
+    for (let i = days; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const change = (Math.random() - 0.48) * 3;
+      price = Math.max(10, price + change);
+      const open = price;
+      const close = price + (Math.random() - 0.5) * 2;
+      const high = Math.max(open, close) + Math.random() * 2;
+      const low = Math.min(open, close) - Math.random() * 2;
+
+      data.push({
+        time: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+        open: +open.toFixed(2),
+        high: +high.toFixed(2),
+        low: +Math.max(1, low).toFixed(2),
+        close: +close.toFixed(2),
+      });
+    }
   }
+
   return data;
 }

@@ -6,7 +6,7 @@ import PriceChart from "../components/charts/PriceChart";
 import type { Holding, TimeRange } from "../types";
 
 const WATCHLIST_TIME_RANGES: TimeRange[] = [
-  "1M", "2M", "3M", "6M", "1Y", "3Y", "5Y", "ALL",
+  "1D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "ALL",
 ];
 
 export default function WatchlistPage() {
