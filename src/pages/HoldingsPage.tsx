@@ -7,6 +7,7 @@ import FormerHoldings from "../components/holdings/FormerHoldings";
 import PriceChart from "../components/charts/PriceChart";
 import HoldingsPieChart from "../components/charts/HoldingsPieChart";
 import { fetchCurrentPrices } from "../api/marketData";
+import { convertCurrency } from "../utils/currency";
 import type { TimeRange } from "../types";
 
 const HOLDINGS_TIME_RANGES: TimeRange[] = [
@@ -15,11 +16,23 @@ const HOLDINGS_TIME_RANGES: TimeRange[] = [
 
 export default function HoldingsPage() {
   const {
+    portfolio,
+    selectedAccount,
     currentHoldings,
     formerHoldings,
     displayCurrency,
     rates,
   } = usePortfolio();
+
+  const totalCash = useMemo(() => {
+    const accounts = selectedAccount
+      ? portfolio.accounts.filter((a) => a.account_name === selectedAccount)
+      : portfolio.accounts;
+    return accounts.reduce(
+      (sum, a) => sum + convertCurrency(a.cash, a.currency, displayCurrency, rates),
+      0
+    );
+  }, [portfolio.accounts, selectedAccount, displayCurrency, rates]);
 
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [prices, setPrices] = useState<Map<string, number>>(new Map());
@@ -64,6 +77,7 @@ export default function HoldingsPage() {
           rates={rates}
           selectedSymbol={selectedSymbol}
           onSelect={setSelectedSymbol}
+          totalCash={totalCash}
         />
 
         <FormerHoldings

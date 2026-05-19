@@ -60,6 +60,7 @@ export default function HoldingsPieChart({
 
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
+
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[280px] text-muted text-sm">

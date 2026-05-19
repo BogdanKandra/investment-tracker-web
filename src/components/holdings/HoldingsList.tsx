@@ -1,4 +1,6 @@
 import type { Holding, CurrencySymbol, ExchangeRates } from "../../types";
+import { convertCurrency, formatCurrency } from "../../utils/currency";
+import { formatPercent } from "../../utils/numbers";
 import HoldingRow from "./HoldingRow";
 import { useState, useMemo } from "react";
 
@@ -18,6 +20,7 @@ interface HoldingsListProps {
   rates: ExchangeRates;
   selectedSymbol: string | null;
   onSelect: (symbol: string) => void;
+  totalCash: number;
 }
 
 export default function HoldingsList({
@@ -27,19 +30,25 @@ export default function HoldingsList({
   rates,
   selectedSymbol,
   onSelect,
+  totalCash,
 }: HoldingsListProps) {
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortAsc, setSortAsc] = useState(false);
   const [filter, setFilter] = useState("");
 
-  const totalPortfolioValue = useMemo(
-    () =>
-      holdings.reduce((sum, h) => {
-        const p = prices.get(h.symbol) ?? h.averageCost;
-        return sum + h.totalShares * p;
-      }, 0),
-    [holdings, prices]
-  );
+  const { totalPortfolioValue, totalInvested, totalPnL } = useMemo(() => {
+    let value = 0;
+    let invested = 0;
+    for (const h of holdings) {
+      const p = prices.get(h.symbol) ?? h.averageCost;
+      value += convertCurrency(h.totalShares * p, h.currency, displayCurrency, rates);
+      invested += convertCurrency(h.totalInvested, h.currency, displayCurrency, rates);
+    }
+    return { totalPortfolioValue: value, totalInvested: invested, totalPnL: value - invested };
+  }, [holdings, prices, displayCurrency, rates]);
+
+  const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
+
 
   const sorted = useMemo(() => {
     let list = [...holdings];
@@ -72,8 +81,10 @@ export default function HoldingsList({
           cmp = priceA - priceB;
           break;
         case "value":
+        case "weight":
           cmp =
-            a.totalShares * priceA - b.totalShares * priceB;
+            convertCurrency(a.totalShares * priceA, a.currency, displayCurrency, rates) -
+            convertCurrency(b.totalShares * priceB, b.currency, displayCurrency, rates);
           break;
         case "pnl": {
           const pnlA =
@@ -83,16 +94,12 @@ export default function HoldingsList({
           cmp = pnlA - pnlB;
           break;
         }
-        case "weight":
-          cmp =
-            a.totalShares * priceA - b.totalShares * priceB;
-          break;
       }
       return sortAsc ? cmp : -cmp;
     });
 
     return list;
-  }, [holdings, sortKey, sortAsc, filter, prices]);
+  }, [holdings, sortKey, sortAsc, filter, prices, displayCurrency, rates]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -110,6 +117,36 @@ export default function HoldingsList({
 
   return (
     <div>
+      {holdings.length > 0 && (
+        <div className="flex items-center justify-end gap-8 mb-3 px-3 py-3 rounded-lg bg-white/[0.03] border border-white/5">
+          <div className="text-right">
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Holdings Value</div>
+            <div className="text-sm font-medium text-white">
+              {formatCurrency(totalPortfolioValue, displayCurrency)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Cash</div>
+            <div className="text-sm font-medium text-white">
+              {formatCurrency(totalCash, displayCurrency)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Total Value</div>
+            <div className="text-sm font-medium text-white">
+              {formatCurrency(totalPortfolioValue + totalCash, displayCurrency)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Unrealized P&L</div>
+            <div className={`text-sm font-medium ${totalPnL >= 0 ? "text-gain" : "text-loss"}`}>
+              {formatCurrency(totalPnL, displayCurrency)}
+              <span className="text-xs ml-1">{formatPercent(totalPnLPct)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <input
         type="text"
         placeholder="Search holdings..."

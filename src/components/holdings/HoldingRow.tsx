@@ -28,8 +28,6 @@ export default function HoldingRow({
     holding.totalInvested > 0
       ? (unrealizedPnL / holding.totalInvested) * 100
       : 0;
-  const weight =
-    totalPortfolioValue > 0 ? (marketValue / totalPortfolioValue) * 100 : 0;
 
   const displayValue = convertCurrency(
     marketValue,
@@ -37,6 +35,9 @@ export default function HoldingRow({
     displayCurrency,
     rates
   );
+  const weight =
+    totalPortfolioValue > 0 ? (displayValue / totalPortfolioValue) * 100 : 0;
+
   const displayPnL = convertCurrency(
     unrealizedPnL,
     holding.currency,
