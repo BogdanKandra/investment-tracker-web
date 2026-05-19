@@ -8,11 +8,100 @@ import { convertCurrency } from "../utils/currency";
  * computing CASS tax for a given year.
  */
 export const ROMANIAN_MINIMUM_WAGE: Record<number, number> = {
-  2023: 3300,
   2024: 3700,
   2025: 4050,
   2026: 4325,
 };
+
+/**
+ * Romanian dividend tax rate by year.
+ * Applied to gross dividends from foreign sources when filing taxes.
+ */
+export const DIVIDEND_TAX: Record<number, number> = {
+  2024: 0.08,
+  2025: 0.10,
+  2026: 0.16,
+};
+
+/**
+ * Average yearly exchange rates to RON for dividend tax calculations.
+ * Key format: "CURRENCY_YEAR" e.g. "USD_2024" means average USD→RON for 2024.
+ */
+export const AVERAGE_YEARLY_RATES_TO_RON: Record<string, number> = {
+  USD_2024: 4.5984,
+  USD_2025: 4.4705,
+  EUR_2024: 4.9746,
+  EUR_2025: 5.0415,
+  DKK_2024: 0.6669,
+  DKK_2025: 0.6755,
+};
+
+const ISO_ALPHA2_TO_COUNTRY: Record<string, string> = {
+  US: "USA",
+  GB: "United Kingdom",
+  IE: "Ireland",
+  FR: "France",
+  DE: "Germany",
+  NL: "Netherlands",
+  BE: "Belgium",
+  LU: "Luxembourg",
+  CH: "Switzerland",
+  SE: "Sweden",
+  DK: "Denmark",
+  NO: "Norway",
+  FI: "Finland",
+  IT: "Italy",
+  ES: "Spain",
+  PT: "Portugal",
+  AT: "Austria",
+  CA: "Canada",
+  AU: "Australia",
+  JP: "Japan",
+  CN: "China",
+  HK: "Hong Kong",
+  KR: "South Korea",
+  TW: "Taiwan",
+  SG: "Singapore",
+  BR: "Brazil",
+  IN: "India",
+  RO: "Romania",
+  GR: "Greece",
+  PL: "Poland",
+  CZ: "Czech Republic",
+  IL: "Israel",
+  ZA: "South Africa",
+  MX: "Mexico",
+};
+
+/**
+ * Derive the country of origin for a security.
+ * Priority:
+ *  1. Explicit `country` field (populated by scripts/populate-countries.ts)
+ *  2. ISIN prefix (first 2 chars = ISO 3166-1 alpha-2 country code)
+ *  3. Symbol exchange suffix (.RO, .PA, .DE, .AS)
+ *  4. Currency-based fallback ($ → USA)
+ */
+export function getCountryFromSymbol(
+  symbol: string,
+  currency: CurrencySymbol,
+  isin?: string,
+  country?: string
+): string {
+  if (country) return country;
+
+  if (isin && isin.length >= 2) {
+    const code = isin.substring(0, 2).toUpperCase();
+    const resolved = ISO_ALPHA2_TO_COUNTRY[code];
+    if (resolved) return resolved;
+  }
+
+  if (symbol.endsWith(".RO")) return "Romania";
+  if (symbol.endsWith(".PA")) return "France";
+  if (symbol.endsWith(".DE")) return "Germany";
+  if (symbol.endsWith(".AS")) return "Netherlands";
+  if (currency === "$") return "USA";
+  return "Other";
+}
 
 export const DEFAULT_CASS_PROPORTION = 0.1;
 

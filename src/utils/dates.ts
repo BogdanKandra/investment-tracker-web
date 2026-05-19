@@ -51,6 +51,7 @@ export function timeRangeToDays(
     "3M": 90,
     "6M": 180,
     "1Y": 365,
+    "2Y": 730,
     "3Y": 1095,
     "5Y": 1825,
   };
