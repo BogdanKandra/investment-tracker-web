@@ -22,23 +22,24 @@ import { computeSellPnL } from "../data/taxCalculator";
 import { getCurrentHoldings as getPerAccountHoldings } from "../data/holdingAggregator";
 import type { Transaction, CurrencySymbol } from "../types";
 
-const ASSET_CLASS_MAP: Record<string, string> = {
-  POWL: "US Stocks", AMD: "US Stocks", GOOG: "US Stocks", ISRG: "US Stocks",
-  AVGO: "US Stocks", NNE: "US Stocks", OSCR: "US Stocks", META: "US Stocks",
-  IONQ: "US Stocks", PLTR: "US Stocks", RKLB: "US Stocks", HOOD: "US Stocks",
-  RDDT: "US Stocks", APP: "US Stocks", OKLO: "US Stocks", SMR: "US Stocks",
-  CCEP: "International Stocks", "MC.PA": "International Stocks",
-  "CDI.PA": "International Stocks", "AIR.PA": "International Stocks",
-  "ASML.AS": "International Stocks", "PARRO.PA": "International Stocks",
-  "TLV.RO": "International Stocks", "SNP.RO": "International Stocks",
-  "SNG.RO": "International Stocks", "H2O.RO": "International Stocks",
-  "FP.RO": "International Stocks", "BRD.RO": "International Stocks",
-  "TRP.RO": "International Stocks", "DIGI.RO": "International Stocks",
-  "TVBETETF.RO": "ETF", "BTC-EUR": "Crypto",
-};
+function getAssetClass(holding: {
+  symbol: string;
+  name: string;
+  transactions: Transaction[];
+}): string {
+  const { symbol, name } = holding;
 
-function getAssetClass(symbol: string): string {
-  return ASSET_CLASS_MAP[symbol] ?? "US Stocks";
+  if (/^[A-Z]+-[A-Z]{3}$/.test(symbol)) return "Crypto";
+
+  const upper = (name + " " + symbol).toUpperCase();
+  if (upper.includes("ETF")) return "ETF";
+
+  const country = holding.transactions.find((t) => t.country)?.country;
+  if (country && country !== "USA") return "International Stocks";
+
+  if (symbol.includes(".")) return "International Stocks";
+
+  return "US Stocks";
 }
 
 const TOOLTIP_STYLE = {
@@ -171,7 +172,7 @@ export default function DashboardPage() {
   const actualAllocation = useMemo(() => {
     const map = new Map<string, number>();
     for (const h of holdingsWithPnL) {
-      const cls = getAssetClass(h.symbol);
+      const cls = getAssetClass(h);
       const val = convertCurrency(h.value, h.currency, displayCurrency, rates);
       map.set(cls, (map.get(cls) ?? 0) + val);
     }
