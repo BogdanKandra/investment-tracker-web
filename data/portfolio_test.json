@@ -1,5 +1,6 @@
 {
     "updated_at": "01-01-2026",
+    "w_8ben_activated_at": "01-04-2026",
     "target_asset_class_distribution": {
         "Cash": 20,
         "Crypto": 10,
@@ -22,7 +23,8 @@
                     "price": 23.03,
                     "currency": "$",
                     "fee": 0,
-                    "note": "Accumulation"
+                    "note": "Accumulation",
+                    "country": "USA"
                 },
                 {
                     "date": "31-12-2025",
@@ -32,8 +34,9 @@
                     "shares": 1,
                     "price": 1.96,
                     "currency": "$",
-                    "fee": 0.60,
-                    "note": ""
+                    "fee": 0.6,
+                    "note": "",
+                    "country": "USA"
                 },
                 {
                     "date": "01-01-2026",
@@ -44,7 +47,8 @@
                     "price": 206.89,
                     "currency": "$",
                     "fee": 29.98,
-                    "note": "Total Sell"
+                    "note": "Total Sell",
+                    "country": "USA"
                 }
             ]
         },
@@ -59,10 +63,11 @@
                     "symbol": "MC.PA",
                     "name": "LVMH",
                     "shares": 0.1223,
-                    "price": 807.60,
+                    "price": 807.6,
                     "currency": "€",
                     "fee": 0,
-                    "note": "Initiation"
+                    "note": "Initiation",
+                    "country": "France"
                 },
                 {
                     "date": "25-04-2024",
@@ -73,7 +78,8 @@
                     "price": 0.92,
                     "currency": "€",
                     "fee": 0.23,
-                    "note": ""
+                    "note": "",
+                    "country": "France"
                 },
                 {
                     "date": "26-02-2025",
@@ -84,7 +90,8 @@
                     "price": 27.21,
                     "currency": "$",
                     "fee": 0,
-                    "note": "Partial Sell"
+                    "note": "Partial Sell",
+                    "country": "USA"
                 },
                 {
                     "date": "26-02-2025",
@@ -95,7 +102,8 @@
                     "price": 27.24,
                     "currency": "$",
                     "fee": 2.26,
-                    "note": "Total Sell"
+                    "note": "Total Sell",
+                    "country": "USA"
                 }
             ]
         },
