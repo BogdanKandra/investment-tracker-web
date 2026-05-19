@@ -11,7 +11,7 @@ import {
 } from "lightweight-charts";
 import type { Holding, TimeRange, OhlcData, MarkerData } from "../../types";
 import { fetchHistoricalData } from "../../api/marketData";
-import { toChartDate } from "../../utils/dates";
+import { parseDate, toChartDate } from "../../utils/dates";
 import { formatCurrency } from "../../utils/currency";
 import { formatPercent } from "../../utils/numbers";
 import StatsCard from "../common/StatsCard";
@@ -30,6 +30,7 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const liqSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const [range, setRange] = useState<TimeRange>("6M");
   const [loading, setLoading] = useState(false);
 
@@ -83,6 +84,7 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
+      liqSeriesRef.current = null;
     };
   }, [range]);
 
@@ -108,6 +110,38 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
 
       const markers = buildMarkers(holding, data);
       seriesRef.current.setMarkers(markers);
+
+      const chart = chartRef.current;
+      if (chart) {
+        if (liqSeriesRef.current) {
+          chart.removeSeries(liqSeriesRef.current);
+          liqSeriesRef.current = null;
+        }
+
+        const liquidationDates = findLiquidationDates(holding);
+        if (liquidationDates.length > 0 && data.length > 0) {
+          const isIntraday = typeof data[0]!.time === "number";
+          const chartTimes = data.map((d) => d.time);
+
+          const liqSeries = chart.addHistogramSeries({
+            color: "rgba(156, 163, 175, 0.35)",
+            priceScaleId: "liquidation",
+            lastValueVisible: false,
+            priceLineVisible: false,
+          });
+
+          chart.priceScale("liquidation").applyOptions({ visible: false });
+
+          const liqData = liquidationDates
+            .map((d) => ({
+              time: snapToBar(d, chartTimes, isIntraday) as Time,
+              value: 1,
+            }));
+
+          liqSeries.setData(liqData);
+          liqSeriesRef.current = liqSeries;
+        }
+      }
 
       chartRef.current?.timeScale().fitContent();
     });
@@ -193,6 +227,43 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
   );
 }
 
+function snapToBar(
+  dateStr: string,
+  chartTimes: (string | number)[],
+  isIntraday: boolean
+): string | number {
+  if (isIntraday) {
+    const txMs = new Date(toChartDate(dateStr)).getTime();
+    let minDiff = Infinity;
+    let snapped: string | number = chartTimes[0]!;
+    for (const ct of chartTimes) {
+      const diff = Math.abs((ct as number) * 1000 - txMs);
+      if (diff < minDiff) {
+        minDiff = diff;
+        snapped = ct;
+      }
+    }
+    return snapped;
+  }
+
+  const txDate = toChartDate(dateStr);
+  const chartDateSet = new Set(chartTimes as string[]);
+  if (chartDateSet.has(txDate)) return txDate;
+
+  let minDiff = Infinity;
+  let snapped: string | number = chartTimes[0]!;
+  for (const cd of chartTimes) {
+    const diff = Math.abs(
+      new Date(cd as string).getTime() - new Date(txDate).getTime()
+    );
+    if (diff < minDiff) {
+      minDiff = diff;
+      snapped = cd;
+    }
+  }
+  return snapped;
+}
+
 function buildMarkers(
   holding: Holding,
   chartData: OhlcData[]
@@ -200,43 +271,13 @@ function buildMarkers(
   if (chartData.length === 0) return [];
 
   const isIntraday = typeof chartData[0]!.time === "number";
-
   const chartTimes = chartData.map((d) => d.time);
   const markers: MarkerData[] = [];
 
   for (const tx of holding.transactions) {
     if (tx.type === "Dividend") continue;
 
-    let snappedTime: string | number;
-
-    if (isIntraday) {
-      const txMs = new Date(toChartDate(tx.date)).getTime();
-      let minDiff = Infinity;
-      snappedTime = chartTimes[0]!;
-      for (const ct of chartTimes) {
-        const diff = Math.abs((ct as number) * 1000 - txMs);
-        if (diff < minDiff) {
-          minDiff = diff;
-          snappedTime = ct;
-        }
-      }
-    } else {
-      const txDate = toChartDate(tx.date);
-      const chartDateSet = new Set(chartTimes as string[]);
-      snappedTime = txDate;
-      if (!chartDateSet.has(txDate)) {
-        let minDiff = Infinity;
-        for (const cd of chartTimes) {
-          const diff = Math.abs(
-            new Date(cd as string).getTime() - new Date(txDate).getTime()
-          );
-          if (diff < minDiff) {
-            minDiff = diff;
-            snappedTime = cd;
-          }
-        }
-      }
-    }
+    const snappedTime = snapToBar(tx.date, chartTimes, isIntraday);
 
     if (tx.type === "Buy") {
       markers.push({
@@ -260,4 +301,26 @@ function buildMarkers(
   markers.sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
 
   return markers as SeriesMarker<Time>[];
+}
+
+function findLiquidationDates(holding: Holding): string[] {
+  const sorted = [...holding.transactions]
+    .filter((t) => t.type === "Buy" || t.type === "Sell")
+    .sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+
+  const dates: string[] = [];
+  let runningShares = 0;
+
+  for (const tx of sorted) {
+    if (tx.type === "Buy") {
+      runningShares += tx.shares;
+    } else {
+      runningShares -= tx.shares;
+      if (runningShares < 1e-9) {
+        dates.push(tx.date);
+        runningShares = 0;
+      }
+    }
+  }
+  return dates;
 }
