@@ -21,6 +21,7 @@ import { formatDateStr, parseDate, toIsoDate } from "../utils/dates";
 import { computeSellPnL } from "../data/taxCalculator";
 import { getCurrentHoldings as getPerAccountHoldings } from "../data/holdingAggregator";
 import type { Transaction, CurrencySymbol } from "../types";
+import { useTableSort } from "../hooks/useTableSort";
 
 function getAssetClass(holding: {
   symbol: string;
@@ -125,7 +126,7 @@ export default function DashboardPage() {
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
         if (tx.type !== "Dividend") continue;
-        const net = tx.shares * tx.price - tx.fee;
+        const net = tx.shares! * tx.price! - tx.fee;
         totalNet += convertCurrency(net, tx.currency, displayCurrency, rates);
         dates.push(parseDate(tx.date).getTime());
         count += 1;
@@ -216,6 +217,16 @@ export default function DashboardPage() {
     }));
   }, [portfolio.accounts, prices, displayCurrency, rates]);
 
+  type AcctSortKey = "name" | "holdings" | "cash" | "total" | "weight";
+  const acctComparators = useMemo(() => ({
+    name: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.name.localeCompare(b.name),
+    holdings: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.marketValue - b.marketValue,
+    cash: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.cash - b.cash,
+    total: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.total - b.total,
+    weight: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.weight - b.weight,
+  }), []);
+  const acctSort = useTableSort(accountBreakdown, acctComparators as Record<AcctSortKey, (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => number>, "total" as AcctSortKey);
+
   /* ── Cumulative investment timeline ── */
 
   const portfolioTimeline = useMemo(() => {
@@ -223,9 +234,9 @@ export default function DashboardPage() {
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
         if (tx.type === "Buy") {
-          events.push({ date: parseDate(tx.date), invested: tx.shares * tx.price, currency: tx.currency });
+          events.push({ date: parseDate(tx.date), invested: tx.shares! * tx.price!, currency: tx.currency });
         } else if (tx.type === "Sell") {
-          events.push({ date: parseDate(tx.date), invested: -(tx.shares * tx.price), currency: tx.currency });
+          events.push({ date: parseDate(tx.date), invested: -(tx.shares! * tx.price!), currency: tx.currency });
         }
       }
     }
@@ -246,7 +257,7 @@ export default function DashboardPage() {
         if (tx.type !== "Dividend") continue;
         const date = parseDate(tx.date);
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-        const net = convertCurrency(tx.shares * tx.price - tx.fee, tx.currency, displayCurrency, rates);
+        const net = convertCurrency(tx.shares! * tx.price! - tx.fee, tx.currency, displayCurrency, rates);
         map.set(key, (map.get(key) ?? 0) + net);
       }
     }
@@ -314,25 +325,25 @@ export default function DashboardPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                    Account
+                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("name")}>
+                    Account{acctSort.arrow("name")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                    Holdings
+                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("holdings")}>
+                    Holdings{acctSort.arrow("holdings")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                    Cash
+                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("cash")}>
+                    Cash{acctSort.arrow("cash")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                    Total
+                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("total")}>
+                    Total{acctSort.arrow("total")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                    Weight
+                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("weight")}>
+                    Weight{acctSort.arrow("weight")}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {accountBreakdown.map((a) => (
+                {acctSort.sorted.map((a) => (
                   <tr key={a.name} className="border-b border-white/5 hover:bg-white/5">
                     <td className="py-2.5 px-3 text-sm font-medium text-white">
                       {a.name}
@@ -499,15 +510,17 @@ export default function DashboardPage() {
                   ? "text-gain"
                   : tx.type === "Sell"
                     ? "text-loss"
-                    : "text-blue-400";
+                    : tx.type === "Interest"
+                      ? "text-purple-400"
+                      : "text-blue-400";
               return (
                 <div
-                  key={`${tx.date}-${tx.symbol}-${i}`}
+                  key={`${tx.date}-${tx.symbol ?? tx.type}-${i}`}
                   className="flex items-center justify-between text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <span className={`font-medium ${color}`}>{tx.type}</span>
-                    <span className="text-white">{tx.symbol}</span>
+                    <span className="text-white">{tx.symbol ?? tx.note}</span>
                   </div>
                   <span className="text-muted text-xs">
                     {formatDateStr(tx.date)}

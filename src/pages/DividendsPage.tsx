@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTableSort } from "../hooks/useTableSort";
 import {
   BarChart,
   Bar,
@@ -90,7 +91,7 @@ export default function DividendsPage() {
       dividendTxs.reduce(
         (s, t) =>
           s +
-          convertCurrency(t.shares * t.price, t.currency, displayCurrency, rates),
+          convertCurrency(t.shares! * t.price!, t.currency, displayCurrency, rates),
         0
       ),
     [dividendTxs, displayCurrency, rates]
@@ -129,7 +130,7 @@ export default function DividendsPage() {
 
     for (const tx of dividendTxs) {
       if (tx.currency !== "$") continue;
-      const gross = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
+      const gross = convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
       const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
       if (isPostTreaty(tx)) {
         postTreatyGross += gross;
@@ -169,8 +170,8 @@ export default function DividendsPage() {
   const bySymbol = useMemo<DividendBySymbol[]>(() => {
     const map = new Map<string, DividendBySymbol>();
     for (const tx of dividendTxs) {
-      const existing = map.get(tx.symbol);
-      const gross = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
+      const existing = map.get(tx.symbol!);
+      const gross = convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
       const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
       if (existing) {
         existing.grossAmount += gross;
@@ -181,9 +182,9 @@ export default function DividendsPage() {
           existing.lastPayment = tx.date;
         }
       } else {
-        map.set(tx.symbol, {
-          symbol: tx.symbol,
-          name: tx.name,
+        map.set(tx.symbol!, {
+          symbol: tx.symbol!,
+          name: tx.name!,
           grossAmount: gross,
           fees: fee,
           netAmount: gross - fee,
@@ -202,13 +203,24 @@ export default function DividendsPage() {
     return Array.from(map.values()).sort((a, b) => b.netAmount - a.netAmount);
   }, [dividendTxs, displayCurrency, rates, investedBySymbol]);
 
+  type DivHoldingSortKey = "symbol" | "net" | "tax" | "yieldOnCost" | "payments" | "lastPayment";
+  const divHoldingComparators = useMemo(() => ({
+    symbol: (a: DividendBySymbol, b: DividendBySymbol) => a.symbol.localeCompare(b.symbol),
+    net: (a: DividendBySymbol, b: DividendBySymbol) => a.netAmount - b.netAmount,
+    tax: (a: DividendBySymbol, b: DividendBySymbol) => a.fees - b.fees,
+    yieldOnCost: (a: DividendBySymbol, b: DividendBySymbol) => (a.yieldOnCost ?? 0) - (b.yieldOnCost ?? 0),
+    payments: (a: DividendBySymbol, b: DividendBySymbol) => a.count - b.count,
+    lastPayment: (a: DividendBySymbol, b: DividendBySymbol) => parseDate(a.lastPayment).getTime() - parseDate(b.lastPayment).getTime(),
+  }), []);
+  const divHoldingSort = useTableSort(bySymbol, divHoldingComparators as Record<DivHoldingSortKey, (a: DividendBySymbol, b: DividendBySymbol) => number>, "net" as DivHoldingSortKey);
+
   const monthly = useMemo<MonthlyDividend[]>(() => {
     const map = new Map<string, number>();
     for (const tx of dividendTxs) {
       const date = parseDate(tx.date);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       const net = convertCurrency(
-        tx.shares * tx.price - tx.fee,
+        tx.shares! * tx.price! - tx.fee,
         tx.currency,
         displayCurrency,
         rates
@@ -225,8 +237,8 @@ export default function DividendsPage() {
     for (const tx of dividendTxs) {
       const year = parseDate(tx.date).getFullYear();
       const entry = map.get(year) ?? { gross: 0, net: 0 };
-      entry.gross += convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
-      entry.net += convertCurrency(tx.shares * tx.price - tx.fee, tx.currency, displayCurrency, rates);
+      entry.gross += convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
+      entry.net += convertCurrency(tx.shares! * tx.price! - tx.fee, tx.currency, displayCurrency, rates);
       map.set(year, entry);
     }
     const sorted = Array.from(map.entries()).sort(([a], [b]) => a - b);
@@ -569,30 +581,32 @@ export default function DividendsPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">Symbol</th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">Name</th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Net
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("symbol")}>
+                  Symbol{divHoldingSort.arrow("symbol")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Tax
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">Name</th>
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("net")}>
+                  Net{divHoldingSort.arrow("net")}
+                </th>
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("tax")}>
+                  Tax{divHoldingSort.arrow("tax")}
                 </th>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                   Eff. Rate
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Yield on Cost
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("yieldOnCost")}>
+                  Yield on Cost{divHoldingSort.arrow("yieldOnCost")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Payments
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("payments")}>
+                  Payments{divHoldingSort.arrow("payments")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Last Payment
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("lastPayment")}>
+                  Last Payment{divHoldingSort.arrow("lastPayment")}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {bySymbol.map((d) => {
+              {divHoldingSort.sorted.map((d) => {
                 const effectiveRate = d.grossAmount > 0 ? d.fees / d.grossAmount : 0;
                 return (
                   <tr key={d.symbol} className="border-b border-white/5 hover:bg-white/5">
@@ -641,7 +655,7 @@ export default function DividendsPage() {
             {recentPayments.length > 0 ? (
               recentPayments.map((tx, i) => {
                 const net = convertCurrency(
-                  tx.shares * tx.price - tx.fee,
+                  tx.shares! * tx.price! - tx.fee,
                   tx.currency,
                   displayCurrency,
                   rates

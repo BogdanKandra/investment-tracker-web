@@ -29,13 +29,13 @@ export function computeFifo(transactions: Transaction[]): FifoResult {
     if (tx.type === "Buy") {
       lots.push({
         date: tx.date,
-        shares: tx.shares,
-        price: tx.price,
+        shares: tx.shares!,
+        price: tx.price!,
         fee: tx.fee,
       });
     } else {
-      let sharesToSell = tx.shares;
-      const sellPrice = tx.price;
+      let sharesToSell = tx.shares!;
+      const sellPrice = tx.price!;
 
       while (sharesToSell > 0 && lots.length > 0) {
         const lot = lots[0]!;

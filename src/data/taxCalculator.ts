@@ -1,6 +1,6 @@
 import type { Account, CurrencySymbol, ExchangeRates, Transaction } from "../types";
 import { parseDate } from "../utils/dates";
-import { convertCurrency } from "../utils/currency";
+import { convertCurrency, currencyLabel } from "../utils/currency";
 
 /**
  * Minimum gross wage in Romania by year (RON).
@@ -153,11 +153,11 @@ export function computeSellPnL(
 
       for (const tx of sorted) {
         if (tx.type === "Buy") {
-          lots.push({ shares: tx.shares, price: tx.price });
+          lots.push({ shares: tx.shares!, price: tx.price! });
           continue;
         }
 
-        let remaining = tx.shares;
+        let remaining = tx.shares!;
         let costBasis = 0;
         while (remaining > 1e-9 && lots.length > 0) {
           const lot = lots[0]!;
@@ -168,7 +168,7 @@ export function computeSellPnL(
           if (lot.shares <= 1e-9) lots.shift();
         }
 
-        const sellValue = tx.shares * tx.price;
+        const sellValue = tx.shares! * tx.price!;
         const grossProfit = sellValue - costBasis;
         const netProfit = grossProfit - tx.fee;
 
@@ -176,10 +176,10 @@ export function computeSellPnL(
           date: tx.date,
           year: parseDate(tx.date).getFullYear(),
           account: account.account_name,
-          symbol: tx.symbol,
-          name: tx.name,
-          shares: tx.shares,
-          sellPrice: tx.price,
+          symbol: tx.symbol!,
+          name: tx.name!,
+          shares: tx.shares!,
+          sellPrice: tx.price!,
           sellValue,
           costBasis,
           fee: tx.fee,
@@ -205,16 +205,19 @@ export function computeSellPnL(
 /**
  * Compute the cumulated taxable income (in RON) for a given calendar year:
  *  - net dividends received that year (gross value - withholding tax fee)
+ *  - net interest received that year (amount - fee)
  *  - net profit of each profitable sell transaction of that year
  *    (only sells with grossProfit > 0 are included).
  */
 export interface YearlyIncomeBreakdown {
   year: number;
   dividendsNetRon: number;
+  interestNetRon: number;
   sellsNetRon: number;
   totalRon: number;
   profitableSellCount: number;
   dividendCount: number;
+  interestCount: number;
 }
 
 export function computeYearlyIncome(
@@ -225,15 +228,31 @@ export function computeYearlyIncome(
 ): YearlyIncomeBreakdown {
   let dividendsNetRon = 0;
   let dividendCount = 0;
+  let interestNetRon = 0;
+  let interestCount = 0;
+
+  const toRon = (amount: number, currency: CurrencySymbol): number => {
+    if (currency === "RON") return amount;
+    const rateKey = `${currencyLabel(currency)}_${year}`;
+    const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
+    if (yearlyRate) return amount * yearlyRate;
+    return convertCurrency(amount, currency, "RON", rates);
+  };
 
   for (const account of accounts) {
     for (const tx of account.transactions) {
-      if (tx.type !== "Dividend") continue;
-      if (parseDate(tx.date).getFullYear() !== year) continue;
-      const gross = tx.shares * tx.price;
-      const net = gross - tx.fee;
-      dividendsNetRon += convertCurrency(net, tx.currency, "RON", rates);
-      dividendCount += 1;
+      if (tx.type === "Dividend") {
+        if (parseDate(tx.date).getFullYear() !== year) continue;
+        const gross = tx.shares! * tx.price!;
+        const net = gross - tx.fee;
+        dividendsNetRon += toRon(net, tx.currency);
+        dividendCount += 1;
+      } else if (tx.type === "Interest") {
+        if (parseDate(tx.date).getFullYear() !== year) continue;
+        const net = tx.amount! - tx.fee;
+        interestNetRon += toRon(net, tx.currency);
+        interestCount += 1;
+      }
     }
   }
 
@@ -249,10 +268,12 @@ export function computeYearlyIncome(
   return {
     year,
     dividendsNetRon,
+    interestNetRon,
     sellsNetRon,
-    totalRon: dividendsNetRon + sellsNetRon,
+    totalRon: dividendsNetRon + interestNetRon + sellsNetRon,
     profitableSellCount,
     dividendCount,
+    interestCount,
   };
 }
 

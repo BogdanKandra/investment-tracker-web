@@ -67,16 +67,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     [portfolio.accounts, selectedAccount]
   );
 
-  const allCurrencies = useMemo<CurrencySymbol[]>(() => {
-    const set = new Set<CurrencySymbol>();
-    for (const acct of portfolio.accounts) {
-      set.add(acct.currency);
-      for (const tx of acct.transactions) {
-        set.add(tx.currency);
-      }
-    }
-    return Array.from(set);
-  }, [portfolio.accounts]);
+  const allCurrencies = useMemo<CurrencySymbol[]>(
+    () => ["€", "$", "RON"] as CurrencySymbol[],
+    []
+  );
 
   const value: PortfolioState = {
     portfolio,

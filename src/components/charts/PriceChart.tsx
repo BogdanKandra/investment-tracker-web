@@ -285,7 +285,7 @@ function buildMarkers(
         position: "belowBar",
         color: "#16a34a",
         shape: "arrowUp",
-        text: `Buy ${tx.shares}@${tx.price.toFixed(2)}`,
+        text: `Buy ${tx.shares}@${tx.price!.toFixed(2)}`,
       });
     } else if (tx.type === "Sell") {
       markers.push({
@@ -293,7 +293,7 @@ function buildMarkers(
         position: "aboveBar",
         color: "#dc2626",
         shape: "arrowDown",
-        text: `Sell ${tx.shares}@${tx.price.toFixed(2)}`,
+        text: `Sell ${tx.shares}@${tx.price!.toFixed(2)}`,
       });
     }
   }
@@ -313,9 +313,9 @@ function findLiquidationDates(holding: Holding): string[] {
 
   for (const tx of sorted) {
     if (tx.type === "Buy") {
-      runningShares += tx.shares;
+      runningShares += tx.shares!;
     } else {
-      runningShares -= tx.shares;
+      runningShares -= tx.shares!;
       if (runningShares < 1e-9) {
         dates.push(tx.date);
         runningShares = 0;

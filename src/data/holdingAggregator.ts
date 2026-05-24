@@ -8,6 +8,7 @@ function aggregateAccount(account: Account): Holding[] {
   const bySymbol = new Map<string, Transaction[]>();
 
   for (const tx of account.transactions) {
+    if (!tx.symbol) continue;
     const existing = bySymbol.get(tx.symbol) ?? [];
     existing.push(tx);
     bySymbol.set(tx.symbol, existing);
@@ -17,7 +18,7 @@ function aggregateAccount(account: Account): Holding[] {
 
   for (const [symbol, txs] of bySymbol) {
     const fifo = computeFifo(txs);
-    const firstName = txs.find((t) => t.type === "Buy")?.name ?? symbol;
+    const firstName = txs.find((t) => t.type === "Buy")?.name ?? txs[0]?.name ?? symbol;
     const currency = txs[0]?.currency ?? account.currency;
 
     holdings.push({

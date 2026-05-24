@@ -140,9 +140,10 @@ export default function PerformancePage() {
 
     for (const acct of filteredAccounts) {
       for (const tx of acct.transactions) {
+        if (tx.type === "Interest") continue;
         const year = parseDate(tx.date).getFullYear();
         const entry = byYear.get(year) ?? { invested: 0, sold: 0, dividends: 0, realizedPnl: 0 };
-        const val = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
+        const val = convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
         if (tx.type === "Buy") entry.invested += val;
         else if (tx.type === "Sell") entry.sold += val;
         else if (tx.type === "Dividend") entry.dividends += val;
@@ -176,15 +177,15 @@ export default function PerformancePage() {
         if (tx.type === "Buy") {
           events.push({
             date: parseDate(tx.date),
-            invested: tx.shares * tx.price,
-            value: tx.shares * tx.price,
+            invested: tx.shares! * tx.price!,
+            value: tx.shares! * tx.price!,
             currency: tx.currency,
           });
         } else if (tx.type === "Sell") {
           events.push({
             date: parseDate(tx.date),
-            invested: -(tx.shares * tx.price),
-            value: -(tx.shares * tx.price),
+            invested: -(tx.shares! * tx.price!),
+            value: -(tx.shares! * tx.price!),
             currency: tx.currency,
           });
         }

@@ -28,6 +28,7 @@ import {
   type CassBracket,
 } from "../data/taxCalculator";
 import type { CurrencySymbol } from "../types";
+import { useTableSort } from "../hooks/useTableSort";
 
 const BRACKET_LABEL: Record<CassBracket, string> = {
   below6: "Under 6 × minimum wage — no CASS due",
@@ -84,11 +85,11 @@ export default function TaxesPage() {
   // --- CASS section ---
   const cassYears = useMemo(() => {
     // CASS is due the year after income is received. Only include years where
-    // the previous year had actual dividend or sell income.
+    // the previous year had actual dividend, interest, or sell income.
     const incomeYears = new Set<number>(sells.map((s) => s.year));
     for (const account of portfolio.accounts) {
       for (const tx of account.transactions) {
-        if (tx.type === "Dividend") {
+        if (tx.type === "Dividend" || tx.type === "Interest") {
           incomeYears.add(parseDate(tx.date).getFullYear());
         }
       }
@@ -144,7 +145,7 @@ export default function TaxesPage() {
           postTreatyGrossRon: 0,
           postTreatyFeeRon: 0,
         };
-        const grossRon = convertCurrency(tx.shares * tx.price, tx.currency, "RON", rates);
+        const grossRon = convertCurrency(tx.shares! * tx.price!, tx.currency, "RON", rates);
         const feeRon = convertCurrency(tx.fee, tx.currency, "RON", rates);
         if (parseDate(tx.date) >= w8benDate) {
           entry.postTreatyGrossRon += grossRon;
@@ -220,9 +221,9 @@ export default function TaxesPage() {
         if (tx.type !== "Dividend") continue;
         const txYear = parseDate(tx.date).getFullYear();
         if (txYear !== divTaxPrevYear) continue;
-        const gross = tx.shares * tx.price;
+        const gross = tx.shares! * tx.price!;
         const net = gross - tx.fee;
-        const country = getCountryFromSymbol(tx.symbol, tx.currency, tx.isin, tx.country);
+        const country = getCountryFromSymbol(tx.symbol!, tx.currency, tx.isin, tx.country);
 
         const rateKey = `${currencyLabel(tx.currency)}_${divTaxPrevYear}`;
         const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
@@ -238,12 +239,12 @@ export default function TaxesPage() {
 
         rows.push({
           date: tx.date,
-          symbol: tx.symbol,
-          name: tx.name,
+          symbol: tx.symbol!,
+          name: tx.name!,
           account: account.account_name,
           country,
-          shares: tx.shares,
-          pricePerShare: tx.price,
+          shares: tx.shares!,
+          pricePerShare: tx.price!,
           grossAmount: gross,
           fee: tx.fee,
           netAmount: net,
@@ -435,7 +436,7 @@ export default function TaxesPage() {
           if (yearlyRate) return amount * yearlyRate;
           return convertCurrency(amount, tx.currency, "RON", rates);
         };
-        const gross = tx.shares * tx.price;
+        const gross = tx.shares! * tx.price!;
         entry.gross += toRon(gross);
         entry.withheld += toRon(tx.fee);
         entry.net += toRon(gross - tx.fee);
@@ -452,6 +453,132 @@ export default function TaxesPage() {
       }));
   }, [portfolio.accounts, rates]);
 
+  // --- Interest Taxes section ---
+  const interestTaxYears = useMemo(() => {
+    const years = new Set<number>();
+    for (const account of portfolio.accounts) {
+      for (const tx of account.transactions) {
+        if (tx.type === "Interest") {
+          const year = parseDate(tx.date).getFullYear();
+          years.add(year + 1);
+        }
+      }
+    }
+    return Array.from(years).sort((a, b) => b - a);
+  }, [portfolio.accounts]);
+
+  const [interestTaxYear, setInterestTaxYear] = useState<number>(
+    interestTaxYears.includes(currentYear) ? currentYear : (interestTaxYears[0] ?? currentYear)
+  );
+
+  const interestTaxPrevYear = interestTaxYear - 1;
+
+  interface InterestRow {
+    date: string;
+    account: string;
+    country: string;
+    grossAmount: number;
+    fee: number;
+    netAmount: number;
+    currency: CurrencySymbol;
+    grossAmountRon: number;
+    feeRon: number;
+    netAmountRon: number;
+    note: string;
+  }
+
+  const interestRows = useMemo((): InterestRow[] => {
+    const rows: InterestRow[] = [];
+    for (const account of portfolio.accounts) {
+      for (const tx of account.transactions) {
+        if (tx.type !== "Interest") continue;
+        const txYear = parseDate(tx.date).getFullYear();
+        if (txYear !== interestTaxPrevYear) continue;
+        const gross = tx.amount!;
+        const net = gross - tx.fee;
+        const country = tx.country ?? "Other";
+
+        const rateKey = `${currencyLabel(tx.currency)}_${interestTaxPrevYear}`;
+        const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
+        const toRon = (amount: number): number => {
+          if (tx.currency === "RON") return amount;
+          if (yearlyRate) return amount * yearlyRate;
+          return convertCurrency(amount, tx.currency, "RON", rates);
+        };
+
+        rows.push({
+          date: tx.date,
+          account: account.account_name,
+          country,
+          grossAmount: gross,
+          fee: tx.fee,
+          netAmount: net,
+          currency: tx.currency,
+          grossAmountRon: toRon(gross),
+          feeRon: toRon(tx.fee),
+          netAmountRon: toRon(net),
+          note: tx.note,
+        });
+      }
+    }
+    rows.sort(
+      (a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime()
+    );
+    return rows;
+  }, [portfolio.accounts, interestTaxPrevYear, rates]);
+
+  const interestTotals = useMemo(() => {
+    let grossRon = 0;
+    let feeRon = 0;
+    let netRon = 0;
+    for (const r of interestRows) {
+      grossRon += r.grossAmountRon;
+      feeRon += r.feeRon;
+      netRon += r.netAmountRon;
+    }
+    return { grossRon, feeRon, netRon };
+  }, [interestRows]);
+
+  interface InterestCountrySummary {
+    country: string;
+    grossRon: number;
+    feeRon: number;
+    netRon: number;
+    count: number;
+  }
+
+  const interestCountryBreakdown = useMemo((): InterestCountrySummary[] => {
+    const map = new Map<string, InterestCountrySummary>();
+    for (const r of interestRows) {
+      const entry = map.get(r.country) ?? {
+        country: r.country,
+        grossRon: 0,
+        feeRon: 0,
+        netRon: 0,
+        count: 0,
+      };
+      entry.grossRon += r.grossAmountRon;
+      entry.feeRon += r.feeRon;
+      entry.netRon += r.netAmountRon;
+      entry.count += 1;
+      map.set(r.country, entry);
+    }
+    return Array.from(map.values()).sort((a, b) => b.grossRon - a.grossRon);
+  }, [interestRows]);
+
+  const INTEREST_TAX_RATE = 0.10;
+
+  const interestTaxDue = useMemo(() => {
+    let totalTax = 0;
+    for (const r of interestRows) {
+      const potentialTax = r.grossAmount * INTEREST_TAX_RATE;
+      if (potentialTax > 0.5) {
+        totalTax += r.grossAmountRon * INTEREST_TAX_RATE;
+      }
+    }
+    return totalTax;
+  }, [interestRows]);
+
   // --- Evolution data for graphs ---
   const evolution = useMemo(() => {
     const yearsWithWage = Object.keys(ROMANIAN_MINIMUM_WAGE)
@@ -466,6 +593,7 @@ export default function TaxesPage() {
         minimumWage: wage,
         income: +income.totalRon.toFixed(2),
         dividends: +income.dividendsNetRon.toFixed(2),
+        interest: +income.interestNetRon.toFixed(2),
         sellProfits: +income.sellsNetRon.toFixed(2),
         cassTaxNextYear: +cass.tax.toFixed(2),
       };
@@ -480,6 +608,58 @@ export default function TaxesPage() {
       color: "#f1f5f9",
     },
   };
+
+  // --- Sell P&L table sorting ---
+  type SellSortKey = "date" | "symbol" | "account" | "shares" | "sellValue" | "costBasis" | "fee" | "grossProfit" | "netProfit";
+  const sellComparators = useMemo(() => ({
+    date: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+    symbol: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.symbol.localeCompare(b.symbol),
+    account: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.account.localeCompare(b.account),
+    shares: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.shares - b.shares,
+    sellValue: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.sellValueRon - b.sellValueRon,
+    costBasis: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.costBasisRon - b.costBasisRon,
+    fee: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.feeRon - b.feeRon,
+    grossProfit: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.grossProfitRon - b.grossProfitRon,
+    netProfit: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.netProfitRon - b.netProfitRon,
+  }), []);
+  const sellSort = useTableSort(filteredSells, sellComparators as Record<SellSortKey, (a: typeof filteredSells[0], b: typeof filteredSells[0]) => number>, "date" as SellSortKey);
+
+  // --- Dividend table sorting ---
+  type DivSortKey = "date" | "symbol" | "account" | "country" | "gross" | "fee" | "net";
+  const divComparators = useMemo(() => ({
+    date: (a: DividendRow, b: DividendRow) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+    symbol: (a: DividendRow, b: DividendRow) => a.symbol.localeCompare(b.symbol),
+    account: (a: DividendRow, b: DividendRow) => a.account.localeCompare(b.account),
+    country: (a: DividendRow, b: DividendRow) => a.country.localeCompare(b.country),
+    gross: (a: DividendRow, b: DividendRow) => a.grossAmountRon - b.grossAmountRon,
+    fee: (a: DividendRow, b: DividendRow) => a.feeRon - b.feeRon,
+    net: (a: DividendRow, b: DividendRow) => a.netAmountRon - b.netAmountRon,
+  }), []);
+  const divSort = useTableSort(dividendRows, divComparators as Record<DivSortKey, (a: DividendRow, b: DividendRow) => number>, "date" as DivSortKey);
+
+  // --- Interest table sorting ---
+  type IntSortKey = "date" | "account" | "country" | "gross" | "fee" | "net";
+  const intComparators = useMemo(() => ({
+    date: (a: InterestRow, b: InterestRow) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+    account: (a: InterestRow, b: InterestRow) => a.account.localeCompare(b.account),
+    country: (a: InterestRow, b: InterestRow) => a.country.localeCompare(b.country),
+    gross: (a: InterestRow, b: InterestRow) => a.grossAmountRon - b.grossAmountRon,
+    fee: (a: InterestRow, b: InterestRow) => a.feeRon - b.feeRon,
+    net: (a: InterestRow, b: InterestRow) => a.netAmountRon - b.netAmountRon,
+  }), []);
+  const intSort = useTableSort(interestRows, intComparators as Record<IntSortKey, (a: InterestRow, b: InterestRow) => number>, "date" as IntSortKey);
+
+  // --- W-8BEN table sorting ---
+  type W8benSortKey = "year" | "preTreatyGross" | "postTreatyGross" | "taxSaved";
+  const w8benComparators = useMemo(() => ({
+    year: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.year - b.year,
+    preTreatyGross: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.preTreatyGrossRon - b.preTreatyGrossRon,
+    postTreatyGross: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.postTreatyGrossRon - b.postTreatyGrossRon,
+    taxSaved: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.taxSavedRon - b.taxSavedRon,
+  }), []);
+  const w8benSort = useTableSort(w8benYearlyImpact, w8benComparators as Record<W8benSortKey, (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => number>, "year" as W8benSortKey, true);
+
+  const thSortable = "py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none";
 
   const fmtRon = (value: number): string => formatCurrency(value, "RON");
 
@@ -546,40 +726,40 @@ export default function TaxesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                  Date
+                <th className={thSortable} onClick={() => sellSort.handleSort("date")}>
+                  Date{sellSort.arrow("date")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                  Symbol
+                <th className={thSortable} onClick={() => sellSort.handleSort("symbol")}>
+                  Symbol{sellSort.arrow("symbol")}
                 </th>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                   Name
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                  Account
+                <th className={thSortable} onClick={() => sellSort.handleSort("account")}>
+                  Account{sellSort.arrow("account")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Shares
+                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("shares")}>
+                  Shares{sellSort.arrow("shares")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Sell Value
+                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("sellValue")}>
+                  Sell Value{sellSort.arrow("sellValue")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Cost Basis
+                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("costBasis")}>
+                  Cost Basis{sellSort.arrow("costBasis")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Income Tax
+                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("fee")}>
+                  Income Tax{sellSort.arrow("fee")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Gross Profit
+                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("grossProfit")}>
+                  Gross Profit{sellSort.arrow("grossProfit")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Net Profit
+                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("netProfit")}>
+                  Net Profit{sellSort.arrow("netProfit")}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {filteredSells.map((s, i) => (
+              {sellSort.sorted.map((s, i) => (
                 <tr
                   key={`${s.date}-${s.symbol}-${s.account}-${i}`}
                   className="border-b border-white/5 hover:bg-white/5"
@@ -704,28 +884,28 @@ export default function TaxesPage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/10">
-                    <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                      Year
+                    <th className={thSortable} onClick={() => w8benSort.handleSort("year")}>
+                      Year{w8benSort.arrow("year")}
                     </th>
-                    <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                      Pre-Treaty Gross (RON)
+                    <th className={`${thSortable} text-right`} onClick={() => w8benSort.handleSort("preTreatyGross")}>
+                      Pre-Treaty Gross (RON){w8benSort.arrow("preTreatyGross")}
                     </th>
                     <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                       Pre-Treaty Withheld (30%)
                     </th>
-                    <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                      Post-Treaty Gross (RON)
+                    <th className={`${thSortable} text-right`} onClick={() => w8benSort.handleSort("postTreatyGross")}>
+                      Post-Treaty Gross (RON){w8benSort.arrow("postTreatyGross")}
                     </th>
                     <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                       Post-Treaty Withheld (10%)
                     </th>
-                    <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                      Tax Saved (RON)
+                    <th className={`${thSortable} text-right`} onClick={() => w8benSort.handleSort("taxSaved")}>
+                      Tax Saved (RON){w8benSort.arrow("taxSaved")}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {w8benYearlyImpact.map((row) => (
+                  {w8benSort.sorted.map((row) => (
                     <tr
                       key={row.year}
                       className="border-b border-white/5 hover:bg-white/5"
@@ -802,34 +982,34 @@ export default function TaxesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                  Date
+                <th className={thSortable} onClick={() => divSort.handleSort("date")}>
+                  Date{divSort.arrow("date")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                  Symbol
+                <th className={thSortable} onClick={() => divSort.handleSort("symbol")}>
+                  Symbol{divSort.arrow("symbol")}
                 </th>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                   Name
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                  Account
+                <th className={thSortable} onClick={() => divSort.handleSort("account")}>
+                  Account{divSort.arrow("account")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
-                  Country
+                <th className={thSortable} onClick={() => divSort.handleSort("country")}>
+                  Country{divSort.arrow("country")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Gross
+                <th className={`${thSortable} text-right`} onClick={() => divSort.handleSort("gross")}>
+                  Gross{divSort.arrow("gross")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Tax Withheld
+                <th className={`${thSortable} text-right`} onClick={() => divSort.handleSort("fee")}>
+                  Tax Withheld{divSort.arrow("fee")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
-                  Net
+                <th className={`${thSortable} text-right`} onClick={() => divSort.handleSort("net")}>
+                  Net{divSort.arrow("net")}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {dividendRows.map((r, i) => (
+              {divSort.sorted.map((r, i) => (
                 <tr
                   key={`${r.date}-${r.symbol}-${r.account}-${i}`}
                   className="border-b border-white/5 hover:bg-white/5"
@@ -1137,7 +1317,219 @@ export default function TaxesPage() {
       </section>
 
       {/* ============================================================
-          SECTION 4 — CASS Tax
+          SECTION 4 — Interest Taxes
+         ============================================================ */}
+      {interestTaxYears.length > 0 && (
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-white">
+                Interest Income Taxes
+              </h2>
+              <p className="text-sm text-muted mt-1">
+                Interest income received in {interestTaxPrevYear}, to be declared for {interestTaxYear} taxes.
+                Income tax rate: <span className="text-white">10%</span> (waived when tax &le; 0.5 currency units per payment).
+              </p>
+            </div>
+            <label className="flex items-center gap-2 text-sm text-muted">
+              Tax year
+              <select
+                value={interestTaxYear}
+                onChange={(e) => setInterestTaxYear(Number(e.target.value))}
+                className="bg-card border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                {interestTaxYears.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {/* Interest table */}
+          <div className="bg-card rounded-xl border border-white/5 overflow-auto mb-6">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className={thSortable} onClick={() => intSort.handleSort("date")}>
+                    Date{intSort.arrow("date")}
+                  </th>
+                  <th className={thSortable} onClick={() => intSort.handleSort("account")}>
+                    Account{intSort.arrow("account")}
+                  </th>
+                  <th className={thSortable} onClick={() => intSort.handleSort("country")}>
+                    Country{intSort.arrow("country")}
+                  </th>
+                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
+                    Note
+                  </th>
+                  <th className={`${thSortable} text-right`} onClick={() => intSort.handleSort("gross")}>
+                    Gross{intSort.arrow("gross")}
+                  </th>
+                  <th className={`${thSortable} text-right`} onClick={() => intSort.handleSort("fee")}>
+                    Income Tax{intSort.arrow("fee")}
+                  </th>
+                  <th className={`${thSortable} text-right`} onClick={() => intSort.handleSort("net")}>
+                    Net{intSort.arrow("net")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {intSort.sorted.map((r, i) => {
+                  const potentialTax = r.grossAmount * INTEREST_TAX_RATE;
+                  const taxWaived = potentialTax <= 0.5;
+                  return (
+                    <tr
+                      key={`${r.date}-${r.account}-${i}`}
+                      className="border-b border-white/5 hover:bg-white/5"
+                    >
+                      <td className="py-2.5 px-3 text-sm text-white whitespace-nowrap">
+                        {formatDateStr(r.date)}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-muted">
+                        {r.account}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-muted">
+                        {r.country}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-muted truncate max-w-[180px]">
+                        {r.note || "—"}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-right text-white">
+                        {formatCurrency(r.grossAmount, r.currency)}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-right text-loss">
+                        {taxWaived ? (
+                          <span className="text-muted" title="Tax waived (≤ 0.5 currency units)">
+                            waived
+                          </span>
+                        ) : (
+                          formatCurrency(r.fee, r.currency)
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-right text-gain">
+                        {formatCurrency(r.netAmount, r.currency)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              {interestRows.length > 0 && (
+                <tfoot>
+                  <tr className="bg-white/5">
+                    <td
+                      colSpan={4}
+                      className="py-2.5 px-3 text-sm font-semibold text-white text-right"
+                    >
+                      Total for {interestTaxPrevYear} (RON)
+                    </td>
+                    <td className="py-2.5 px-3 text-sm text-right text-white font-semibold">
+                      {fmtRon(interestTotals.grossRon)}
+                    </td>
+                    <td className="py-2.5 px-3 text-sm text-right text-loss font-medium">
+                      {fmtRon(interestTotals.feeRon)}
+                    </td>
+                    <td className="py-2.5 px-3 text-sm text-right text-gain font-semibold">
+                      {fmtRon(interestTotals.netRon)}
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+            {interestRows.length === 0 && (
+              <div className="text-center text-muted py-8 text-sm">
+                No interest transactions in {interestTaxPrevYear}
+              </div>
+            )}
+          </div>
+
+          {/* Country breakdown */}
+          {interestCountryBreakdown.length > 0 && (
+            <div className="bg-card rounded-xl p-5 border border-white/5 mb-6">
+              <h3 className="text-sm font-medium text-muted mb-4 uppercase tracking-wide">
+                Interest by Country of Origin (RON)
+              </h3>
+              <div className="space-y-4">
+                {interestCountryBreakdown.map((cs) => (
+                  <div key={cs.country} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium">{cs.country}</span>
+                      <span className="text-white font-semibold">{fmtRon(cs.grossRon)} gross</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div>
+                        <span className="text-muted">Payments:</span>{" "}
+                        <span className="text-white">{cs.count}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted">Gross:</span>{" "}
+                        <span className="text-white">{fmtRon(cs.grossRon)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted">Tax paid:</span>{" "}
+                        <span className="text-loss">{fmtRon(cs.feeRon)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted">Net:</span>{" "}
+                        <span className="text-gain">{fmtRon(cs.netRon)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Interest tax due summary */}
+          <div className="bg-card rounded-xl p-5 border border-white/5 mb-6">
+            <h3 className="text-sm font-medium text-muted mb-4 uppercase tracking-wide">
+              Interest Tax Summary for {interestTaxYear}
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-start justify-between p-3 rounded-lg bg-white/5 gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="text-white font-medium text-sm">Income tax on interest (10%)</div>
+                  <div className="text-xs text-muted mt-0.5">
+                    Applied to each interest payment where 10% exceeds 0.5 currency units.
+                    Payments below this threshold are tax-exempt.
+                  </div>
+                  <div className="text-xs text-muted mt-1">
+                    <span className="text-white">Must declare</span>
+                    <span className="mx-2">·</span>
+                    Gross total: {fmtRon(interestTotals.grossRon)}
+                    <span className="mx-2">·</span>
+                    Already withheld: {fmtRon(interestTotals.feeRon)}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div
+                    className={`text-lg font-bold ${
+                      interestTaxDue > 0 ? "text-loss" : "text-gain"
+                    }`}
+                  >
+                    {interestTaxDue > 0 ? fmtRon(interestTaxDue) : "—"}
+                  </div>
+                  <div className="text-xs text-muted">
+                    {interestTaxDue > 0 ? "total tax" : "nothing additional to pay"}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-white/10 mt-4 pt-4 flex items-baseline justify-between">
+              <span className="text-muted uppercase text-xs tracking-wide">
+                Net interest income (contributes to CASS base)
+              </span>
+              <span className="text-white text-2xl font-bold">
+                {fmtRon(interestTotals.netRon)}
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================
+          SECTION 5 — CASS Tax
          ============================================================ */}
       <section>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -1208,6 +1600,12 @@ export default function TaxesPage() {
                     {fmtRon(prevYearIncome.dividendsNetRon)}
                     <span className="text-xs text-muted ml-2">
                       ({prevYearIncome.dividendCount} payments)
+                    </span>
+                  </InfoRow>
+                  <InfoRow label={`Net interest ${prevYear}`}>
+                    {fmtRon(prevYearIncome.interestNetRon)}
+                    <span className="text-xs text-muted ml-2">
+                      ({prevYearIncome.interestCount} payments)
                     </span>
                   </InfoRow>
                   <InfoRow label={`Profitable sell net ${prevYear}`}>
@@ -1360,6 +1758,13 @@ export default function TaxesPage() {
                         name="Dividends (net)"
                         stackId="income"
                         fill="#10b981"
+                        radius={[0, 0, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="interest"
+                        name="Interest (net)"
+                        stackId="income"
+                        fill="#8b5cf6"
                         radius={[0, 0, 0, 0]}
                       />
                       <Bar

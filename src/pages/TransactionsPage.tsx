@@ -36,10 +36,13 @@ export default function TransactionsPage() {
     const txs: EnrichedTx[] = [];
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
+        const total = tx.type === "Interest"
+          ? tx.amount! + tx.fee
+          : tx.shares! * tx.price! + tx.fee;
         txs.push({
           ...tx,
           account: acct.account_name,
-          total: tx.shares * tx.price + tx.fee,
+          total,
         });
       }
     }
@@ -59,8 +62,8 @@ export default function TransactionsPage() {
       const q = filterSymbol.toLowerCase();
       list = list.filter(
         (t) =>
-          t.symbol.toLowerCase().includes(q) ||
-          t.name.toLowerCase().includes(q)
+          (t.symbol ?? "").toLowerCase().includes(q) ||
+          (t.name ?? t.note ?? "").toLowerCase().includes(q)
       );
     }
 
@@ -75,13 +78,13 @@ export default function TransactionsPage() {
           cmp = a.type.localeCompare(b.type);
           break;
         case "symbol":
-          cmp = a.symbol.localeCompare(b.symbol);
+          cmp = (a.symbol ?? "").localeCompare(b.symbol ?? "");
           break;
         case "shares":
-          cmp = a.shares - b.shares;
+          cmp = (a.shares ?? 0) - (b.shares ?? 0);
           break;
         case "price":
-          cmp = a.price - b.price;
+          cmp = (a.price ?? a.amount ?? 0) - (b.price ?? b.amount ?? 0);
           break;
         case "fee":
           cmp = a.fee - b.fee;
@@ -172,6 +175,7 @@ export default function TransactionsPage() {
           <option value="Buy">Buy</option>
           <option value="Sell">Sell</option>
           <option value="Dividend">Dividend</option>
+          <option value="Interest">Interest</option>
         </select>
 
         <input
@@ -232,10 +236,12 @@ export default function TransactionsPage() {
                   ? "text-gain"
                   : tx.type === "Sell"
                     ? "text-loss"
-                    : "text-blue-400";
+                    : tx.type === "Interest"
+                      ? "text-purple-400"
+                      : "text-blue-400";
               return (
                 <tr
-                  key={`${tx.date}-${tx.symbol}-${i}`}
+                  key={`${tx.date}-${tx.symbol ?? tx.type}-${i}`}
                   className="border-b border-white/5 hover:bg-white/5"
                 >
                   <td className="py-2.5 px-3 text-sm text-white">
@@ -245,16 +251,20 @@ export default function TransactionsPage() {
                     {tx.type}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-white font-medium">
-                    {tx.symbol}
+                    {tx.symbol ?? "—"}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-muted truncate max-w-[150px]">
-                    {tx.name}
+                    {tx.name ?? (tx.type === "Interest" ? tx.note : "—")}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
-                    {formatShares(tx.shares)}
+                    {tx.shares != null ? formatShares(tx.shares) : "—"}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
-                    {formatCurrency(convertCurrency(tx.price, tx.currency, displayCurrency, rates), displayCurrency)}
+                    {tx.price != null
+                      ? formatCurrency(convertCurrency(tx.price, tx.currency, displayCurrency, rates), displayCurrency)
+                      : tx.amount != null
+                        ? formatCurrency(convertCurrency(tx.amount, tx.currency, displayCurrency, rates), displayCurrency)
+                        : "—"}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
                     {tx.fee > 0 ? formatCurrency(convertCurrency(tx.fee, tx.currency, displayCurrency, rates), displayCurrency) : "-"}

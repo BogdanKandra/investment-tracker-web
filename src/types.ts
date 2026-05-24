@@ -1,18 +1,21 @@
-export type TransactionType = "Buy" | "Sell" | "Dividend";
+export type TransactionType = "Buy" | "Sell" | "Dividend" | "Interest";
 export type CurrencySymbol = "$" | "€" | "RON" | "DKK";
 
 export interface Transaction {
   date: string; // DD-MM-YYYY
   type: TransactionType;
-  symbol: string;
-  name: string;
-  shares: number;
-  price: number;
   currency: CurrencySymbol;
   fee: number;
   note: string;
-  isin?: string; // ISO 6166, e.g. "US0378331005"
   country?: string; // Country of incorporation/domicile
+  // Present on Buy/Sell/Dividend transactions
+  symbol?: string;
+  name?: string;
+  shares?: number;
+  price?: number;
+  isin?: string; // ISO 6166, e.g. "US0378331005"
+  // Present on Interest transactions
+  amount?: number;
 }
 
 export interface Account {
