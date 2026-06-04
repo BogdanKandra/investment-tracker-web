@@ -141,6 +141,47 @@ export async function fetchCurrentPrices(
   return prices;
 }
 
+/**
+ * Fetch the full price history (closing prices) for a symbol at the given interval.
+ * Uses Yahoo Finance range=max so data spans from the earliest available date to today.
+ * Returns an ascending-sorted array of { time: YYYY-MM-DD, close }.
+ * Returns an empty array on failure so callers can degrade gracefully.
+ */
+export async function fetchHistoricalCloses(
+  symbol: string,
+  interval: "1d" | "1wk" | "1mo" | "3mo"
+): Promise<Array<{ time: string; close: number }>> {
+  const url = `${CORS_PROXY}${encodeURIComponent(
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=max&interval=${interval}`
+  )}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const json = await res.json();
+    const result = json?.chart?.result?.[0];
+    if (!result) return [];
+
+    const timestamps: number[] = result.timestamp ?? [];
+    const closes: (number | null)[] = result.indicators?.quote?.[0]?.close ?? [];
+
+    const data: Array<{ time: string; close: number }> = [];
+    for (let i = 0; i < timestamps.length; i++) {
+      const c = closes[i];
+      if (c == null) continue;
+      const d = new Date(timestamps[i]! * 1000);
+      data.push({
+        time: `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`,
+        close: c,
+      });
+    }
+
+    return data;
+  } catch {
+    return [];
+  }
+}
+
 /** Generate mock price data when the API is unavailable */
 function generateMockData(range: TimeRange): OhlcData[] {
   const { intraday } = yahooRange(range);

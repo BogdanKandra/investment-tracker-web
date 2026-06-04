@@ -70,17 +70,19 @@ export default function TaxesPage() {
     [sells, pnlYear]
   );
 
+  const [pnlCurrency, setPnlCurrency] = useState<CurrencySymbol>("RON");
+
   const pnlTotals = useMemo(() => {
     let gross = 0;
     let net = 0;
     let fees = 0;
     for (const s of filteredSells) {
-      gross += s.grossProfitRon;
-      net += s.netProfitRon;
-      fees += s.feeRon;
+      gross += convertCurrency(s.grossProfit, s.currency, pnlCurrency, rates);
+      net += convertCurrency(s.netProfit, s.currency, pnlCurrency, rates);
+      fees += convertCurrency(s.fee, s.currency, pnlCurrency, rates);
     }
     return { gross, net, fees };
-  }, [filteredSells]);
+  }, [filteredSells, pnlCurrency, rates]);
 
   // --- CASS section ---
   const cassYears = useMemo(() => {
@@ -662,6 +664,7 @@ export default function TaxesPage() {
   const thSortable = "py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none";
 
   const fmtRon = (value: number): string => formatCurrency(value, "RON");
+  const fmtPnl = (value: number): string => formatCurrency(value, pnlCurrency);
 
   return (
     <div>
@@ -685,20 +688,36 @@ export default function TaxesPage() {
               Gross vs net (after income tax) profit for every sell transaction.
             </p>
           </div>
-          <label className="flex items-center gap-2 text-sm text-muted">
-            Year
-            <select
-              value={pnlYear}
-              onChange={(e) => setPnlYear(Number(e.target.value))}
-              className="bg-card border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              {sellYears.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="flex items-center gap-2 text-sm text-muted">
+              Currency
+              <select
+                value={pnlCurrency}
+                onChange={(e) => setPnlCurrency(e.target.value as CurrencySymbol)}
+                className="bg-card border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                {(["RON", "$", "€"] as const).map((c) => (
+                  <option key={c} value={c}>
+                    {currencyLabel(c)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-muted">
+              Year
+              <select
+                value={pnlYear}
+                onChange={(e) => setPnlYear(Number(e.target.value))}
+                className="bg-card border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                {sellYears.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -708,16 +727,16 @@ export default function TaxesPage() {
           />
           <StatsCard
             label="Income Tax Paid"
-            value={fmtRon(pnlTotals.fees)}
+            value={fmtPnl(pnlTotals.fees)}
           />
           <StatsCard
             label="Gross Profit"
-            value={fmtRon(pnlTotals.gross)}
+            value={fmtPnl(pnlTotals.gross)}
             trend={pnlTotals.gross >= 0 ? "up" : "down"}
           />
           <StatsCard
             label="Net Profit"
-            value={fmtRon(pnlTotals.net)}
+            value={fmtPnl(pnlTotals.net)}
             trend={pnlTotals.net >= 0 ? "up" : "down"}
           />
         </div>
@@ -780,27 +799,27 @@ export default function TaxesPage() {
                     {formatShares(s.shares)}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
-                    {fmtRon(s.sellValueRon)}
+                    {fmtPnl(convertCurrency(s.sellValue, s.currency, pnlCurrency, rates))}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
-                    {fmtRon(s.costBasisRon)}
+                    {fmtPnl(convertCurrency(s.costBasis, s.currency, pnlCurrency, rates))}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
-                    {s.feeRon > 0 ? fmtRon(s.feeRon) : "-"}
+                    {s.fee > 0 ? fmtPnl(convertCurrency(s.fee, s.currency, pnlCurrency, rates)) : "-"}
                   </td>
                   <td
                     className={`py-2.5 px-3 text-sm text-right font-medium ${
                       s.grossProfit >= 0 ? "text-gain" : "text-loss"
                     }`}
                   >
-                    {fmtRon(s.grossProfitRon)}
+                    {fmtPnl(convertCurrency(s.grossProfit, s.currency, pnlCurrency, rates))}
                   </td>
                   <td
                     className={`py-2.5 px-3 text-sm text-right font-medium ${
                       s.netProfit >= 0 ? "text-gain" : "text-loss"
                     }`}
                   >
-                    {fmtRon(s.netProfitRon)}
+                    {fmtPnl(convertCurrency(s.netProfit, s.currency, pnlCurrency, rates))}
                   </td>
                 </tr>
               ))}
@@ -812,24 +831,24 @@ export default function TaxesPage() {
                     colSpan={7}
                     className="py-2.5 px-3 text-sm font-semibold text-white text-right"
                   >
-                    Total for {pnlYear}
+                    Total for {pnlYear} ({currencyLabel(pnlCurrency)})
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted font-medium">
-                    {fmtRon(pnlTotals.fees)}
+                    {fmtPnl(pnlTotals.fees)}
                   </td>
                   <td
                     className={`py-2.5 px-3 text-sm text-right font-semibold ${
                       pnlTotals.gross >= 0 ? "text-gain" : "text-loss"
                     }`}
                   >
-                    {fmtRon(pnlTotals.gross)}
+                    {fmtPnl(pnlTotals.gross)}
                   </td>
                   <td
                     className={`py-2.5 px-3 text-sm text-right font-semibold ${
                       pnlTotals.net >= 0 ? "text-gain" : "text-loss"
                     }`}
                   >
-                    {fmtRon(pnlTotals.net)}
+                    {fmtPnl(pnlTotals.net)}
                   </td>
                 </tr>
               </tfoot>

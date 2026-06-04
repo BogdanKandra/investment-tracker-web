@@ -12,6 +12,8 @@ import {
   LineChart,
   Line,
   ReferenceLine,
+  AreaChart,
+  Area,
 } from "recharts";
 import { usePortfolio } from "../context/PortfolioContext";
 import StatsCard from "../components/common/StatsCard";
@@ -20,12 +22,72 @@ import CurrencySelect from "../components/common/CurrencySelect";
 import { formatCurrency, convertCurrency } from "../utils/currency";
 import { formatPercent } from "../utils/numbers";
 import { parseDate, toIsoDate } from "../utils/dates";
-import { fetchCurrentPrices } from "../api/marketData";
+import { fetchCurrentPrices, fetchHistoricalCloses } from "../api/marketData";
 import { computeSellPnL } from "../data/taxCalculator";
-import type { CurrencySymbol } from "../types";
+import type { Account, CurrencySymbol } from "../types";
 
 type SortField = "symbol" | "invested" | "value" | "pnl" | "pnlPct";
 type SortDir = "asc" | "desc";
+
+const PORTFOLIO_VALUE_PIXELS_PER_POINT = 12;
+
+type ShareLedgerEntry = { date: string; cumShares: number };
+
+function buildShareLedger(accounts: Account[]): Map<string, ShareLedgerEntry[]> {
+  const increments = new Map<string, Array<{ date: string; delta: number }>>();
+
+  for (const acct of accounts) {
+    for (const tx of acct.transactions) {
+      if (tx.type !== "Buy" && tx.type !== "Sell") continue;
+      if (!tx.symbol || tx.shares == null) continue;
+      const isoDate = toIsoDate(parseDate(tx.date));
+      const arr = increments.get(tx.symbol) ?? [];
+      arr.push({ date: isoDate, delta: tx.type === "Buy" ? tx.shares : -tx.shares });
+      increments.set(tx.symbol, arr);
+    }
+  }
+
+  const ledger = new Map<string, ShareLedgerEntry[]>();
+  for (const [symbol, entries] of increments) {
+    entries.sort((a, b) => a.date.localeCompare(b.date));
+    let cum = 0;
+    ledger.set(
+      symbol,
+      entries.map((e) => {
+        cum += e.delta;
+        return { date: e.date, cumShares: Math.max(0, +cum.toFixed(8)) };
+      })
+    );
+  }
+
+  return ledger;
+}
+
+function getSharesAt(entries: ShareLedgerEntry[], targetDate: string): number {
+  let result = 0;
+  for (const e of entries) {
+    if (e.date <= targetDate) result = e.cumShares;
+    else break;
+  }
+  return result;
+}
+
+function getLastKnownClose(
+  history: Array<{ time: string; close: number }>,
+  targetDate: string
+): number | undefined {
+  let result: number | undefined;
+  for (const e of history) {
+    if (e.time <= targetDate) result = e.close;
+    else break;
+  }
+  return result;
+}
+
+function formatPortfolioDate(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00Z");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit", timeZone: "UTC" });
+}
 
 interface HoldingPerf {
   symbol: string;
@@ -69,6 +131,81 @@ export default function PerformancePage() {
         : portfolio.accounts,
     [portfolio.accounts, selectedAccount]
   );
+
+  const [portfolioValueData, setPortfolioValueData] = useState<Array<{ time: string; value: number }>>([]);
+  const [portfolioValueLoading, setPortfolioValueLoading] = useState(false);
+
+  useEffect(() => {
+    const symbolCurrencies = new Map<string, CurrencySymbol>();
+    for (const acct of filteredAccounts) {
+      for (const tx of acct.transactions) {
+        if ((tx.type === "Buy" || tx.type === "Sell") && tx.symbol) {
+          symbolCurrencies.set(tx.symbol, tx.currency);
+        }
+      }
+    }
+
+    const syms = Array.from(symbolCurrencies.keys());
+    if (syms.length === 0) {
+      setPortfolioValueData([]);
+      return;
+    }
+
+    const ledger = buildShareLedger(filteredAccounts);
+    let cancelled = false;
+
+    setPortfolioValueLoading(true);
+
+    Promise.allSettled(
+      syms.map((sym) =>
+        fetchHistoricalCloses(sym, "1wk").then((data) => ({ sym, data }))
+      )
+    )
+      .then((results) => {
+        if (cancelled) return;
+
+        const priceHistories = new Map<string, Array<{ time: string; close: number }>>();
+        for (const r of results) {
+          if (r.status === "fulfilled" && r.value.data.length > 0) {
+            priceHistories.set(r.value.sym, r.value.data);
+          }
+        }
+
+        const allTimeKeys = new Set<string>();
+        for (const history of priceHistories.values()) {
+          for (const { time } of history) allTimeKeys.add(time);
+        }
+
+        const sortedKeys = Array.from(allTimeKeys).sort();
+        const timeline: Array<{ time: string; value: number }> = [];
+
+        for (const timeKey of sortedKeys) {
+          let total = 0;
+          for (const sym of syms) {
+            const history = priceHistories.get(sym);
+            if (!history) continue;
+            const price = getLastKnownClose(history, timeKey);
+            if (price == null) continue;
+            const ledgerEntries = ledger.get(sym) ?? [];
+            const shares = getSharesAt(ledgerEntries, timeKey);
+            if (shares <= 0) continue;
+            const currency = symbolCurrencies.get(sym)!;
+            total += convertCurrency(shares * price, currency, displayCurrency, rates);
+          }
+          if (total > 0) timeline.push({ time: timeKey, value: +total.toFixed(2) });
+        }
+
+        setPortfolioValueData(timeline);
+        setPortfolioValueLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setPortfolioValueLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filteredAccounts, displayCurrency, rates]);
 
   const holdingPerformance = useMemo(() => {
     const items = currentHoldings.map((h) => {
@@ -119,21 +256,25 @@ export default function PerformancePage() {
     return list;
   }, [holdingPerformance, sortField, sortDir]);
 
+  const sellPnLData = useMemo(
+    () => computeSellPnL(filteredAccounts, rates),
+    [filteredAccounts, rates]
+  );
+
   const realizedPnL = useMemo(() => {
-    const sells = computeSellPnL(filteredAccounts, rates);
     let totalGross = 0;
     let totalNet = 0;
     let winCount = 0;
     let lossCount = 0;
-    for (const s of sells) {
+    for (const s of sellPnLData) {
       const gross = convertCurrency(s.grossProfit, s.currency, displayCurrency, rates);
       totalGross += gross;
       totalNet += convertCurrency(s.netProfit, s.currency, displayCurrency, rates);
       if (s.grossProfit >= 0) winCount++;
       else lossCount++;
     }
-    return { totalGross, totalNet, winCount, lossCount, total: sells.length };
-  }, [filteredAccounts, rates, displayCurrency]);
+    return { totalGross, totalNet, winCount, lossCount, total: sellPnLData.length };
+  }, [sellPnLData, rates, displayCurrency]);
 
   const yearlyReturns = useMemo<YearlyReturn[]>(() => {
     const byYear = new Map<number, { invested: number; sold: number; dividends: number; realizedPnl: number }>();
@@ -151,8 +292,7 @@ export default function PerformancePage() {
       }
     }
 
-    const sells = computeSellPnL(filteredAccounts, rates);
-    for (const s of sells) {
+    for (const s of sellPnLData) {
       const year = s.year;
       const entry = byYear.get(year) ?? { invested: 0, sold: 0, dividends: 0, realizedPnl: 0 };
       entry.realizedPnl += convertCurrency(s.grossProfit, s.currency, displayCurrency, rates);
@@ -168,7 +308,7 @@ export default function PerformancePage() {
         dividends: +d.dividends.toFixed(2),
         realizedPnl: +d.realizedPnl.toFixed(2),
       }));
-  }, [filteredAccounts, displayCurrency, rates]);
+  }, [filteredAccounts, displayCurrency, rates, sellPnLData]);
 
   const portfolioTimeline = useMemo(() => {
     const events: { date: Date; invested: number; value: number; currency: string }[] = [];
@@ -211,6 +351,82 @@ export default function PerformancePage() {
     }
     return { timeline, currentValue: 0 };
   }, [filteredAccounts, displayCurrency, rates, holdingPerformance]);
+
+  const totalGrowthTimeline = useMemo(() => {
+    type RawEvent = { date: Date; cashFlow: number; realizedPnl: number; dividend: number };
+    const rawEvents: RawEvent[] = [];
+
+    for (const acct of filteredAccounts) {
+      for (const tx of acct.transactions) {
+        const d = parseDate(tx.date);
+        if (tx.type === "Buy") {
+          rawEvents.push({
+            date: d,
+            cashFlow: convertCurrency(tx.shares! * tx.price!, tx.currency as CurrencySymbol, displayCurrency, rates),
+            realizedPnl: 0,
+            dividend: 0,
+          });
+        } else if (tx.type === "Sell") {
+          rawEvents.push({
+            date: d,
+            cashFlow: -convertCurrency(tx.shares! * tx.price!, tx.currency as CurrencySymbol, displayCurrency, rates),
+            realizedPnl: 0,
+            dividend: 0,
+          });
+        } else if (tx.type === "Dividend") {
+          rawEvents.push({
+            date: d,
+            cashFlow: 0,
+            realizedPnl: 0,
+            dividend: convertCurrency(tx.shares! * tx.price!, tx.currency as CurrencySymbol, displayCurrency, rates),
+          });
+        }
+      }
+    }
+
+    for (const s of sellPnLData) {
+      rawEvents.push({
+        date: parseDate(s.date),
+        cashFlow: 0,
+        realizedPnl: convertCurrency(s.grossProfit, s.currency, displayCurrency, rates),
+        dividend: 0,
+      });
+    }
+
+    rawEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    let cumNetInvested = 0;
+    let cumRealizedPnl = 0;
+    let cumDividends = 0;
+
+    const timeline: { date: string; netInvested: number; realizedPnl: number; dividends: number }[] = [];
+
+    for (const ev of rawEvents) {
+      cumNetInvested += ev.cashFlow;
+      cumRealizedPnl += ev.realizedPnl;
+      cumDividends += ev.dividend;
+      timeline.push({
+        date: toIsoDate(ev.date),
+        netInvested: +cumNetInvested.toFixed(2),
+        realizedPnl: +cumRealizedPnl.toFixed(2),
+        dividends: +cumDividends.toFixed(2),
+      });
+    }
+
+    if (timeline.length > 0) {
+      const today = toIsoDate(new Date());
+      if (timeline[timeline.length - 1]!.date !== today) {
+        timeline.push({
+          date: today,
+          netInvested: +cumNetInvested.toFixed(2),
+          realizedPnl: +cumRealizedPnl.toFixed(2),
+          dividends: +cumDividends.toFixed(2),
+        });
+      }
+    }
+
+    return { timeline, totalNetInvested: cumNetInvested, totalRealizedPnl: cumRealizedPnl, totalDividends: cumDividends };
+  }, [filteredAccounts, displayCurrency, rates, sellPnLData]);
 
   const totalInvested = holdingPerformance.reduce((s, h) => s + h.invested, 0);
   const totalValue = holdingPerformance.reduce((s, h) => s + h.value, 0);
@@ -439,6 +655,183 @@ export default function PerformancePage() {
         ) : (
           <div className="text-muted text-sm text-center py-10">
             No data available
+          </div>
+        )}
+      </div>
+
+      {/* Total Investment Growth (incl. Closed Positions & Dividends) */}
+      <div className="bg-card rounded-xl p-5 border border-white/5 mb-8">
+        <h2 className="text-sm font-medium text-muted mb-1 uppercase tracking-wide">
+          Total Investment Growth
+        </h2>
+        <p className="text-xs text-muted mb-4">
+          Includes net capital deployed, realized P&amp;L from closed positions, and dividends received.
+        </p>
+        {totalGrowthTimeline.timeline.length > 0 ? (
+          <div>
+            <div className="flex items-center gap-6 mb-4 text-sm flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500" />
+                <span className="text-muted">Net Invested</span>
+                <span className="text-white font-medium">
+                  {formatCurrency(totalGrowthTimeline.totalNetInvested, displayCurrency)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                <span className="text-muted">Closed P&amp;L</span>
+                <span className={`font-medium ${totalGrowthTimeline.totalRealizedPnl >= 0 ? "text-gain" : "text-loss"}`}>
+                  {formatCurrency(totalGrowthTimeline.totalRealizedPnl, displayCurrency)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-pink-500" />
+                <span className="text-muted">Dividends</span>
+                <span className="text-white font-medium">
+                  {formatCurrency(totalGrowthTimeline.totalDividends, displayCurrency)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted">Total</span>
+                <span className="text-white font-medium">
+                  {formatCurrency(
+                    totalGrowthTimeline.totalNetInvested +
+                      totalGrowthTimeline.totalRealizedPnl +
+                      totalGrowthTimeline.totalDividends,
+                    displayCurrency
+                  )}
+                </span>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={totalGrowthTimeline.timeline}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: "#9ca3af", fontSize: 11 }}
+                  stroke="rgba(255,255,255,0.1)"
+                />
+                <YAxis
+                  tick={{ fill: "#9ca3af", fontSize: 11 }}
+                  stroke="rgba(255,255,255,0.1)"
+                />
+                <Tooltip
+                  {...tooltipStyle}
+                  formatter={(value: number, name: string) => [
+                    formatCurrency(value, displayCurrency),
+                    name,
+                  ]}
+                />
+                <Legend wrapperStyle={{ color: "#9ca3af", fontSize: 12 }} />
+                <Area
+                  type="monotone"
+                  stackId="growth"
+                  dataKey="netInvested"
+                  name="Net Invested"
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
+                  fillOpacity={0.55}
+                  dot={false}
+                />
+                <Area
+                  type="monotone"
+                  stackId="growth"
+                  dataKey="realizedPnl"
+                  name="Closed Position P&L"
+                  stroke="#eab308"
+                  fill="#eab308"
+                  fillOpacity={0.55}
+                  dot={false}
+                />
+                <Area
+                  type="monotone"
+                  stackId="growth"
+                  dataKey="dividends"
+                  name="Dividends"
+                  stroke="#ec4899"
+                  fill="#ec4899"
+                  fillOpacity={0.55}
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="text-muted text-sm text-center py-10">
+            No data available
+          </div>
+        )}
+      </div>
+
+      {/* Holdings Value Evolution */}
+      <div className="bg-card rounded-xl p-5 border border-white/5 mb-8">
+        <div className="mb-4">
+          <h2 className="text-sm font-medium text-muted uppercase tracking-wide">
+            Holdings Value Evolution
+          </h2>
+          <p className="text-xs text-muted mt-0.5">
+            Total market value of all holdings from the selected account, sampled weekly.
+          </p>
+        </div>
+
+        {portfolioValueLoading ? (
+          <div className="flex items-center justify-center py-16 gap-2 text-muted text-sm">
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            Loading price history…
+          </div>
+        ) : portfolioValueData.length === 0 ? (
+          <div className="text-muted text-sm text-center py-10">No data available</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div
+              style={{
+                width: Math.max(600, portfolioValueData.length * PORTFOLIO_VALUE_PIXELS_PER_POINT),
+                minWidth: "100%",
+              }}
+            >
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart data={portfolioValueData}>
+                  <defs>
+                    <linearGradient id="pvGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fill: "#9ca3af", fontSize: 11 }}
+                    stroke="rgba(255,255,255,0.1)"
+                    minTickGap={60}
+                    tickFormatter={(v: string) => formatPortfolioDate(v)}
+                  />
+                  <YAxis
+                    tick={{ fill: "#9ca3af", fontSize: 11 }}
+                    stroke="rgba(255,255,255,0.1)"
+                    width={80}
+                    tickFormatter={(v: number) => {
+                      if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+                      if (Math.abs(v) >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+                      return String(v);
+                    }}
+                  />
+                  <Tooltip
+                    {...tooltipStyle}
+                    formatter={(v: number) => [formatCurrency(v, displayCurrency), "Portfolio Value"]}
+                    labelFormatter={(label: string) => formatPortfolioDate(label)}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    name="Portfolio Value"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    fill="url(#pvGradient)"
+                    dot={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         )}
       </div>
