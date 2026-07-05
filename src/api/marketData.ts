@@ -1,4 +1,4 @@
-import type { OhlcData, TimeRange } from "../types";
+import type { CurrencySymbol, OhlcData, TimeRange } from "../types";
 import { timeRangeToDays } from "../utils/dates";
 
 const CORS_PROXY = "https://corsproxy.io/?url=";
@@ -180,6 +180,75 @@ export async function fetchHistoricalCloses(
   } catch {
     return [];
   }
+}
+
+function yahooCurrencyToSymbol(currency: string | undefined): CurrencySymbol {
+  switch (currency?.toUpperCase()) {
+    case "USD":
+      return "$";
+    case "EUR":
+      return "€";
+    case "RON":
+      return "RON";
+    case "DKK":
+      return "DKK";
+    default:
+      return "€";
+  }
+}
+
+export interface BenchmarkCloseHistory {
+  symbol: string;
+  currency: CurrencySymbol;
+  data: Array<{ time: string; close: number }>;
+}
+
+/**
+ * Try Yahoo symbol candidates in order; return the first with price history.
+ */
+export async function fetchBenchmarkCloses(
+  symbolCandidates: string[],
+  interval: "1d" | "1wk" | "1mo" | "3mo" = "1wk"
+): Promise<BenchmarkCloseHistory | null> {
+  for (const symbol of symbolCandidates) {
+    const url = `${CORS_PROXY}${encodeURIComponent(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=max&interval=${interval}`
+    )}`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const json = await res.json();
+      const result = json?.chart?.result?.[0];
+      if (!result) continue;
+
+      const timestamps: number[] = result.timestamp ?? [];
+      const closes: (number | null)[] = result.indicators?.quote?.[0]?.close ?? [];
+      const data: Array<{ time: string; close: number }> = [];
+
+      for (let i = 0; i < timestamps.length; i++) {
+        const c = closes[i];
+        if (c == null) continue;
+        const d = new Date(timestamps[i]! * 1000);
+        data.push({
+          time: `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`,
+          close: c,
+        });
+      }
+
+      if (data.length > 0) {
+        return {
+          symbol,
+          currency: yahooCurrencyToSymbol(result.meta?.currency),
+          data,
+        };
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
 }
 
 /** Generate mock price data when the API is unavailable */

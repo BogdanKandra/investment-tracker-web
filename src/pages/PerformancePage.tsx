@@ -22,14 +22,131 @@ import CurrencySelect from "../components/common/CurrencySelect";
 import { formatCurrency, convertCurrency } from "../utils/currency";
 import { formatPercent } from "../utils/numbers";
 import { parseDate, toIsoDate } from "../utils/dates";
-import { fetchCurrentPrices, fetchHistoricalCloses } from "../api/marketData";
+import {
+  fetchBenchmarkCloses,
+  fetchCurrentPrices,
+  fetchHistoricalCloses,
+} from "../api/marketData";
 import { computeSellPnL } from "../data/taxCalculator";
-import type { Account, CurrencySymbol } from "../types";
+import type { Account, CurrencySymbol, ExchangeRates } from "../types";
 
 type SortField = "symbol" | "invested" | "value" | "pnl" | "pnlPct";
 type SortDir = "asc" | "desc";
 
 const PORTFOLIO_VALUE_PIXELS_PER_POINT = 12;
+
+const BENCHMARK_CONFIG = [
+  {
+    id: "sp500" as const,
+    label: "S&P 500",
+    color: "#f59e0b",
+    symbolCandidates: [
+      "^GSPC",
+      "SPY",
+      "SPY5.DE",
+      "SXR8.DE",
+      "CSPX.L",
+      "CSPX.AS",
+      "VUAA.DE",
+      "VUA1.DE",
+      "VUAA.L",
+      "IVV",
+      "VOO",
+    ],
+  },
+  {
+    id: "nasdaq100" as const,
+    label: "Nasdaq 100",
+    color: "#a855f7",
+    symbolCandidates: ["SXRV.DE", "^NDX", "QQQ", "CNDX.L", "SXRV.AS"],
+  },
+] as const;
+
+type BenchmarkId = (typeof BENCHMARK_CONFIG)[number]["id"];
+
+type ComparisonChartPoint = {
+  time: string;
+  value: number;
+  sp500Hypothetical: number | null;
+  nasdaq100Hypothetical: number | null;
+};
+
+const BENCHMARK_HYPOTHETICAL_KEYS: Record<BenchmarkId, keyof ComparisonChartPoint> = {
+  sp500: "sp500Hypothetical",
+  nasdaq100: "nasdaq100Hypothetical",
+};
+
+type ResolvedBenchmark = {
+  id: BenchmarkId;
+  label: string;
+  color: string;
+  symbol: string;
+  currency: CurrencySymbol;
+  history: Array<{ time: string; close: number }>;
+};
+
+function computePortfolioValueAt(
+  timeKey: string,
+  syms: string[],
+  priceHistories: Map<string, Array<{ time: string; close: number }>>,
+  ledger: Map<string, ShareLedgerEntry[]>,
+  symbolCurrencies: Map<string, CurrencySymbol>,
+  displayCurrency: CurrencySymbol,
+  rates: ExchangeRates,
+  requireAllHeldPrices = true
+): number | null {
+  let total = 0;
+  for (const sym of syms) {
+    const shares = getSharesAt(ledger.get(sym) ?? [], timeKey);
+    if (shares <= 0) continue;
+    const history = priceHistories.get(sym);
+    if (!history) {
+      if (requireAllHeldPrices) return null;
+      continue;
+    }
+    const price = getLastKnownClose(history, timeKey);
+    if (price == null) {
+      if (requireAllHeldPrices) return null;
+      continue;
+    }
+    const currency = symbolCurrencies.get(sym)!;
+    total += convertCurrency(shares * price, currency, displayCurrency, rates);
+  }
+  return total > 0 ? +total.toFixed(2) : null;
+}
+
+function findComparisonStart(
+  sortedKeys: string[],
+  syms: string[],
+  priceHistories: Map<string, Array<{ time: string; close: number }>>,
+  ledger: Map<string, ShareLedgerEntry[]>,
+  symbolCurrencies: Map<string, CurrencySymbol>,
+  displayCurrency: CurrencySymbol,
+  rates: ExchangeRates,
+  benchmarks: ResolvedBenchmark[]
+): { time: string; value: number } | null {
+  for (const timeKey of sortedKeys) {
+    const value = computePortfolioValueAt(
+      timeKey,
+      syms,
+      priceHistories,
+      ledger,
+      symbolCurrencies,
+      displayCurrency,
+      rates,
+      true
+    );
+    if (value == null) continue;
+
+    const benchmarksReady = benchmarks.every(
+      (bench) => getLastKnownClose(bench.history, timeKey) != null
+    );
+    if (!benchmarksReady) continue;
+
+    return { time: timeKey, value };
+  }
+  return null;
+}
 
 type ShareLedgerEntry = { date: string; cumShares: number };
 
@@ -89,6 +206,16 @@ function formatPortfolioDate(dateStr: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit", timeZone: "UTC" });
 }
 
+/** Scale portfolio baseline by benchmark price return (ratio is currency-neutral). */
+function scaledBenchmarkValue(
+  close: number | undefined,
+  startClose: number,
+  baselineAmount: number
+): number | null {
+  if (close == null || startClose <= 0 || baselineAmount <= 0) return null;
+  return +(baselineAmount * (close / startClose)).toFixed(2);
+}
+
 interface HoldingPerf {
   symbol: string;
   name: string;
@@ -132,8 +259,14 @@ export default function PerformancePage() {
     [portfolio.accounts, selectedAccount]
   );
 
-  const [portfolioValueData, setPortfolioValueData] = useState<Array<{ time: string; value: number }>>([]);
+  const [comparisonChartData, setComparisonChartData] = useState<ComparisonChartPoint[]>([]);
+  const [resolvedBenchmarks, setResolvedBenchmarks] = useState<ResolvedBenchmark[]>([]);
   const [portfolioValueLoading, setPortfolioValueLoading] = useState(false);
+  const [benchmarkVisibility, setBenchmarkVisibility] = useState<Record<BenchmarkId, boolean>>({
+    sp500: true,
+    nasdaq100: true,
+  });
+  const [comparisonStartTime, setComparisonStartTime] = useState<string | null>(null);
 
   useEffect(() => {
     const symbolCurrencies = new Map<string, CurrencySymbol>();
@@ -147,7 +280,8 @@ export default function PerformancePage() {
 
     const syms = Array.from(symbolCurrencies.keys());
     if (syms.length === 0) {
-      setPortfolioValueData([]);
+      setComparisonChartData([]);
+      setResolvedBenchmarks([]);
       return;
     }
 
@@ -156,50 +290,124 @@ export default function PerformancePage() {
 
     setPortfolioValueLoading(true);
 
-    Promise.allSettled(
-      syms.map((sym) =>
-        fetchHistoricalCloses(sym, "1wk").then((data) => ({ sym, data }))
-      )
-    )
-      .then((results) => {
+    const holdingFetches = syms.map((sym) =>
+      fetchHistoricalCloses(sym, "1wk").then((data) => ({ sym, data }))
+    );
+    const benchmarkFetches = BENCHMARK_CONFIG.map((bench) =>
+      fetchBenchmarkCloses([...bench.symbolCandidates], "1wk").then((result) => ({
+        config: bench,
+        result,
+      }))
+    );
+
+    Promise.all([Promise.allSettled(holdingFetches), Promise.all(benchmarkFetches)])
+      .then(([holdingResults, benchmarkResults]) => {
         if (cancelled) return;
 
         const priceHistories = new Map<string, Array<{ time: string; close: number }>>();
-        for (const r of results) {
+        for (const r of holdingResults) {
           if (r.status === "fulfilled" && r.value.data.length > 0) {
             priceHistories.set(r.value.sym, r.value.data);
           }
+        }
+
+        const benchmarks: ResolvedBenchmark[] = [];
+        for (const { config, result } of benchmarkResults) {
+          if (!result) continue;
+          benchmarks.push({
+            id: config.id,
+            label: config.label,
+            color: config.color,
+            symbol: result.symbol,
+            currency: result.currency,
+            history: result.data,
+          });
         }
 
         const allTimeKeys = new Set<string>();
         for (const history of priceHistories.values()) {
           for (const { time } of history) allTimeKeys.add(time);
         }
-
-        const sortedKeys = Array.from(allTimeKeys).sort();
-        const timeline: Array<{ time: string; value: number }> = [];
-
-        for (const timeKey of sortedKeys) {
-          let total = 0;
-          for (const sym of syms) {
-            const history = priceHistories.get(sym);
-            if (!history) continue;
-            const price = getLastKnownClose(history, timeKey);
-            if (price == null) continue;
-            const ledgerEntries = ledger.get(sym) ?? [];
-            const shares = getSharesAt(ledgerEntries, timeKey);
-            if (shares <= 0) continue;
-            const currency = symbolCurrencies.get(sym)!;
-            total += convertCurrency(shares * price, currency, displayCurrency, rates);
-          }
-          if (total > 0) timeline.push({ time: timeKey, value: +total.toFixed(2) });
+        for (const bench of benchmarks) {
+          for (const { time } of bench.history) allTimeKeys.add(time);
         }
 
-        setPortfolioValueData(timeline);
+        const sortedKeys = Array.from(allTimeKeys).sort();
+
+        const startPoint = findComparisonStart(
+          sortedKeys,
+          syms,
+          priceHistories,
+          ledger,
+          symbolCurrencies,
+          displayCurrency,
+          rates,
+          benchmarks
+        );
+        if (!startPoint) {
+          setComparisonChartData([]);
+          setResolvedBenchmarks(benchmarks);
+          setComparisonStartTime(null);
+          setPortfolioValueLoading(false);
+          return;
+        }
+
+        const baselineAmount = startPoint.value;
+
+        const benchmarkStartCloses = new Map<BenchmarkId, number>();
+        for (const bench of benchmarks) {
+          const startClose = getLastKnownClose(bench.history, startPoint.time);
+          if (startClose != null) benchmarkStartCloses.set(bench.id, startClose);
+        }
+
+        const comparisonTimeline: ComparisonChartPoint[] = [];
+        for (const timeKey of sortedKeys) {
+          if (timeKey < startPoint.time) continue;
+
+          const portfolioValue = computePortfolioValueAt(
+            timeKey,
+            syms,
+            priceHistories,
+            ledger,
+            symbolCurrencies,
+            displayCurrency,
+            rates,
+            false
+          );
+          if (portfolioValue == null) continue;
+
+          const row: ComparisonChartPoint = {
+            time: timeKey,
+            value: portfolioValue,
+            sp500Hypothetical: null,
+            nasdaq100Hypothetical: null,
+          };
+
+          for (const bench of benchmarks) {
+            const startClose = benchmarkStartCloses.get(bench.id);
+            if (startClose == null) continue;
+
+            const close = getLastKnownClose(bench.history, timeKey);
+            const scaled = scaledBenchmarkValue(close, startClose, baselineAmount);
+            if (bench.id === "sp500") {
+              row.sp500Hypothetical = scaled;
+            } else {
+              row.nasdaq100Hypothetical = scaled;
+            }
+          }
+
+          comparisonTimeline.push(row);
+        }
+
+        setComparisonChartData(comparisonTimeline);
+        setResolvedBenchmarks(benchmarks);
+        setComparisonStartTime(startPoint.time);
         setPortfolioValueLoading(false);
       })
       .catch(() => {
-        if (!cancelled) setPortfolioValueLoading(false);
+        if (!cancelled) {
+          setPortfolioValueLoading(false);
+        }
       });
 
     return () => {
@@ -763,14 +971,60 @@ export default function PerformancePage() {
         )}
       </div>
 
-      {/* Holdings Value Evolution */}
+      {/* Portfolio vs Benchmarks */}
       <div className="bg-card rounded-xl p-5 border border-white/5 mb-8">
-        <div className="mb-4">
-          <h2 className="text-sm font-medium text-muted uppercase tracking-wide">
-            Holdings Value Evolution
-          </h2>
-          <p className="text-xs text-muted mt-0.5">
-            Total market value of all holdings from the selected account, sampled weekly.
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-sm font-medium text-muted uppercase tracking-wide">
+              Portfolio vs Benchmarks
+            </h2>
+            <p className="text-xs text-muted mt-0.5">
+              Total market value of all holdings from the selected account, sampled weekly.
+            </p>
+            <p className="text-xs text-muted/70 mt-1">
+              Portfolio value includes deposits and withdrawals over time, so benchmark comparison is indicative rather than a formal time-weighted return.
+            </p>
+            {comparisonStartTime && comparisonChartData.length > 0 && (
+              <p className="text-xs text-muted/70 mt-1">
+                Comparison starts {formatPortfolioDate(comparisonStartTime)} at{" "}
+                {formatCurrency(comparisonChartData[0]!.value, displayCurrency)} (first week with full portfolio valuation and benchmark data).
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            {BENCHMARK_CONFIG.map((config) => {
+              const resolved = resolvedBenchmarks.find((b) => b.id === config.id);
+              return (
+                <label
+                  key={config.id}
+                  className={`flex items-center gap-2 text-xs cursor-pointer select-none ${
+                    resolved ? "text-muted" : "text-muted/40"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={benchmarkVisibility[config.id]}
+                    disabled={!resolved}
+                    onChange={(e) =>
+                      setBenchmarkVisibility((prev) => ({
+                        ...prev,
+                        [config.id]: e.target.checked,
+                      }))
+                    }
+                    className="rounded border-white/20 bg-transparent disabled:opacity-40"
+                    style={{ accentColor: config.color }}
+                  />
+                  {config.label}
+                  {resolved ? ` (${resolved.symbol})` : " — unavailable"}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mb-4 rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3 text-xs text-muted/80">
+          <p>
+            Portfolio shows your actual weekly market value. Each benchmark line shows what your portfolio would be worth if it had grown at the benchmark&apos;s price return since the comparison start: starting portfolio value × (benchmark price this week ÷ benchmark price at start). Example: if your portfolio was {formatCurrency(10000, displayCurrency)} at the start and the benchmark rose 20%, that line reads {formatCurrency(12000, displayCurrency)}.
           </p>
         </div>
 
@@ -779,24 +1033,21 @@ export default function PerformancePage() {
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             Loading price history…
           </div>
-        ) : portfolioValueData.length === 0 ? (
+        ) : comparisonChartData.length === 0 ? (
           <div className="text-muted text-sm text-center py-10">No data available</div>
         ) : (
           <div className="overflow-x-auto">
             <div
               style={{
-                width: Math.max(600, portfolioValueData.length * PORTFOLIO_VALUE_PIXELS_PER_POINT),
+                width: Math.max(600, comparisonChartData.length * PORTFOLIO_VALUE_PIXELS_PER_POINT),
                 minWidth: "100%",
               }}
             >
               <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={portfolioValueData}>
-                  <defs>
-                    <linearGradient id="pvGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <LineChart
+                  data={comparisonChartData}
+                  margin={{ top: 8, right: 12, left: 4, bottom: 0 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis
                     dataKey="time"
@@ -809,27 +1060,49 @@ export default function PerformancePage() {
                     tick={{ fill: "#9ca3af", fontSize: 11 }}
                     stroke="rgba(255,255,255,0.1)"
                     width={80}
+                    domain={["auto", "auto"]}
                     tickFormatter={(v: number) => {
                       if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
                       if (Math.abs(v) >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
-                      return String(v);
+                      return String(Math.round(v));
                     }}
                   />
                   <Tooltip
                     {...tooltipStyle}
-                    formatter={(v: number) => [formatCurrency(v, displayCurrency), "Portfolio Value"]}
+                    formatter={(v: number, name: string) => {
+                      if (v == null || Number.isNaN(v)) return ["—", name];
+                      return [formatCurrency(v, displayCurrency), name];
+                    }}
                     labelFormatter={(label: string) => formatPortfolioDate(label)}
                   />
-                  <Area
+                  <Legend wrapperStyle={{ color: "#9ca3af", fontSize: 12 }} />
+                  <Line
                     type="monotone"
                     dataKey="value"
-                    name="Portfolio Value"
+                    name="Portfolio"
                     stroke="#3b82f6"
-                    strokeWidth={2}
-                    fill="url(#pvGradient)"
+                    strokeWidth={2.5}
                     dot={false}
+                    connectNulls
+                    isAnimationActive={false}
                   />
-                </AreaChart>
+                  {resolvedBenchmarks
+                    .filter((bench) => benchmarkVisibility[bench.id])
+                    .map((bench) => (
+                      <Line
+                        key={bench.id}
+                        type="monotone"
+                        dataKey={BENCHMARK_HYPOTHETICAL_KEYS[bench.id]}
+                        name={`${bench.label} (${bench.symbol})`}
+                        stroke={bench.color}
+                        strokeWidth={2}
+                        strokeDasharray="6 4"
+                        dot={false}
+                        connectNulls
+                        isAnimationActive={false}
+                      />
+                    ))}
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
