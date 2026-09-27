@@ -1,7 +1,10 @@
 import type { CurrencySymbol, OhlcData, TimeRange } from "../types";
 import { timeRangeToDays } from "../utils/dates";
 
-const CORS_PROXY = "https://corsproxy.io/?url=";
+/** Same-origin path proxied by Vite to query1.finance.yahoo.com (avoids CORS). */
+function yahooChartUrl(symbol: string, search: string): string {
+  return `/api/yahoo/v8/finance/chart/${encodeURIComponent(symbol)}?${search}`;
+}
 
 /**
  * Build a Yahoo Finance chart API URL for a given symbol and range.
@@ -52,9 +55,7 @@ export async function fetchHistoricalData(
   range: TimeRange
 ): Promise<OhlcData[]> {
   const { range: yRange, interval, intraday } = yahooRange(range);
-  const url = `${CORS_PROXY}${encodeURIComponent(
-    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${yRange}&interval=${interval}`
-  )}`;
+  const url = yahooChartUrl(symbol, `range=${yRange}&interval=${interval}`);
 
   try {
     const res = await fetch(url);
@@ -108,9 +109,7 @@ export async function fetchHistoricalData(
 export async function fetchCurrentPrice(
   symbol: string
 ): Promise<number | null> {
-  const url = `${CORS_PROXY}${encodeURIComponent(
-    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1d`
-  )}`;
+  const url = yahooChartUrl(symbol, "range=1d&interval=1d");
 
   try {
     const res = await fetch(url);
@@ -151,9 +150,7 @@ export async function fetchHistoricalCloses(
   symbol: string,
   interval: "1d" | "1wk" | "1mo" | "3mo"
 ): Promise<Array<{ time: string; close: number }>> {
-  const url = `${CORS_PROXY}${encodeURIComponent(
-    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=max&interval=${interval}`
-  )}`;
+  const url = yahooChartUrl(symbol, `range=max&interval=${interval}`);
 
   try {
     const res = await fetch(url);
@@ -211,9 +208,7 @@ export async function fetchBenchmarkCloses(
   interval: "1d" | "1wk" | "1mo" | "3mo" = "1wk"
 ): Promise<BenchmarkCloseHistory | null> {
   for (const symbol of symbolCandidates) {
-    const url = `${CORS_PROXY}${encodeURIComponent(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=max&interval=${interval}`
-    )}`;
+    const url = yahooChartUrl(symbol, `range=max&interval=${interval}`);
 
     try {
       const res = await fetch(url);
