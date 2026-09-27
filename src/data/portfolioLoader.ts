@@ -1,6 +1,11 @@
 import type { PortfolioData } from "../types";
-import rawData from "../../data/portfolio.json";
 
-export function loadPortfolio(): PortfolioData {
-  return rawData as unknown as PortfolioData;
+export async function loadPortfolio(): Promise<PortfolioData> {
+  try {
+    const module = await import("../../data/portfolio.json");
+    return module.default as unknown as PortfolioData;
+  } catch {
+    const module = await import("../../data/portfolio_test.json");
+    return module.default as unknown as PortfolioData;
+  }
 }

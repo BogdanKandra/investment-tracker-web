@@ -46,7 +46,7 @@ const DEFAULT_RATES: ExchangeRates = {
 };
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
-  const portfolio = useMemo(() => loadPortfolio(), []);
+  const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<string | undefined>(
     undefined
   );
@@ -54,23 +54,31 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [rates, setRates] = useState<ExchangeRates>(DEFAULT_RATES);
 
   useEffect(() => {
+    loadPortfolio().then(setPortfolio).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     fetchExchangeRates().then(setRates).catch(() => {});
   }, []);
 
   const currentHoldings = useMemo(
-    () => getCurrentHoldings(portfolio.accounts, selectedAccount),
-    [portfolio.accounts, selectedAccount]
+    () => portfolio ? getCurrentHoldings(portfolio.accounts, selectedAccount) : [],
+    [portfolio, selectedAccount]
   );
 
   const formerHoldings = useMemo(
-    () => getFormerHoldings(portfolio.accounts, selectedAccount),
-    [portfolio.accounts, selectedAccount]
+    () => portfolio ? getFormerHoldings(portfolio.accounts, selectedAccount) : [],
+    [portfolio, selectedAccount]
   );
 
   const allCurrencies = useMemo<CurrencySymbol[]>(
     () => ["€", "$", "RON"] as CurrencySymbol[],
     []
   );
+
+  if (!portfolio) {
+    return <div>Loading portfolio...</div>;
+  }
 
   const value: PortfolioState = {
     portfolio,
