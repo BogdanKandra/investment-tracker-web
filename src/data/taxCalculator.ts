@@ -3,15 +3,53 @@ import { parseDate } from "../utils/dates";
 import { convertCurrency, currencyLabel } from "../utils/currency";
 
 /**
- * Minimum gross wage in Romania by year (RON).
- * Used both to show the evolution and to pick the prior-year wage when
- * computing CASS tax for a given year.
+ * History of the Romanian minimum gross wage (salariul de bază minim brut pe
+ * țară), in RON. Each entry applies from `effectiveFrom` until the next entry.
+ * Keep entries sorted ascending by date. Mid-year raises go here too.
  */
-export const ROMANIAN_MINIMUM_WAGE: Record<number, number> = {
-  2024: 3700,
-  2025: 4050,
-  2026: 4325,
-};
+export const ROMANIAN_MINIMUM_WAGE_HISTORY: ReadonlyArray<{
+  effectiveFrom: string; // ISO date, YYYY-MM-DD
+  amount: number;
+}> = [
+  { effectiveFrom: "2023-10-01", amount: 3300 }, // HG 900/2023
+  { effectiveFrom: "2024-07-01", amount: 3700 }, // HG 598/2024
+  { effectiveFrom: "2025-01-01", amount: 4050 }, // HG 1506/2024
+  { effectiveFrom: "2026-07-01", amount: 4325 }, // HG 146/2026
+];
+
+/**
+ * Minimum gross wage in force on the given ISO date (YYYY-MM-DD), or
+ * undefined if the date is before the first recorded entry.
+ */
+export function getMinimumWageAt(isoDate: string): number | undefined {
+  let wage: number | undefined;
+  for (const entry of ROMANIAN_MINIMUM_WAGE_HISTORY) {
+    if (entry.effectiveFrom > isoDate) break;
+    wage = entry.amount;
+  }
+  return wage;
+}
+
+/**
+ * Minimum wage used for the CASS brackets on income earned in `incomeYear`.
+ * Per Codul fiscal art. 135^1 alin. (3), the brackets use the minimum wage in
+ * force on 1 January of the year the income was earned. Raises later in that
+ * year (e.g. 1 July 2026) do not change that year's brackets.
+ */
+export function getCassMinimumWage(incomeYear: number): number | undefined {
+  return getMinimumWageAt(`${incomeYear}-01-01`);
+}
+
+/**
+ * First income year whose CASS wage is known, i.e. the first year whose
+ * 1 January is covered by the history (the year after the first entry, unless
+ * that entry starts exactly on 1 January).
+ */
+export const FIRST_CASS_INCOME_YEAR = (() => {
+  const first = ROMANIAN_MINIMUM_WAGE_HISTORY[0]!.effectiveFrom;
+  const year = Number(first.slice(0, 4));
+  return first.endsWith("-01-01") ? year : year + 1;
+})();
 
 /**
  * Romanian dividend tax rate by year.

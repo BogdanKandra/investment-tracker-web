@@ -20,7 +20,8 @@ import {
   computeSellPnL,
   computeYearlyIncome,
   computeCassTax,
-  ROMANIAN_MINIMUM_WAGE,
+  getCassMinimumWage,
+  FIRST_CASS_INCOME_YEAR,
   DEFAULT_CASS_PROPORTION,
   DIVIDEND_TAX,
   AVERAGE_YEARLY_RATES_TO_RON,
@@ -113,7 +114,7 @@ export default function TaxesPage() {
     [portfolio.accounts, sells, prevYear, rates]
   );
 
-  const prevYearWage = ROMANIAN_MINIMUM_WAGE[prevYear];
+  const prevYearWage = getCassMinimumWage(prevYear);
 
   const cassResult = useMemo(() => {
     if (prevYearWage === undefined) return null;
@@ -583,14 +584,13 @@ export default function TaxesPage() {
 
   // --- Evolution data for graphs ---
   const evolution = useMemo(() => {
-    const yearsWithWage = Object.keys(ROMANIAN_MINIMUM_WAGE)
-      .map(Number)
-      .sort((a, b) => a - b);
-    return yearsWithWage.map((year) => {
-      const wage = ROMANIAN_MINIMUM_WAGE[year]!;
+    const rows = [];
+    for (let year = FIRST_CASS_INCOME_YEAR; year <= currentYear; year++) {
+      const wage = getCassMinimumWage(year);
+      if (wage === undefined) continue;
       const income = computeYearlyIncome(portfolio.accounts, sells, year, rates);
       const cass = computeCassTax(income.totalRon, wage, proportion);
-      return {
+      rows.push({
         year: String(year),
         minimumWage: wage,
         income: +income.totalRon.toFixed(2),
@@ -598,9 +598,10 @@ export default function TaxesPage() {
         interest: +income.interestNetRon.toFixed(2),
         sellProfits: +income.sellsNetRon.toFixed(2),
         cassTaxNextYear: +cass.tax.toFixed(2),
-      };
-    });
-  }, [portfolio.accounts, sells, rates, proportion]);
+      });
+    }
+    return rows;
+  }, [portfolio.accounts, sells, rates, proportion, currentYear]);
 
   const tooltipStyle = {
     contentStyle: {
@@ -1558,7 +1559,8 @@ export default function TaxesPage() {
             </h2>
             <p className="text-sm text-muted mt-1">
               Romanian health contribution on investment income. Computed from
-              the previous year's income and minimum wage.
+              the previous year's income and the minimum wage in force on
+              1 January of that year.
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -1609,7 +1611,7 @@ export default function TaxesPage() {
             ) : cassResult ? (
               <div className="space-y-4 text-sm">
                 <div className="grid grid-cols-2 gap-3">
-                  <InfoRow label={`Minimum wage (${prevYear})`}>
+                  <InfoRow label={`Minimum wage (1 Jan ${prevYear})`}>
                     {fmtRon(prevYearWage)}
                   </InfoRow>
                   <InfoRow label="Proportion">
