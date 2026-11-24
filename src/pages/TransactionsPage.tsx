@@ -106,7 +106,7 @@ export default function TransactionsPage() {
       totalFees += convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
       if (tx.type === "Buy") {
         totalInvested += convertCurrency(
-          tx.shares * tx.price,
+          (tx.shares ?? 0) * (tx.price ?? 0),
           tx.currency,
           displayCurrency,
           rates

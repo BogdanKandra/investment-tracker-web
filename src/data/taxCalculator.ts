@@ -177,7 +177,7 @@ export function computeSellPnL(
   for (const account of accounts) {
     const bySymbol = new Map<string, Transaction[]>();
     for (const tx of account.transactions) {
-      if (tx.type !== "Buy" && tx.type !== "Sell") continue;
+      if ((tx.type !== "Buy" && tx.type !== "Sell") || !tx.symbol) continue;
       const arr = bySymbol.get(tx.symbol) ?? [];
       arr.push(tx);
       bySymbol.set(tx.symbol, arr);

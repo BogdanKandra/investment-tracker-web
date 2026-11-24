@@ -54,7 +54,7 @@ export default function AllocationChart({
     }
 
     const cMap = new Map<string, string>();
-    ordered.forEach((name, i) => cMap.set(name, PALETTE[i % PALETTE.length]));
+    ordered.forEach((name, i) => cMap.set(name, PALETTE[i % PALETTE.length]!));
 
     const orderIndex = new Map<string, number>();
     ordered.forEach((name, i) => orderIndex.set(name, i));
