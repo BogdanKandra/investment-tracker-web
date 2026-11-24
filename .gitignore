@@ -1,0 +1,6 @@
+.cursor/
+data/portfolio.json
+dist/
+node_modules/
+*.local
+.env
