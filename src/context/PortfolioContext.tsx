@@ -1,34 +1,9 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-  type ReactNode,
-} from "react";
-import type {
-  PortfolioData,
-  CurrencySymbol,
-  ExchangeRates,
-  Holding,
-} from "../types";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
+import type { PortfolioData, CurrencySymbol, ExchangeRates } from "../types";
 import { loadPortfolio } from "../data/portfolioLoader";
 import { getCurrentHoldings, getFormerHoldings } from "../data/holdingAggregator";
 import { fetchExchangeRates } from "../api/exchangeRates";
-
-interface PortfolioState {
-  portfolio: PortfolioData;
-  selectedAccount: string | undefined;
-  setSelectedAccount: (name: string | undefined) => void;
-  displayCurrency: CurrencySymbol;
-  setDisplayCurrency: (c: CurrencySymbol) => void;
-  rates: ExchangeRates;
-  currentHoldings: Holding[];
-  formerHoldings: Holding[];
-  allCurrencies: CurrencySymbol[];
-}
-
-const PortfolioContext = createContext<PortfolioState | null>(null);
+import { PortfolioContext, type PortfolioState } from "./usePortfolio";
 
 const DEFAULT_RATES: ExchangeRates = {
   USD_EUR: 0.92,
@@ -52,9 +27,15 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   );
   const [displayCurrency, setDisplayCurrency] = useState<CurrencySymbol>("$");
   const [rates, setRates] = useState<ExchangeRates>(DEFAULT_RATES);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPortfolio().then(setPortfolio).catch(() => {});
+    loadPortfolio()
+      .then(setPortfolio)
+      .catch((err: unknown) => {
+        console.error(err);
+        setLoadError(err instanceof Error ? err.message : String(err));
+      });
   }, []);
 
   useEffect(() => {
@@ -75,6 +56,15 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     () => ["€", "$", "RON"] as CurrencySymbol[],
     []
   );
+
+  if (loadError) {
+    return (
+      <div className="p-6 text-sm text-red-400">
+        <h1 className="text-lg font-semibold mb-2">Could not load portfolio</h1>
+        <pre className="whitespace-pre-wrap">{loadError}</pre>
+      </div>
+    );
+  }
 
   if (!portfolio) {
     return <div>Loading portfolio...</div>;
@@ -97,10 +87,4 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       {children}
     </PortfolioContext.Provider>
   );
-}
-
-export function usePortfolio(): PortfolioState {
-  const ctx = useContext(PortfolioContext);
-  if (!ctx) throw new Error("usePortfolio must be used within PortfolioProvider");
-  return ctx;
 }

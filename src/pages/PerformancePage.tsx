@@ -15,7 +15,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../context/usePortfolio";
 import StatsCard from "../components/common/StatsCard";
 import AccountSelect from "../components/common/AccountSelect";
 import CurrencySelect from "../components/common/CurrencySelect";
@@ -492,7 +492,7 @@ export default function PerformancePage() {
         if (tx.type === "Interest") continue;
         const year = parseDate(tx.date).getFullYear();
         const entry = byYear.get(year) ?? { invested: 0, sold: 0, dividends: 0, realizedPnl: 0 };
-        const val = convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
+        const val = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
         if (tx.type === "Buy") entry.invested += val;
         else if (tx.type === "Sell") entry.sold += val;
         else if (tx.type === "Dividend") entry.dividends += val;
@@ -525,15 +525,15 @@ export default function PerformancePage() {
         if (tx.type === "Buy") {
           events.push({
             date: parseDate(tx.date),
-            invested: tx.shares! * tx.price!,
-            value: tx.shares! * tx.price!,
+            invested: tx.shares * tx.price,
+            value: tx.shares * tx.price,
             currency: tx.currency,
           });
         } else if (tx.type === "Sell") {
           events.push({
             date: parseDate(tx.date),
-            invested: -(tx.shares! * tx.price!),
-            value: -(tx.shares! * tx.price!),
+            invested: -(tx.shares * tx.price),
+            value: -(tx.shares * tx.price),
             currency: tx.currency,
           });
         }
@@ -570,14 +570,14 @@ export default function PerformancePage() {
         if (tx.type === "Buy") {
           rawEvents.push({
             date: d,
-            cashFlow: convertCurrency(tx.shares! * tx.price!, tx.currency as CurrencySymbol, displayCurrency, rates),
+            cashFlow: convertCurrency(tx.shares * tx.price, tx.currency as CurrencySymbol, displayCurrency, rates),
             realizedPnl: 0,
             dividend: 0,
           });
         } else if (tx.type === "Sell") {
           rawEvents.push({
             date: d,
-            cashFlow: -convertCurrency(tx.shares! * tx.price!, tx.currency as CurrencySymbol, displayCurrency, rates),
+            cashFlow: -convertCurrency(tx.shares * tx.price, tx.currency as CurrencySymbol, displayCurrency, rates),
             realizedPnl: 0,
             dividend: 0,
           });
@@ -586,7 +586,7 @@ export default function PerformancePage() {
             date: d,
             cashFlow: 0,
             realizedPnl: 0,
-            dividend: convertCurrency(tx.shares! * tx.price!, tx.currency as CurrencySymbol, displayCurrency, rates),
+            dividend: convertCurrency(tx.shares * tx.price, tx.currency as CurrencySymbol, displayCurrency, rates),
           });
         }
       }

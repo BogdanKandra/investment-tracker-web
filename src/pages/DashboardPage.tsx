@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../context/usePortfolio";
 import StatsCard from "../components/common/StatsCard";
 import CurrencySelect from "../components/common/CurrencySelect";
 import AllocationChart from "../components/charts/AllocationChart";
@@ -126,7 +126,7 @@ export default function DashboardPage() {
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
         if (tx.type !== "Dividend") continue;
-        const net = tx.shares! * tx.price! - tx.fee;
+        const net = tx.shares * tx.price - tx.fee;
         totalNet += convertCurrency(net, tx.currency, displayCurrency, rates);
         dates.push(parseDate(tx.date).getTime());
         count += 1;
@@ -234,9 +234,9 @@ export default function DashboardPage() {
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
         if (tx.type === "Buy") {
-          events.push({ date: parseDate(tx.date), invested: tx.shares! * tx.price!, currency: tx.currency });
+          events.push({ date: parseDate(tx.date), invested: tx.shares * tx.price, currency: tx.currency });
         } else if (tx.type === "Sell") {
-          events.push({ date: parseDate(tx.date), invested: -(tx.shares! * tx.price!), currency: tx.currency });
+          events.push({ date: parseDate(tx.date), invested: -(tx.shares * tx.price), currency: tx.currency });
         }
       }
     }
@@ -257,7 +257,7 @@ export default function DashboardPage() {
         if (tx.type !== "Dividend") continue;
         const date = parseDate(tx.date);
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-        const net = convertCurrency(tx.shares! * tx.price! - tx.fee, tx.currency, displayCurrency, rates);
+        const net = convertCurrency(tx.shares * tx.price - tx.fee, tx.currency, displayCurrency, rates);
         map.set(key, (map.get(key) ?? 0) + net);
       }
     }
@@ -515,12 +515,12 @@ export default function DashboardPage() {
                       : "text-blue-400";
               return (
                 <div
-                  key={`${tx.date}-${tx.symbol ?? tx.type}-${i}`}
+                  key={`${tx.date}-${tx.type === "Interest" ? tx.type : tx.symbol}-${i}`}
                   className="flex items-center justify-between text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <span className={`font-medium ${color}`}>{tx.type}</span>
-                    <span className="text-white">{tx.symbol ?? tx.note}</span>
+                    <span className="text-white">{tx.type === "Interest" ? tx.note : tx.symbol}</span>
                   </div>
                   <span className="text-muted text-xs">
                     {formatDateStr(tx.date)}

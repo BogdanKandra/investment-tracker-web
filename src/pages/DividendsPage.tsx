@@ -8,20 +8,24 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  LineChart,
-  Line,
   Legend,
 } from "recharts";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../context/usePortfolio";
 import StatsCard from "../components/common/StatsCard";
 import AccountSelect from "../components/common/AccountSelect";
 import CurrencySelect from "../components/common/CurrencySelect";
 import { formatCurrency, convertCurrency } from "../utils/currency";
 import { parseDate, formatDateStr } from "../utils/dates";
-import type { Transaction, CurrencySymbol } from "../types";
+import type { Transaction, SecurityTransaction } from "../types";
 
 const W8BEN_PRE_TREATY_RATE = 0.3;
 const W8BEN_POST_TREATY_RATE = 0.1;
+
+/** USD payments on or after the W-8BEN activation date get the treaty rate. */
+function isPostTreaty(tx: Transaction, w8benDate: Date): boolean {
+  if (tx.currency !== "$") return false;
+  return parseDate(tx.date) >= w8benDate;
+}
 
 interface DividendBySymbol {
   symbol: string;
@@ -69,7 +73,7 @@ export default function DividendsPage() {
   }, [portfolio.w_8ben_activated_at]);
 
   const dividendTxs = useMemo(() => {
-    const txs: (Transaction & { account: string })[] = [];
+    const txs: (SecurityTransaction & { account: string })[] = [];
     for (const acct of filteredAccounts) {
       for (const tx of acct.transactions) {
         if (tx.type === "Dividend") {
@@ -80,18 +84,12 @@ export default function DividendsPage() {
     return txs;
   }, [filteredAccounts]);
 
-  const isPostTreaty = (tx: Transaction): boolean => {
-    if (!w8benDate) return false;
-    if (tx.currency !== "$") return false;
-    return parseDate(tx.date) >= w8benDate;
-  };
-
   const totalGross = useMemo(
     () =>
       dividendTxs.reduce(
         (s, t) =>
           s +
-          convertCurrency(t.shares! * t.price!, t.currency, displayCurrency, rates),
+          convertCurrency(t.shares * t.price, t.currency, displayCurrency, rates),
         0
       ),
     [dividendTxs, displayCurrency, rates]
@@ -130,9 +128,9 @@ export default function DividendsPage() {
 
     for (const tx of dividendTxs) {
       if (tx.currency !== "$") continue;
-      const gross = convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
+      const gross = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
       const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
-      if (isPostTreaty(tx)) {
+      if (isPostTreaty(tx, w8benDate)) {
         postTreatyGross += gross;
         postTreatyFee += fee;
         postTreatyCount += 1;
@@ -170,8 +168,8 @@ export default function DividendsPage() {
   const bySymbol = useMemo<DividendBySymbol[]>(() => {
     const map = new Map<string, DividendBySymbol>();
     for (const tx of dividendTxs) {
-      const existing = map.get(tx.symbol!);
-      const gross = convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
+      const existing = map.get(tx.symbol);
+      const gross = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
       const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
       if (existing) {
         existing.grossAmount += gross;
@@ -182,9 +180,9 @@ export default function DividendsPage() {
           existing.lastPayment = tx.date;
         }
       } else {
-        map.set(tx.symbol!, {
-          symbol: tx.symbol!,
-          name: tx.name!,
+        map.set(tx.symbol, {
+          symbol: tx.symbol,
+          name: tx.name,
           grossAmount: gross,
           fees: fee,
           netAmount: gross - fee,
@@ -220,7 +218,7 @@ export default function DividendsPage() {
       const date = parseDate(tx.date);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       const net = convertCurrency(
-        tx.shares! * tx.price! - tx.fee,
+        tx.shares * tx.price - tx.fee,
         tx.currency,
         displayCurrency,
         rates
@@ -237,8 +235,8 @@ export default function DividendsPage() {
     for (const tx of dividendTxs) {
       const year = parseDate(tx.date).getFullYear();
       const entry = map.get(year) ?? { gross: 0, net: 0 };
-      entry.gross += convertCurrency(tx.shares! * tx.price!, tx.currency, displayCurrency, rates);
-      entry.net += convertCurrency(tx.shares! * tx.price! - tx.fee, tx.currency, displayCurrency, rates);
+      entry.gross += convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
+      entry.net += convertCurrency(tx.shares * tx.price - tx.fee, tx.currency, displayCurrency, rates);
       map.set(year, entry);
     }
     const sorted = Array.from(map.entries()).sort(([a], [b]) => a - b);
@@ -655,7 +653,7 @@ export default function DividendsPage() {
             {recentPayments.length > 0 ? (
               recentPayments.map((tx, i) => {
                 const net = convertCurrency(
-                  tx.shares! * tx.price! - tx.fee,
+                  tx.shares * tx.price - tx.fee,
                   tx.currency,
                   displayCurrency,
                   rates

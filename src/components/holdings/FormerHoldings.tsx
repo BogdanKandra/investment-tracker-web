@@ -67,7 +67,7 @@ export default function FormerHoldings({
                 );
                 const totalBuys = h.transactions
                   .filter((t) => t.type === "Buy")
-                  .reduce((s, t) => s + t.shares! * t.price!, 0);
+                  .reduce((s, t) => s + t.shares * t.price, 0);
                 const pct =
                   totalBuys > 0
                     ? (h.realizedPnL / totalBuys) * 100

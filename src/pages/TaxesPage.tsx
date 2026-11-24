@@ -11,7 +11,7 @@ import {
   Line,
   Legend,
 } from "recharts";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../context/usePortfolio";
 import StatsCard from "../components/common/StatsCard";
 import { formatCurrency, convertCurrency, currencyLabel } from "../utils/currency";
 import { formatDateStr, parseDate } from "../utils/dates";
@@ -148,7 +148,7 @@ export default function TaxesPage() {
           postTreatyGrossRon: 0,
           postTreatyFeeRon: 0,
         };
-        const grossRon = convertCurrency(tx.shares! * tx.price!, tx.currency, "RON", rates);
+        const grossRon = convertCurrency(tx.shares * tx.price, tx.currency, "RON", rates);
         const feeRon = convertCurrency(tx.fee, tx.currency, "RON", rates);
         if (parseDate(tx.date) >= w8benDate) {
           entry.postTreatyGrossRon += grossRon;
@@ -224,9 +224,9 @@ export default function TaxesPage() {
         if (tx.type !== "Dividend") continue;
         const txYear = parseDate(tx.date).getFullYear();
         if (txYear !== divTaxPrevYear) continue;
-        const gross = tx.shares! * tx.price!;
+        const gross = tx.shares * tx.price;
         const net = gross - tx.fee;
-        const country = getCountryFromSymbol(tx.symbol!, tx.currency, tx.isin, tx.country);
+        const country = getCountryFromSymbol(tx.symbol, tx.currency, tx.isin, tx.country);
 
         const rateKey = `${currencyLabel(tx.currency)}_${divTaxPrevYear}`;
         const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
@@ -242,12 +242,12 @@ export default function TaxesPage() {
 
         rows.push({
           date: tx.date,
-          symbol: tx.symbol!,
-          name: tx.name!,
+          symbol: tx.symbol,
+          name: tx.name,
           account: account.account_name,
           country,
-          shares: tx.shares!,
-          pricePerShare: tx.price!,
+          shares: tx.shares,
+          pricePerShare: tx.price,
           grossAmount: gross,
           fee: tx.fee,
           netAmount: net,
@@ -439,7 +439,7 @@ export default function TaxesPage() {
           if (yearlyRate) return amount * yearlyRate;
           return convertCurrency(amount, tx.currency, "RON", rates);
         };
-        const gross = tx.shares! * tx.price!;
+        const gross = tx.shares * tx.price;
         entry.gross += toRon(gross);
         entry.withheld += toRon(tx.fee);
         entry.net += toRon(gross - tx.fee);
@@ -497,7 +497,7 @@ export default function TaxesPage() {
         if (tx.type !== "Interest") continue;
         const txYear = parseDate(tx.date).getFullYear();
         if (txYear !== interestTaxPrevYear) continue;
-        const gross = tx.amount!;
+        const gross = tx.amount;
         const net = gross - tx.fee;
         const country = tx.country ?? "Other";
 

@@ -1,15 +1,51 @@
 import { useMemo, useState } from "react";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../context/usePortfolio";
 import { formatDateStr, parseDate } from "../utils/dates";
 import { formatCurrency, convertCurrency } from "../utils/currency";
-import { formatShares, formatNumber } from "../utils/numbers";
+import { formatShares } from "../utils/numbers";
 import StatsCard from "../components/common/StatsCard";
 import CurrencySelect from "../components/common/CurrencySelect";
-import type { Transaction, TransactionType, CurrencySymbol } from "../types";
+import type { Transaction, TransactionType } from "../types";
 
-interface EnrichedTx extends Transaction {
+/**
+ * One table row. The table mixes all transaction types, so the per-type
+ * fields are flattened into optional columns.
+ */
+interface EnrichedTx {
   account: string;
+  date: string;
+  type: TransactionType;
+  currency: Transaction["currency"];
+  fee: number;
+  note: string;
+  symbol?: string;
+  name?: string;
+  shares?: number;
+  price?: number;
+  amount?: number;
   total: number;
+}
+
+function toRow(tx: Transaction, account: string): EnrichedTx {
+  const base = {
+    account,
+    date: tx.date,
+    type: tx.type,
+    currency: tx.currency,
+    fee: tx.fee,
+    note: tx.note,
+  };
+  if (tx.type === "Interest") {
+    return { ...base, amount: tx.amount, total: tx.amount + tx.fee };
+  }
+  return {
+    ...base,
+    symbol: tx.symbol,
+    name: tx.name,
+    shares: tx.shares,
+    price: tx.price,
+    total: tx.shares * tx.price + tx.fee,
+  };
 }
 
 type SortKey =
@@ -36,14 +72,7 @@ export default function TransactionsPage() {
     const txs: EnrichedTx[] = [];
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
-        const total = tx.type === "Interest"
-          ? tx.amount! + tx.fee
-          : tx.shares! * tx.price! + tx.fee;
-        txs.push({
-          ...tx,
-          account: acct.account_name,
-          total,
-        });
+        txs.push(toRow(tx, acct.account_name));
       }
     }
     return txs;

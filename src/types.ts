@@ -1,21 +1,41 @@
-export type TransactionType = "Buy" | "Sell" | "Dividend" | "Interest";
+export type SecurityTransactionType = "Buy" | "Sell" | "Dividend";
+export type TransactionType = SecurityTransactionType | "Interest";
 export type CurrencySymbol = "$" | "€" | "RON" | "DKK";
 
-export interface Transaction {
+interface TransactionBase {
   date: string; // DD-MM-YYYY
-  type: TransactionType;
   currency: CurrencySymbol;
   fee: number;
   note: string;
   country?: string; // Country of incorporation/domicile
-  // Present on Buy/Sell/Dividend transactions
-  symbol?: string;
-  name?: string;
-  shares?: number;
-  price?: number;
+}
+
+/**
+ * A transaction on a security. For Dividend, `shares` is the number of shares
+ * held and `price` the dividend per share.
+ */
+export interface SecurityTransaction extends TransactionBase {
+  type: SecurityTransactionType;
+  symbol: string;
+  name: string;
+  shares: number;
+  price: number;
   isin?: string; // ISO 6166, e.g. "US0378331005"
-  // Present on Interest transactions
-  amount?: number;
+}
+
+/** Interest paid on cash held at the broker. */
+export interface InterestTransaction extends TransactionBase {
+  type: "Interest";
+  amount: number;
+}
+
+/** Narrow on `type` to get the matching fields. */
+export type Transaction = SecurityTransaction | InterestTransaction;
+
+export function isSecurityTransaction(
+  tx: Transaction
+): tx is SecurityTransaction {
+  return tx.type !== "Interest";
 }
 
 export interface Account {
@@ -58,7 +78,7 @@ export interface Holding {
   totalInvested: number;
   totalFees: number;
   lots: FifoLot[];
-  transactions: Transaction[];
+  transactions: SecurityTransaction[];
   isClosed: boolean;
   realizedPnL: number;
 }

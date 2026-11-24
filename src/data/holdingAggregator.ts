@@ -1,14 +1,19 @@
-import type { Account, Holding, Transaction } from "../types";
+import {
+  isSecurityTransaction,
+  type Account,
+  type Holding,
+  type SecurityTransaction,
+} from "../types";
 import { computeFifo } from "./fifoCalculator";
 
 /**
  * Group transactions by symbol within an account and compute FIFO holdings.
  */
 function aggregateAccount(account: Account): Holding[] {
-  const bySymbol = new Map<string, Transaction[]>();
+  const bySymbol = new Map<string, SecurityTransaction[]>();
 
   for (const tx of account.transactions) {
-    if (!tx.symbol) continue;
+    if (!isSecurityTransaction(tx)) continue;
     const existing = bySymbol.get(tx.symbol) ?? [];
     existing.push(tx);
     bySymbol.set(tx.symbol, existing);

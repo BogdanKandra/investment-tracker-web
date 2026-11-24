@@ -1,4 +1,9 @@
-import type { Account, CurrencySymbol, ExchangeRates, Transaction } from "../types";
+import type {
+  Account,
+  CurrencySymbol,
+  ExchangeRates,
+  SecurityTransaction,
+} from "../types";
 import { parseDate } from "../utils/dates";
 import { convertCurrency, currencyLabel } from "../utils/currency";
 
@@ -175,9 +180,9 @@ export function computeSellPnL(
   const results: SellPnL[] = [];
 
   for (const account of accounts) {
-    const bySymbol = new Map<string, Transaction[]>();
+    const bySymbol = new Map<string, SecurityTransaction[]>();
     for (const tx of account.transactions) {
-      if ((tx.type !== "Buy" && tx.type !== "Sell") || !tx.symbol) continue;
+      if (tx.type !== "Buy" && tx.type !== "Sell") continue;
       const arr = bySymbol.get(tx.symbol) ?? [];
       arr.push(tx);
       bySymbol.set(tx.symbol, arr);
@@ -191,11 +196,11 @@ export function computeSellPnL(
 
       for (const tx of sorted) {
         if (tx.type === "Buy") {
-          lots.push({ shares: tx.shares!, price: tx.price! });
+          lots.push({ shares: tx.shares, price: tx.price });
           continue;
         }
 
-        let remaining = tx.shares!;
+        let remaining = tx.shares;
         let costBasis = 0;
         while (remaining > 1e-9 && lots.length > 0) {
           const lot = lots[0]!;
@@ -206,7 +211,7 @@ export function computeSellPnL(
           if (lot.shares <= 1e-9) lots.shift();
         }
 
-        const sellValue = tx.shares! * tx.price!;
+        const sellValue = tx.shares * tx.price;
         const grossProfit = sellValue - costBasis;
         const netProfit = grossProfit - tx.fee;
 
@@ -214,10 +219,10 @@ export function computeSellPnL(
           date: tx.date,
           year: parseDate(tx.date).getFullYear(),
           account: account.account_name,
-          symbol: tx.symbol!,
-          name: tx.name!,
-          shares: tx.shares!,
-          sellPrice: tx.price!,
+          symbol: tx.symbol,
+          name: tx.name,
+          shares: tx.shares,
+          sellPrice: tx.price,
           sellValue,
           costBasis,
           fee: tx.fee,
@@ -281,13 +286,13 @@ export function computeYearlyIncome(
     for (const tx of account.transactions) {
       if (tx.type === "Dividend") {
         if (parseDate(tx.date).getFullYear() !== year) continue;
-        const gross = tx.shares! * tx.price!;
+        const gross = tx.shares * tx.price;
         const net = gross - tx.fee;
         dividendsNetRon += toRon(net, tx.currency);
         dividendCount += 1;
       } else if (tx.type === "Interest") {
         if (parseDate(tx.date).getFullYear() !== year) continue;
-        const net = tx.amount! - tx.fee;
+        const net = tx.amount - tx.fee;
         interestNetRon += toRon(net, tx.currency);
         interestCount += 1;
       }

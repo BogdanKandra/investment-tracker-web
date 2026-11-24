@@ -1,4 +1,4 @@
-import { usePortfolio } from "../../context/PortfolioContext";
+import { usePortfolio } from "../../context/usePortfolio";
 import { currencyLabel } from "../../utils/currency";
 
 export default function CurrencySelect() {

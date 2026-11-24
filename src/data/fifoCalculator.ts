@@ -1,4 +1,4 @@
-import type { Transaction, FifoLot } from "../types";
+import type { Transaction, SecurityTransaction, FifoLot } from "../types";
 import { parseDate } from "../utils/dates";
 
 export interface FifoResult {
@@ -16,7 +16,9 @@ export interface FifoResult {
  */
 export function computeFifo(transactions: Transaction[]): FifoResult {
   const sorted = [...transactions]
-    .filter((t) => t.type === "Buy" || t.type === "Sell")
+    .filter(
+      (t): t is SecurityTransaction => t.type === "Buy" || t.type === "Sell"
+    )
     .sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
 
   const lots: FifoLot[] = [];
@@ -29,13 +31,13 @@ export function computeFifo(transactions: Transaction[]): FifoResult {
     if (tx.type === "Buy") {
       lots.push({
         date: tx.date,
-        shares: tx.shares!,
-        price: tx.price!,
+        shares: tx.shares,
+        price: tx.price,
         fee: tx.fee,
       });
     } else {
-      let sharesToSell = tx.shares!;
-      const sellPrice = tx.price!;
+      let sharesToSell = tx.shares;
+      const sellPrice = tx.price;
 
       while (sharesToSell > 0 && lots.length > 0) {
         const lot = lots[0]!;

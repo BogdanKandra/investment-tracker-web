@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../context/usePortfolio";
 import { fetchCurrentPrices } from "../api/marketData";
 import { formatCurrency } from "../utils/currency";
 import PriceChart from "../components/charts/PriceChart";
