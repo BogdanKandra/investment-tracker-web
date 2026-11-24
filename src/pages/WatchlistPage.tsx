@@ -7,7 +7,18 @@ import type { Holding, TimeRange, WatchlistItem } from "../types";
 import { useTableSort } from "../hooks/useTableSort";
 
 const WATCHLIST_TIME_RANGES: TimeRange[] = [
-  "1D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "ALL",
+  "1D",
+  "1W",
+  "2W",
+  "1M",
+  "2M",
+  "3M",
+  "6M",
+  "1Y",
+  "2Y",
+  "3Y",
+  "5Y",
+  "ALL",
 ];
 
 export default function WatchlistPage() {
@@ -22,16 +33,32 @@ export default function WatchlistPage() {
 
   useEffect(() => {
     if (symbols.length === 0) return;
-    fetchCurrentPrices(symbols).then(setPrices).catch(() => {});
+    fetchCurrentPrices(symbols)
+      .then(setPrices)
+      .catch(() => {});
   }, [symbols]);
 
   type WatchSortKey = "symbol" | "currency" | "price";
-  const watchComparators = useMemo(() => ({
-    symbol: (a: WatchlistItem, b: WatchlistItem) => a.symbol.localeCompare(b.symbol),
-    currency: (a: WatchlistItem, b: WatchlistItem) => a.currency.localeCompare(b.currency),
-    price: (a: WatchlistItem, b: WatchlistItem) => (prices.get(a.symbol) ?? 0) - (prices.get(b.symbol) ?? 0),
-  }), [prices]);
-  const watchSort = useTableSort(portfolio.watchlist, watchComparators as Record<WatchSortKey, (a: WatchlistItem, b: WatchlistItem) => number>, "symbol" as WatchSortKey, true);
+  const watchComparators = useMemo(
+    () => ({
+      symbol: (a: WatchlistItem, b: WatchlistItem) =>
+        a.symbol.localeCompare(b.symbol),
+      currency: (a: WatchlistItem, b: WatchlistItem) =>
+        a.currency.localeCompare(b.currency),
+      price: (a: WatchlistItem, b: WatchlistItem) =>
+        (prices.get(a.symbol) ?? 0) - (prices.get(b.symbol) ?? 0),
+    }),
+    [prices]
+  );
+  const watchSort = useTableSort(
+    portfolio.watchlist,
+    watchComparators as Record<
+      WatchSortKey,
+      (a: WatchlistItem, b: WatchlistItem) => number
+    >,
+    "symbol" as WatchSortKey,
+    true
+  );
 
   const selectedItem = useMemo(
     () =>
@@ -68,13 +95,22 @@ export default function WatchlistPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="py-2 px-4 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none" onClick={() => watchSort.handleSort("symbol")}>
+                <th
+                  className="py-2 px-4 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
+                  onClick={() => watchSort.handleSort("symbol")}
+                >
                   Symbol{watchSort.arrow("symbol")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none" onClick={() => watchSort.handleSort("currency")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
+                  onClick={() => watchSort.handleSort("currency")}
+                >
                   Currency{watchSort.arrow("currency")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => watchSort.handleSort("price")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                  onClick={() => watchSort.handleSort("price")}
+                >
                   Price{watchSort.arrow("price")}
                 </th>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">

@@ -1,7 +1,10 @@
 import { useState, useEffect, useMemo, type ReactNode } from "react";
 import type { PortfolioData, CurrencySymbol, ExchangeRates } from "../types";
 import { loadPortfolio } from "../data/portfolioLoader";
-import { getCurrentHoldings, getFormerHoldings } from "../data/holdingAggregator";
+import {
+  getCurrentHoldings,
+  getFormerHoldings,
+} from "../data/holdingAggregator";
 import { fetchExchangeRates } from "../api/exchangeRates";
 import { PortfolioContext, type PortfolioState } from "./usePortfolio";
 
@@ -13,8 +16,8 @@ const DEFAULT_RATES: ExchangeRates = {
   EUR_USD: 1.09,
   EUR_DKK: 7.46,
   RON_USD: 0.22,
-  RON_EUR: 0.20,
-  RON_DKK: 1.50,
+  RON_EUR: 0.2,
+  RON_DKK: 1.5,
   DKK_USD: 0.146,
   DKK_EUR: 0.134,
   DKK_RON: 0.67,
@@ -39,16 +42,20 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetchExchangeRates().then(setRates).catch(() => {});
+    fetchExchangeRates()
+      .then(setRates)
+      .catch(() => {});
   }, []);
 
   const currentHoldings = useMemo(
-    () => portfolio ? getCurrentHoldings(portfolio.accounts, selectedAccount) : [],
+    () =>
+      portfolio ? getCurrentHoldings(portfolio.accounts, selectedAccount) : [],
     [portfolio, selectedAccount]
   );
 
   const formerHoldings = useMemo(
-    () => portfolio ? getFormerHoldings(portfolio.accounts, selectedAccount) : [],
+    () =>
+      portfolio ? getFormerHoldings(portfolio.accounts, selectedAccount) : [],
     [portfolio, selectedAccount]
   );
 

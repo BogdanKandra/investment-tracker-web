@@ -49,13 +49,7 @@ function toRow(tx: Transaction, account: string): EnrichedTx {
 }
 
 type SortKey =
-  | "date"
-  | "type"
-  | "symbol"
-  | "shares"
-  | "price"
-  | "fee"
-  | "total";
+  "date" | "type" | "symbol" | "shares" | "price" | "fee" | "total";
 
 export default function TransactionsPage() {
   const { portfolio, displayCurrency, rates } = usePortfolio();
@@ -100,8 +94,7 @@ export default function TransactionsPage() {
       let cmp = 0;
       switch (sortKey) {
         case "date":
-          cmp =
-            parseDate(a.date).getTime() - parseDate(b.date).getTime();
+          cmp = parseDate(a.date).getTime() - parseDate(b.date).getTime();
           break;
         case "type":
           cmp = a.type.localeCompare(b.type);
@@ -126,7 +119,14 @@ export default function TransactionsPage() {
     });
 
     return list;
-  }, [allTransactions, filterAccount, filterType, filterSymbol, sortKey, sortAsc]);
+  }, [
+    allTransactions,
+    filterAccount,
+    filterType,
+    filterSymbol,
+    sortKey,
+    sortAsc,
+  ]);
 
   const stats = useMemo(() => {
     let totalInvested = 0;
@@ -276,7 +276,9 @@ export default function TransactionsPage() {
                   <td className="py-2.5 px-3 text-sm text-white">
                     {formatDateStr(tx.date)}
                   </td>
-                  <td className={`py-2.5 px-3 text-sm font-medium ${typeColor}`}>
+                  <td
+                    className={`py-2.5 px-3 text-sm font-medium ${typeColor}`}
+                  >
                     {tx.type}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-white font-medium">
@@ -290,16 +292,50 @@ export default function TransactionsPage() {
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
                     {tx.price != null
-                      ? formatCurrency(convertCurrency(tx.price, tx.currency, displayCurrency, rates), displayCurrency)
+                      ? formatCurrency(
+                          convertCurrency(
+                            tx.price,
+                            tx.currency,
+                            displayCurrency,
+                            rates
+                          ),
+                          displayCurrency
+                        )
                       : tx.amount != null
-                        ? formatCurrency(convertCurrency(tx.amount, tx.currency, displayCurrency, rates), displayCurrency)
+                        ? formatCurrency(
+                            convertCurrency(
+                              tx.amount,
+                              tx.currency,
+                              displayCurrency,
+                              rates
+                            ),
+                            displayCurrency
+                          )
                         : "—"}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
-                    {tx.fee > 0 ? formatCurrency(convertCurrency(tx.fee, tx.currency, displayCurrency, rates), displayCurrency) : "-"}
+                    {tx.fee > 0
+                      ? formatCurrency(
+                          convertCurrency(
+                            tx.fee,
+                            tx.currency,
+                            displayCurrency,
+                            rates
+                          ),
+                          displayCurrency
+                        )
+                      : "-"}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
-                    {formatCurrency(convertCurrency(tx.total, tx.currency, displayCurrency, rates), displayCurrency)}
+                    {formatCurrency(
+                      convertCurrency(
+                        tx.total,
+                        tx.currency,
+                        displayCurrency,
+                        rates
+                      ),
+                      displayCurrency
+                    )}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-muted truncate max-w-[150px]">
                     {tx.note || "-"}

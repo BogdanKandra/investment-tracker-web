@@ -25,6 +25,7 @@ export const PortfolioContext = createContext<PortfolioState | null>(null);
 
 export function usePortfolio(): PortfolioState {
   const ctx = useContext(PortfolioContext);
-  if (!ctx) throw new Error("usePortfolio must be used within PortfolioProvider");
+  if (!ctx)
+    throw new Error("usePortfolio must be used within PortfolioProvider");
   return ctx;
 }

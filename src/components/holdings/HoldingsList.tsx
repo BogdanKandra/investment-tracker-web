@@ -5,13 +5,7 @@ import HoldingRow from "./HoldingRow";
 import { useState, useMemo } from "react";
 
 type SortKey =
-  | "symbol"
-  | "shares"
-  | "avgCost"
-  | "price"
-  | "value"
-  | "pnl"
-  | "weight";
+  "symbol" | "shares" | "avgCost" | "price" | "value" | "pnl" | "weight";
 
 interface HoldingsListProps {
   holdings: Holding[];
@@ -41,14 +35,27 @@ export default function HoldingsList({
     let invested = 0;
     for (const h of holdings) {
       const p = prices.get(h.symbol) ?? h.averageCost;
-      value += convertCurrency(h.totalShares * p, h.currency, displayCurrency, rates);
-      invested += convertCurrency(h.totalInvested, h.currency, displayCurrency, rates);
+      value += convertCurrency(
+        h.totalShares * p,
+        h.currency,
+        displayCurrency,
+        rates
+      );
+      invested += convertCurrency(
+        h.totalInvested,
+        h.currency,
+        displayCurrency,
+        rates
+      );
     }
-    return { totalPortfolioValue: value, totalInvested: invested, totalPnL: value - invested };
+    return {
+      totalPortfolioValue: value,
+      totalInvested: invested,
+      totalPnL: value - invested,
+    };
   }, [holdings, prices, displayCurrency, rates]);
 
   const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
-
 
   const sorted = useMemo(() => {
     let list = [...holdings];
@@ -57,8 +64,7 @@ export default function HoldingsList({
       const q = filter.toLowerCase();
       list = list.filter(
         (h) =>
-          h.symbol.toLowerCase().includes(q) ||
-          h.name.toLowerCase().includes(q)
+          h.symbol.toLowerCase().includes(q) || h.name.toLowerCase().includes(q)
       );
     }
 
@@ -83,14 +89,22 @@ export default function HoldingsList({
         case "value":
         case "weight":
           cmp =
-            convertCurrency(a.totalShares * priceA, a.currency, displayCurrency, rates) -
-            convertCurrency(b.totalShares * priceB, b.currency, displayCurrency, rates);
+            convertCurrency(
+              a.totalShares * priceA,
+              a.currency,
+              displayCurrency,
+              rates
+            ) -
+            convertCurrency(
+              b.totalShares * priceB,
+              b.currency,
+              displayCurrency,
+              rates
+            );
           break;
         case "pnl": {
-          const pnlA =
-            a.totalShares * priceA - a.totalInvested;
-          const pnlB =
-            b.totalShares * priceB - b.totalInvested;
+          const pnlA = a.totalShares * priceA - a.totalInvested;
+          const pnlB = b.totalShares * priceB - b.totalInvested;
           cmp = pnlA - pnlB;
           break;
         }
@@ -120,26 +134,36 @@ export default function HoldingsList({
       {holdings.length > 0 && (
         <div className="flex items-center justify-end gap-8 mb-3 px-3 py-3 rounded-lg bg-white/[0.03] border border-white/5">
           <div className="text-right">
-            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Holdings Value</div>
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">
+              Holdings Value
+            </div>
             <div className="text-sm font-medium text-white">
               {formatCurrency(totalPortfolioValue, displayCurrency)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Cash</div>
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">
+              Cash
+            </div>
             <div className="text-sm font-medium text-white">
               {formatCurrency(totalCash, displayCurrency)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Total Value</div>
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">
+              Total Value
+            </div>
             <div className="text-sm font-medium text-white">
               {formatCurrency(totalPortfolioValue + totalCash, displayCurrency)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">Unrealized P&L</div>
-            <div className={`text-sm font-medium ${totalPnL >= 0 ? "text-gain" : "text-loss"}`}>
+            <div className="text-xs text-muted uppercase tracking-wide mb-0.5">
+              Unrealized P&L
+            </div>
+            <div
+              className={`text-sm font-medium ${totalPnL >= 0 ? "text-gain" : "text-loss"}`}
+            >
               {formatCurrency(totalPnL, displayCurrency)}
               <span className="text-xs ml-1">{formatPercent(totalPnLPct)}</span>
             </div>

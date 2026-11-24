@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "populate-countries": "tsx scripts/populate-countries.ts"
   },
@@ -28,6 +30,7 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
+    "prettier": "3.10.1",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.22.2",
     "typescript": "~5.7.0",

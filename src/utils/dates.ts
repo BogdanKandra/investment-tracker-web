@@ -39,9 +39,7 @@ export function daysAgo(days: number): Date {
 }
 
 /** Map time range keys to number of calendar days */
-export function timeRangeToDays(
-  range: string
-): number | null {
+export function timeRangeToDays(range: string): number | null {
   const map: Record<string, number> = {
     "1D": 1,
     "1W": 7,

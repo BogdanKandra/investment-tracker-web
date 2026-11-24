@@ -11,7 +11,18 @@ import { convertCurrency } from "../utils/currency";
 import type { TimeRange } from "../types";
 
 const HOLDINGS_TIME_RANGES: TimeRange[] = [
-  "1D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "ALL",
+  "1D",
+  "1W",
+  "2W",
+  "1M",
+  "2M",
+  "3M",
+  "6M",
+  "1Y",
+  "2Y",
+  "3Y",
+  "5Y",
+  "ALL",
 ];
 
 export default function HoldingsPage() {
@@ -29,7 +40,8 @@ export default function HoldingsPage() {
       ? portfolio.accounts.filter((a) => a.account_name === selectedAccount)
       : portfolio.accounts;
     return accounts.reduce(
-      (sum, a) => sum + convertCurrency(a.cash, a.currency, displayCurrency, rates),
+      (sum, a) =>
+        sum + convertCurrency(a.cash, a.currency, displayCurrency, rates),
       0
     );
   }, [portfolio.accounts, selectedAccount, displayCurrency, rates]);
@@ -46,7 +58,9 @@ export default function HoldingsPage() {
 
   useEffect(() => {
     if (allSymbols.length === 0) return;
-    fetchCurrentPrices(allSymbols).then(setPrices).catch(() => {});
+    fetchCurrentPrices(allSymbols)
+      .then(setPrices)
+      .catch(() => {});
   }, [allSymbols]);
 
   const selectedHolding = useMemo(() => {

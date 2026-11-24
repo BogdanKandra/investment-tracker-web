@@ -59,12 +59,14 @@ export default function DashboardPage() {
 
   const symbols = useMemo(
     () => currentHoldings.map((h) => h.symbol),
-    [currentHoldings],
+    [currentHoldings]
   );
 
   useEffect(() => {
     if (symbols.length === 0) return;
-    fetchCurrentPrices(symbols).then(setPrices).catch(() => {});
+    fetchCurrentPrices(symbols)
+      .then(setPrices)
+      .catch(() => {});
   }, [symbols]);
 
   /* ── Core portfolio metrics ── */
@@ -72,7 +74,12 @@ export default function DashboardPage() {
   const totalCash = useMemo(() => {
     let total = 0;
     for (const acct of portfolio.accounts) {
-      total += convertCurrency(acct.cash, acct.currency, displayCurrency, rates);
+      total += convertCurrency(
+        acct.cash,
+        acct.currency,
+        displayCurrency,
+        rates
+      );
     }
     return total;
   }, [portfolio.accounts, displayCurrency, rates]);
@@ -80,7 +87,12 @@ export default function DashboardPage() {
   const totalInvested = useMemo(() => {
     let total = 0;
     for (const h of currentHoldings) {
-      total += convertCurrency(h.totalInvested, h.currency, displayCurrency, rates);
+      total += convertCurrency(
+        h.totalInvested,
+        h.currency,
+        displayCurrency,
+        rates
+      );
     }
     return total;
   }, [currentHoldings, displayCurrency, rates]);
@@ -112,7 +124,12 @@ export default function DashboardPage() {
     const sells = computeSellPnL(portfolio.accounts, rates);
     let total = 0;
     for (const s of sells) {
-      total += convertCurrency(s.grossProfit, s.currency, displayCurrency, rates);
+      total += convertCurrency(
+        s.grossProfit,
+        s.currency,
+        displayCurrency,
+        rates
+      );
     }
     return total;
   }, [portfolio.accounts, rates, displayCurrency]);
@@ -146,12 +163,12 @@ export default function DashboardPage() {
 
   const topGainers = useMemo(
     () => [...holdingsWithPnL].sort((a, b) => b.pnlPct - a.pnlPct).slice(0, 5),
-    [holdingsWithPnL],
+    [holdingsWithPnL]
   );
 
   const topLosers = useMemo(
     () => [...holdingsWithPnL].sort((a, b) => a.pnlPct - b.pnlPct).slice(0, 5),
-    [holdingsWithPnL],
+    [holdingsWithPnL]
   );
 
   /* ── Recent transactions ── */
@@ -187,7 +204,7 @@ export default function DashboardPage() {
 
   const targetAllocation = useMemo(() => {
     return Object.entries(portfolio.target_asset_class_distribution).map(
-      ([name, value]) => ({ name, value }),
+      ([name, value]) => ({ name, value })
     );
   }, [portfolio.target_asset_class_distribution]);
 
@@ -203,11 +220,21 @@ export default function DashboardPage() {
           h.totalShares * price,
           h.currency,
           displayCurrency,
-          rates,
+          rates
         );
       }
-      const cash = convertCurrency(acct.cash, acct.currency, displayCurrency, rates);
-      return { name: acct.account_name, marketValue, cash, total: marketValue + cash };
+      const cash = convertCurrency(
+        acct.cash,
+        acct.currency,
+        displayCurrency,
+        rates
+      );
+      return {
+        name: acct.account_name,
+        marketValue,
+        cash,
+        total: marketValue + cash,
+      };
     });
     rows.sort((a, b) => b.total - a.total);
     const grandTotal = rows.reduce((s, r) => s + r.total, 0);
@@ -218,14 +245,42 @@ export default function DashboardPage() {
   }, [portfolio.accounts, prices, displayCurrency, rates]);
 
   type AcctSortKey = "name" | "holdings" | "cash" | "total" | "weight";
-  const acctComparators = useMemo(() => ({
-    name: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.name.localeCompare(b.name),
-    holdings: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.marketValue - b.marketValue,
-    cash: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.cash - b.cash,
-    total: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.total - b.total,
-    weight: (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => a.weight - b.weight,
-  }), []);
-  const acctSort = useTableSort(accountBreakdown, acctComparators as Record<AcctSortKey, (a: typeof accountBreakdown[0], b: typeof accountBreakdown[0]) => number>, "total" as AcctSortKey);
+  const acctComparators = useMemo(
+    () => ({
+      name: (
+        a: (typeof accountBreakdown)[0],
+        b: (typeof accountBreakdown)[0]
+      ) => a.name.localeCompare(b.name),
+      holdings: (
+        a: (typeof accountBreakdown)[0],
+        b: (typeof accountBreakdown)[0]
+      ) => a.marketValue - b.marketValue,
+      cash: (
+        a: (typeof accountBreakdown)[0],
+        b: (typeof accountBreakdown)[0]
+      ) => a.cash - b.cash,
+      total: (
+        a: (typeof accountBreakdown)[0],
+        b: (typeof accountBreakdown)[0]
+      ) => a.total - b.total,
+      weight: (
+        a: (typeof accountBreakdown)[0],
+        b: (typeof accountBreakdown)[0]
+      ) => a.weight - b.weight,
+    }),
+    []
+  );
+  const acctSort = useTableSort(
+    accountBreakdown,
+    acctComparators as Record<
+      AcctSortKey,
+      (
+        a: (typeof accountBreakdown)[0],
+        b: (typeof accountBreakdown)[0]
+      ) => number
+    >,
+    "total" as AcctSortKey
+  );
 
   /* ── Cumulative investment timeline ── */
 
@@ -234,16 +289,29 @@ export default function DashboardPage() {
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
         if (tx.type === "Buy") {
-          events.push({ date: parseDate(tx.date), invested: tx.shares * tx.price, currency: tx.currency });
+          events.push({
+            date: parseDate(tx.date),
+            invested: tx.shares * tx.price,
+            currency: tx.currency,
+          });
         } else if (tx.type === "Sell") {
-          events.push({ date: parseDate(tx.date), invested: -(tx.shares * tx.price), currency: tx.currency });
+          events.push({
+            date: parseDate(tx.date),
+            invested: -(tx.shares * tx.price),
+            currency: tx.currency,
+          });
         }
       }
     }
     events.sort((a, b) => a.date.getTime() - b.date.getTime());
     let cumulative = 0;
     return events.map((ev) => {
-      cumulative += convertCurrency(ev.invested, ev.currency as CurrencySymbol, displayCurrency, rates);
+      cumulative += convertCurrency(
+        ev.invested,
+        ev.currency as CurrencySymbol,
+        displayCurrency,
+        rates
+      );
       return { date: toIsoDate(ev.date), invested: +cumulative.toFixed(2) };
     });
   }, [portfolio.accounts, displayCurrency, rates]);
@@ -257,7 +325,12 @@ export default function DashboardPage() {
         if (tx.type !== "Dividend") continue;
         const date = parseDate(tx.date);
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-        const net = convertCurrency(tx.shares * tx.price - tx.fee, tx.currency, displayCurrency, rates);
+        const net = convertCurrency(
+          tx.shares * tx.price - tx.fee,
+          tx.currency,
+          displayCurrency,
+          rates
+        );
         map.set(key, (map.get(key) ?? 0) + net);
       }
     }
@@ -314,7 +387,10 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-white mb-4">
             Asset Allocation
           </h2>
-          <AllocationChart actual={actualAllocation} target={targetAllocation} />
+          <AllocationChart
+            actual={actualAllocation}
+            target={targetAllocation}
+          />
         </div>
 
         <div className="bg-card rounded-xl p-5 border border-white/5">
@@ -325,26 +401,44 @@ export default function DashboardPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("name")}>
+                  <th
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
+                    onClick={() => acctSort.handleSort("name")}
+                  >
                     Account{acctSort.arrow("name")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("holdings")}>
+                  <th
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                    onClick={() => acctSort.handleSort("holdings")}
+                  >
                     Holdings{acctSort.arrow("holdings")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("cash")}>
+                  <th
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                    onClick={() => acctSort.handleSort("cash")}
+                  >
                     Cash{acctSort.arrow("cash")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("total")}>
+                  <th
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                    onClick={() => acctSort.handleSort("total")}
+                  >
                     Total{acctSort.arrow("total")}
                   </th>
-                  <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => acctSort.handleSort("weight")}>
+                  <th
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                    onClick={() => acctSort.handleSort("weight")}
+                  >
                     Weight{acctSort.arrow("weight")}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {acctSort.sorted.map((a) => (
-                  <tr key={a.name} className="border-b border-white/5 hover:bg-white/5">
+                  <tr
+                    key={a.name}
+                    className="border-b border-white/5 hover:bg-white/5"
+                  >
                     <td className="py-2.5 px-3 text-sm font-medium text-white">
                       {a.name}
                     </td>
@@ -387,7 +481,10 @@ export default function DashboardPage() {
           {portfolioTimeline.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={portfolioTimeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="date"
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -422,7 +519,10 @@ export default function DashboardPage() {
           {monthlyDividends.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={monthlyDividends}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="month"
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -458,15 +558,22 @@ export default function DashboardPage() {
           <div className="space-y-2">
             {topGainers.map((h) => (
               <div key={h.symbol} className="flex items-center justify-between">
-                <span className="text-white text-sm font-medium">{h.symbol}</span>
+                <span className="text-white text-sm font-medium">
+                  {h.symbol}
+                </span>
                 <div className="text-right">
                   <span className="text-gain text-sm font-medium">
                     {formatPercent(h.pnlPct)}
                   </span>
                   <div className="text-xs text-muted">
                     {formatCurrency(
-                      convertCurrency(h.pnl, h.currency, displayCurrency, rates),
-                      displayCurrency,
+                      convertCurrency(
+                        h.pnl,
+                        h.currency,
+                        displayCurrency,
+                        rates
+                      ),
+                      displayCurrency
                     )}
                   </div>
                 </div>
@@ -482,15 +589,22 @@ export default function DashboardPage() {
           <div className="space-y-2">
             {topLosers.map((h) => (
               <div key={h.symbol} className="flex items-center justify-between">
-                <span className="text-white text-sm font-medium">{h.symbol}</span>
+                <span className="text-white text-sm font-medium">
+                  {h.symbol}
+                </span>
                 <div className="text-right">
                   <span className="text-loss text-sm font-medium">
                     {formatPercent(h.pnlPct)}
                   </span>
                   <div className="text-xs text-muted">
                     {formatCurrency(
-                      convertCurrency(h.pnl, h.currency, displayCurrency, rates),
-                      displayCurrency,
+                      convertCurrency(
+                        h.pnl,
+                        h.currency,
+                        displayCurrency,
+                        rates
+                      ),
+                      displayCurrency
                     )}
                   </div>
                 </div>
@@ -520,7 +634,9 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-center gap-2">
                     <span className={`font-medium ${color}`}>{tx.type}</span>
-                    <span className="text-white">{tx.type === "Interest" ? tx.note : tx.symbol}</span>
+                    <span className="text-white">
+                      {tx.type === "Interest" ? tx.note : tx.symbol}
+                    </span>
                   </div>
                   <span className="text-muted text-xs">
                     {formatDateStr(tx.date)}

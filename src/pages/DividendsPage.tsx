@@ -89,7 +89,12 @@ export default function DividendsPage() {
       dividendTxs.reduce(
         (s, t) =>
           s +
-          convertCurrency(t.shares * t.price, t.currency, displayCurrency, rates),
+          convertCurrency(
+            t.shares * t.price,
+            t.currency,
+            displayCurrency,
+            rates
+          ),
         0
       ),
     [dividendTxs, displayCurrency, rates]
@@ -98,7 +103,8 @@ export default function DividendsPage() {
   const totalFees = useMemo(
     () =>
       dividendTxs.reduce(
-        (s, t) => s + convertCurrency(t.fee, t.currency, displayCurrency, rates),
+        (s, t) =>
+          s + convertCurrency(t.fee, t.currency, displayCurrency, rates),
         0
       ),
     [dividendTxs, displayCurrency, rates]
@@ -110,12 +116,18 @@ export default function DividendsPage() {
   const totalInvested = useMemo(() => {
     let total = 0;
     for (const h of currentHoldings) {
-      total += convertCurrency(h.totalInvested, h.currency, displayCurrency, rates);
+      total += convertCurrency(
+        h.totalInvested,
+        h.currency,
+        displayCurrency,
+        rates
+      );
     }
     return total;
   }, [currentHoldings, displayCurrency, rates]);
 
-  const portfolioDividendYield = totalInvested > 0 ? (totalNet / totalInvested) * 100 : 0;
+  const portfolioDividendYield =
+    totalInvested > 0 ? (totalNet / totalInvested) * 100 : 0;
 
   const treatyStats = useMemo(() => {
     if (!w8benDate) return null;
@@ -128,7 +140,12 @@ export default function DividendsPage() {
 
     for (const tx of dividendTxs) {
       if (tx.currency !== "$") continue;
-      const gross = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
+      const gross = convertCurrency(
+        tx.shares * tx.price,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
       const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
       if (isPostTreaty(tx, w8benDate)) {
         postTreatyGross += gross;
@@ -147,10 +164,12 @@ export default function DividendsPage() {
     return {
       preTreatyGross,
       preTreatyFee,
-      preTreatyEffectiveRate: preTreatyGross > 0 ? preTreatyFee / preTreatyGross : null,
+      preTreatyEffectiveRate:
+        preTreatyGross > 0 ? preTreatyFee / preTreatyGross : null,
       postTreatyGross,
       postTreatyFee,
-      postTreatyEffectiveRate: postTreatyGross > 0 ? postTreatyFee / postTreatyGross : null,
+      postTreatyEffectiveRate:
+        postTreatyGross > 0 ? postTreatyFee / postTreatyGross : null,
       postTreatyCount,
       taxSaved,
     };
@@ -159,7 +178,12 @@ export default function DividendsPage() {
   const investedBySymbol = useMemo(() => {
     const map = new Map<string, number>();
     for (const h of currentHoldings) {
-      const inv = convertCurrency(h.totalInvested, h.currency, displayCurrency, rates);
+      const inv = convertCurrency(
+        h.totalInvested,
+        h.currency,
+        displayCurrency,
+        rates
+      );
       map.set(h.symbol, (map.get(h.symbol) ?? 0) + inv);
     }
     return map;
@@ -169,7 +193,12 @@ export default function DividendsPage() {
     const map = new Map<string, DividendBySymbol>();
     for (const tx of dividendTxs) {
       const existing = map.get(tx.symbol);
-      const gross = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
+      const gross = convertCurrency(
+        tx.shares * tx.price,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
       const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
       if (existing) {
         existing.grossAmount += gross;
@@ -201,16 +230,31 @@ export default function DividendsPage() {
     return Array.from(map.values()).sort((a, b) => b.netAmount - a.netAmount);
   }, [dividendTxs, displayCurrency, rates, investedBySymbol]);
 
-  type DivHoldingSortKey = "symbol" | "net" | "tax" | "yieldOnCost" | "payments" | "lastPayment";
-  const divHoldingComparators = useMemo(() => ({
-    symbol: (a: DividendBySymbol, b: DividendBySymbol) => a.symbol.localeCompare(b.symbol),
-    net: (a: DividendBySymbol, b: DividendBySymbol) => a.netAmount - b.netAmount,
-    tax: (a: DividendBySymbol, b: DividendBySymbol) => a.fees - b.fees,
-    yieldOnCost: (a: DividendBySymbol, b: DividendBySymbol) => (a.yieldOnCost ?? 0) - (b.yieldOnCost ?? 0),
-    payments: (a: DividendBySymbol, b: DividendBySymbol) => a.count - b.count,
-    lastPayment: (a: DividendBySymbol, b: DividendBySymbol) => parseDate(a.lastPayment).getTime() - parseDate(b.lastPayment).getTime(),
-  }), []);
-  const divHoldingSort = useTableSort(bySymbol, divHoldingComparators as Record<DivHoldingSortKey, (a: DividendBySymbol, b: DividendBySymbol) => number>, "net" as DivHoldingSortKey);
+  type DivHoldingSortKey =
+    "symbol" | "net" | "tax" | "yieldOnCost" | "payments" | "lastPayment";
+  const divHoldingComparators = useMemo(
+    () => ({
+      symbol: (a: DividendBySymbol, b: DividendBySymbol) =>
+        a.symbol.localeCompare(b.symbol),
+      net: (a: DividendBySymbol, b: DividendBySymbol) =>
+        a.netAmount - b.netAmount,
+      tax: (a: DividendBySymbol, b: DividendBySymbol) => a.fees - b.fees,
+      yieldOnCost: (a: DividendBySymbol, b: DividendBySymbol) =>
+        (a.yieldOnCost ?? 0) - (b.yieldOnCost ?? 0),
+      payments: (a: DividendBySymbol, b: DividendBySymbol) => a.count - b.count,
+      lastPayment: (a: DividendBySymbol, b: DividendBySymbol) =>
+        parseDate(a.lastPayment).getTime() - parseDate(b.lastPayment).getTime(),
+    }),
+    []
+  );
+  const divHoldingSort = useTableSort(
+    bySymbol,
+    divHoldingComparators as Record<
+      DivHoldingSortKey,
+      (a: DividendBySymbol, b: DividendBySymbol) => number
+    >,
+    "net" as DivHoldingSortKey
+  );
 
   const monthly = useMemo<MonthlyDividend[]>(() => {
     const map = new Map<string, number>();
@@ -235,14 +279,25 @@ export default function DividendsPage() {
     for (const tx of dividendTxs) {
       const year = parseDate(tx.date).getFullYear();
       const entry = map.get(year) ?? { gross: 0, net: 0 };
-      entry.gross += convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
-      entry.net += convertCurrency(tx.shares * tx.price - tx.fee, tx.currency, displayCurrency, rates);
+      entry.gross += convertCurrency(
+        tx.shares * tx.price,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
+      entry.net += convertCurrency(
+        tx.shares * tx.price - tx.fee,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
       map.set(year, entry);
     }
     const sorted = Array.from(map.entries()).sort(([a], [b]) => a - b);
     return sorted.map(([year, d], i) => {
       const prevNet = i > 0 ? sorted[i - 1]![1].net : null;
-      const yoyGrowth = prevNet && prevNet > 0 ? ((d.net - prevNet) / prevNet) * 100 : null;
+      const yoyGrowth =
+        prevNet && prevNet > 0 ? ((d.net - prevNet) / prevNet) * 100 : null;
       return {
         year: String(year),
         gross: +d.gross.toFixed(2),
@@ -292,7 +347,9 @@ export default function DividendsPage() {
       {/* W-8BEN Status Banner */}
       {portfolio.w_8ben_activated_at && (
         <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
-          <div className="mt-0.5 text-blue-400 text-lg leading-none">&#9873;</div>
+          <div className="mt-0.5 text-blue-400 text-lg leading-none">
+            &#9873;
+          </div>
           <div>
             <div className="text-sm font-semibold text-blue-300 mb-0.5">
               W-8BEN Treaty Active
@@ -361,7 +418,10 @@ export default function DividendsPage() {
                 <div className="flex justify-between">
                   <span className="text-muted">Gross</span>
                   <span className="text-white">
-                    {formatCurrency(treatyStats.preTreatyGross, displayCurrency)}
+                    {formatCurrency(
+                      treatyStats.preTreatyGross,
+                      displayCurrency
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -392,13 +452,17 @@ export default function DividendsPage() {
 
             <div className="bg-card rounded-xl p-4 border border-blue-500/20">
               <div className="text-xs text-blue-400 uppercase tracking-wide mb-3">
-                Post-Treaty (10% rate) &middot; {treatyStats.postTreatyCount} payments
+                Post-Treaty (10% rate) &middot; {treatyStats.postTreatyCount}{" "}
+                payments
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted">Gross</span>
                   <span className="text-white">
-                    {formatCurrency(treatyStats.postTreatyGross, displayCurrency)}
+                    {formatCurrency(
+                      treatyStats.postTreatyGross,
+                      displayCurrency
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -440,8 +504,13 @@ export default function DividendsPage() {
                 </div>
                 {treatyStats.postTreatyGross > 0 && (
                   <div className="text-xs text-muted mt-1">
-                    {fmtPct(W8BEN_PRE_TREATY_RATE)} &rarr; {fmtPct(W8BEN_POST_TREATY_RATE)} on{" "}
-                    {formatCurrency(treatyStats.postTreatyGross, displayCurrency)} gross
+                    {fmtPct(W8BEN_PRE_TREATY_RATE)} &rarr;{" "}
+                    {fmtPct(W8BEN_POST_TREATY_RATE)} on{" "}
+                    {formatCurrency(
+                      treatyStats.postTreatyGross,
+                      displayCurrency
+                    )}{" "}
+                    gross
                   </div>
                 )}
                 {treatyStats.postTreatyCount === 0 && (
@@ -466,7 +535,10 @@ export default function DividendsPage() {
             <div>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={yearly}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.05)"
+                  />
                   <XAxis
                     dataKey="year"
                     tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -478,8 +550,18 @@ export default function DividendsPage() {
                   />
                   <Tooltip {...tooltipStyle} />
                   <Legend wrapperStyle={{ color: "#9ca3af", fontSize: 12 }} />
-                  <Bar dataKey="gross" name="Gross" fill="#60a5fa" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="net" name="Net" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="gross"
+                    name="Gross"
+                    fill="#60a5fa"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="net"
+                    name="Net"
+                    fill="#10b981"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
               {yearly.length > 1 && (
@@ -503,7 +585,9 @@ export default function DividendsPage() {
               )}
             </div>
           ) : (
-            <div className="text-muted text-sm text-center py-10">No dividend data yet</div>
+            <div className="text-muted text-sm text-center py-10">
+              No dividend data yet
+            </div>
           )}
         </div>
 
@@ -515,7 +599,10 @@ export default function DividendsPage() {
           {monthly.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="month"
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -526,11 +613,18 @@ export default function DividendsPage() {
                   stroke="rgba(255,255,255,0.1)"
                 />
                 <Tooltip {...tooltipStyle} />
-                <Bar dataKey="amount" name="Net Income" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="amount"
+                  name="Net Income"
+                  fill="#10b981"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-muted text-sm text-center py-10">No dividend data yet</div>
+            <div className="text-muted text-sm text-center py-10">
+              No dividend data yet
+            </div>
           )}
         </div>
       </div>
@@ -543,7 +637,10 @@ export default function DividendsPage() {
         {bySymbol.length > 0 ? (
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={bySymbol} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.05)"
+              />
               <XAxis
                 type="number"
                 tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -558,12 +655,24 @@ export default function DividendsPage() {
               />
               <Tooltip {...tooltipStyle} />
               <Legend wrapperStyle={{ color: "#9ca3af", fontSize: 12 }} />
-              <Bar dataKey="grossAmount" name="Gross" fill="#60a5fa" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="netAmount" name="Net" fill="#10b981" radius={[0, 4, 4, 0]} />
+              <Bar
+                dataKey="grossAmount"
+                name="Gross"
+                fill="#60a5fa"
+                radius={[0, 4, 4, 0]}
+              />
+              <Bar
+                dataKey="netAmount"
+                name="Net"
+                fill="#10b981"
+                radius={[0, 4, 4, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="text-muted text-sm text-center py-10">No dividend data yet</div>
+          <div className="text-muted text-sm text-center py-10">
+            No dividend data yet
+          </div>
         )}
       </div>
 
@@ -579,37 +688,65 @@ export default function DividendsPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("symbol")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
+                  onClick={() => divHoldingSort.handleSort("symbol")}
+                >
                   Symbol{divHoldingSort.arrow("symbol")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">Name</th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("net")}>
+                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
+                  Name
+                </th>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                  onClick={() => divHoldingSort.handleSort("net")}
+                >
                   Net{divHoldingSort.arrow("net")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("tax")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                  onClick={() => divHoldingSort.handleSort("tax")}
+                >
                   Tax{divHoldingSort.arrow("tax")}
                 </th>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                   Eff. Rate
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("yieldOnCost")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                  onClick={() => divHoldingSort.handleSort("yieldOnCost")}
+                >
                   Yield on Cost{divHoldingSort.arrow("yieldOnCost")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("payments")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                  onClick={() => divHoldingSort.handleSort("payments")}
+                >
                   Payments{divHoldingSort.arrow("payments")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => divHoldingSort.handleSort("lastPayment")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                  onClick={() => divHoldingSort.handleSort("lastPayment")}
+                >
                   Last Payment{divHoldingSort.arrow("lastPayment")}
                 </th>
               </tr>
             </thead>
             <tbody>
               {divHoldingSort.sorted.map((d) => {
-                const effectiveRate = d.grossAmount > 0 ? d.fees / d.grossAmount : 0;
+                const effectiveRate =
+                  d.grossAmount > 0 ? d.fees / d.grossAmount : 0;
                 return (
-                  <tr key={d.symbol} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="py-2.5 px-3 text-sm font-medium text-white">{d.symbol}</td>
-                    <td className="py-2.5 px-3 text-sm text-muted truncate max-w-[120px]">{d.name}</td>
+                  <tr
+                    key={d.symbol}
+                    className="border-b border-white/5 hover:bg-white/5"
+                  >
+                    <td className="py-2.5 px-3 text-sm font-medium text-white">
+                      {d.symbol}
+                    </td>
+                    <td className="py-2.5 px-3 text-sm text-muted truncate max-w-[120px]">
+                      {d.name}
+                    </td>
                     <td className="py-2.5 px-3 text-sm text-right text-gain">
                       {formatCurrency(d.netAmount, displayCurrency)}
                     </td>
@@ -628,7 +765,9 @@ export default function DividendsPage() {
                         <span className="text-muted">\u2014</span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 text-sm text-right text-muted">{d.count}</td>
+                    <td className="py-2.5 px-3 text-sm text-right text-muted">
+                      {d.count}
+                    </td>
                     <td className="py-2.5 px-3 text-sm text-right text-muted whitespace-nowrap">
                       {formatDateStr(d.lastPayment)}
                     </td>
@@ -638,7 +777,9 @@ export default function DividendsPage() {
             </tbody>
           </table>
           {bySymbol.length === 0 && (
-            <div className="text-center text-muted py-8 text-sm">No dividends received yet</div>
+            <div className="text-center text-muted py-8 text-sm">
+              No dividends received yet
+            </div>
           )}
         </div>
 

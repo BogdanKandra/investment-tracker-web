@@ -32,11 +32,13 @@ export function convertCurrency(
 ): number {
   if (from === to) return amount;
 
-  const key = `${currencyLabel(from)}_${currencyLabel(to)}` as keyof ExchangeRates;
+  const key =
+    `${currencyLabel(from)}_${currencyLabel(to)}` as keyof ExchangeRates;
   const rate = rates[key];
   if (rate) return amount * rate;
 
-  const reverseKey = `${currencyLabel(to)}_${currencyLabel(from)}` as keyof ExchangeRates;
+  const reverseKey =
+    `${currencyLabel(to)}_${currencyLabel(from)}` as keyof ExchangeRates;
   const reverseRate = rates[reverseKey];
   if (reverseRate) return amount / reverseRate;
 

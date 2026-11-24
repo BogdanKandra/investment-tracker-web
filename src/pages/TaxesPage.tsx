@@ -13,7 +13,11 @@ import {
 } from "recharts";
 import { usePortfolio } from "../context/usePortfolio";
 import StatsCard from "../components/common/StatsCard";
-import { formatCurrency, convertCurrency, currencyLabel } from "../utils/currency";
+import {
+  formatCurrency,
+  convertCurrency,
+  currencyLabel,
+} from "../utils/currency";
 import { formatDateStr, parseDate } from "../utils/dates";
 import { formatShares, formatNumber } from "../utils/numbers";
 import {
@@ -63,7 +67,9 @@ export default function TaxesPage() {
 
   const currentYear = new Date().getFullYear();
   const [pnlYear, setPnlYear] = useState<number>(
-    sellYears.includes(currentYear) ? currentYear : (sellYears[0] ?? currentYear)
+    sellYears.includes(currentYear)
+      ? currentYear
+      : (sellYears[0] ?? currentYear)
   );
 
   const filteredSells = useMemo(
@@ -103,7 +109,9 @@ export default function TaxesPage() {
   }, [portfolio.accounts, sells]);
 
   const [cassYear, setCassYear] = useState<number>(
-    cassYears.includes(currentYear) ? currentYear : (cassYears[0] ?? currentYear)
+    cassYears.includes(currentYear)
+      ? currentYear
+      : (cassYears[0] ?? currentYear)
   );
   const [proportion, setProportion] = useState<number>(DEFAULT_CASS_PROPORTION);
 
@@ -136,7 +144,11 @@ export default function TaxesPage() {
 
     const byYear = new Map<
       number,
-      { preTreatyGrossRon: number; postTreatyGrossRon: number; postTreatyFeeRon: number }
+      {
+        preTreatyGrossRon: number;
+        postTreatyGrossRon: number;
+        postTreatyFeeRon: number;
+      }
     >();
 
     for (const account of portfolio.accounts) {
@@ -148,7 +160,12 @@ export default function TaxesPage() {
           postTreatyGrossRon: 0,
           postTreatyFeeRon: 0,
         };
-        const grossRon = convertCurrency(tx.shares * tx.price, tx.currency, "RON", rates);
+        const grossRon = convertCurrency(
+          tx.shares * tx.price,
+          tx.currency,
+          "RON",
+          rates
+        );
         const feeRon = convertCurrency(tx.fee, tx.currency, "RON", rates);
         if (parseDate(tx.date) >= w8benDate) {
           entry.postTreatyGrossRon += grossRon;
@@ -194,7 +211,9 @@ export default function TaxesPage() {
   }, [portfolio.accounts]);
 
   const [divTaxYear, setDivTaxYear] = useState<number>(
-    divTaxYears.includes(currentYear) ? currentYear : (divTaxYears[0] ?? currentYear)
+    divTaxYears.includes(currentYear)
+      ? currentYear
+      : (divTaxYears[0] ?? currentYear)
   );
 
   const divTaxPrevYear = divTaxYear - 1;
@@ -226,7 +245,12 @@ export default function TaxesPage() {
         if (txYear !== divTaxPrevYear) continue;
         const gross = tx.shares * tx.price;
         const net = gross - tx.fee;
-        const country = getCountryFromSymbol(tx.symbol, tx.currency, tx.isin, tx.country);
+        const country = getCountryFromSymbol(
+          tx.symbol,
+          tx.currency,
+          tx.isin,
+          tx.country
+        );
 
         const rateKey = `${currencyLabel(tx.currency)}_${divTaxPrevYear}`;
         const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
@@ -355,7 +379,8 @@ export default function TaxesPage() {
         if (cs.postW8benGrossRon > 0) {
           items.push({
             country: "USA (post W-8BEN)",
-            description: "Dividends received after W-8BEN activation — no tax due (treaty benefit)",
+            description:
+              "Dividends received after W-8BEN activation — no tax due (treaty benefit)",
             grossRon: cs.postW8benGrossRon,
             taxRate: 0,
             taxDue: 0,
@@ -393,10 +418,17 @@ export default function TaxesPage() {
 
   // --- Dividend charts data ---
   const divMonthlyData = useMemo(() => {
-    const months: { month: string; gross: number; withheld: number; net: number }[] = [];
+    const months: {
+      month: string;
+      gross: number;
+      withheld: number;
+      net: number;
+    }[] = [];
     for (let m = 0; m < 12; m++) {
       months.push({
-        month: new Date(divTaxPrevYear, m).toLocaleString("en-US", { month: "short" }),
+        month: new Date(divTaxPrevYear, m).toLocaleString("en-US", {
+          month: "short",
+        }),
         gross: 0,
         withheld: 0,
         net: 0,
@@ -426,7 +458,10 @@ export default function TaxesPage() {
   }, [countryBreakdown]);
 
   const divYearlyEvolution = useMemo(() => {
-    const byYear = new Map<number, { gross: number; withheld: number; net: number }>();
+    const byYear = new Map<
+      number,
+      { gross: number; withheld: number; net: number }
+    >();
     for (const account of portfolio.accounts) {
       for (const tx of account.transactions) {
         if (tx.type !== "Dividend") continue;
@@ -471,7 +506,9 @@ export default function TaxesPage() {
   }, [portfolio.accounts]);
 
   const [interestTaxYear, setInterestTaxYear] = useState<number>(
-    interestTaxYears.includes(currentYear) ? currentYear : (interestTaxYears[0] ?? currentYear)
+    interestTaxYears.includes(currentYear)
+      ? currentYear
+      : (interestTaxYears[0] ?? currentYear)
   );
 
   const interestTaxPrevYear = interestTaxYear - 1;
@@ -569,7 +606,7 @@ export default function TaxesPage() {
     return Array.from(map.values()).sort((a, b) => b.grossRon - a.grossRon);
   }, [interestRows]);
 
-  const INTEREST_TAX_RATE = 0.10;
+  const INTEREST_TAX_RATE = 0.1;
 
   const interestTaxDue = useMemo(() => {
     let totalTax = 0;
@@ -588,7 +625,12 @@ export default function TaxesPage() {
     for (let year = FIRST_CASS_INCOME_YEAR; year <= currentYear; year++) {
       const wage = getCassMinimumWage(year);
       if (wage === undefined) continue;
-      const income = computeYearlyIncome(portfolio.accounts, sells, year, rates);
+      const income = computeYearlyIncome(
+        portfolio.accounts,
+        sells,
+        year,
+        rates
+      );
       const cass = computeCassTax(income.totalRon, wage, proportion);
       rows.push({
         year: String(year),
@@ -613,56 +655,144 @@ export default function TaxesPage() {
   };
 
   // --- Sell P&L table sorting ---
-  type SellSortKey = "date" | "symbol" | "account" | "shares" | "sellValue" | "costBasis" | "fee" | "grossProfit" | "netProfit";
-  const sellComparators = useMemo(() => ({
-    date: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
-    symbol: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.symbol.localeCompare(b.symbol),
-    account: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.account.localeCompare(b.account),
-    shares: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.shares - b.shares,
-    sellValue: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.sellValueRon - b.sellValueRon,
-    costBasis: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.costBasisRon - b.costBasisRon,
-    fee: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.feeRon - b.feeRon,
-    grossProfit: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.grossProfitRon - b.grossProfitRon,
-    netProfit: (a: typeof filteredSells[0], b: typeof filteredSells[0]) => a.netProfitRon - b.netProfitRon,
-  }), []);
-  const sellSort = useTableSort(filteredSells, sellComparators as Record<SellSortKey, (a: typeof filteredSells[0], b: typeof filteredSells[0]) => number>, "date" as SellSortKey);
+  type SellSortKey =
+    | "date"
+    | "symbol"
+    | "account"
+    | "shares"
+    | "sellValue"
+    | "costBasis"
+    | "fee"
+    | "grossProfit"
+    | "netProfit";
+  const sellComparators = useMemo(
+    () => ({
+      date: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+      symbol: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        a.symbol.localeCompare(b.symbol),
+      account: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        a.account.localeCompare(b.account),
+      shares: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        a.shares - b.shares,
+      sellValue: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        a.sellValueRon - b.sellValueRon,
+      costBasis: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        a.costBasisRon - b.costBasisRon,
+      fee: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        a.feeRon - b.feeRon,
+      grossProfit: (
+        a: (typeof filteredSells)[0],
+        b: (typeof filteredSells)[0]
+      ) => a.grossProfitRon - b.grossProfitRon,
+      netProfit: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
+        a.netProfitRon - b.netProfitRon,
+    }),
+    []
+  );
+  const sellSort = useTableSort(
+    filteredSells,
+    sellComparators as Record<
+      SellSortKey,
+      (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) => number
+    >,
+    "date" as SellSortKey
+  );
 
   // --- Dividend table sorting ---
-  type DivSortKey = "date" | "symbol" | "account" | "country" | "gross" | "fee" | "net";
-  const divComparators = useMemo(() => ({
-    date: (a: DividendRow, b: DividendRow) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
-    symbol: (a: DividendRow, b: DividendRow) => a.symbol.localeCompare(b.symbol),
-    account: (a: DividendRow, b: DividendRow) => a.account.localeCompare(b.account),
-    country: (a: DividendRow, b: DividendRow) => a.country.localeCompare(b.country),
-    gross: (a: DividendRow, b: DividendRow) => a.grossAmountRon - b.grossAmountRon,
-    fee: (a: DividendRow, b: DividendRow) => a.feeRon - b.feeRon,
-    net: (a: DividendRow, b: DividendRow) => a.netAmountRon - b.netAmountRon,
-  }), []);
-  const divSort = useTableSort(dividendRows, divComparators as Record<DivSortKey, (a: DividendRow, b: DividendRow) => number>, "date" as DivSortKey);
+  type DivSortKey =
+    "date" | "symbol" | "account" | "country" | "gross" | "fee" | "net";
+  const divComparators = useMemo(
+    () => ({
+      date: (a: DividendRow, b: DividendRow) =>
+        parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+      symbol: (a: DividendRow, b: DividendRow) =>
+        a.symbol.localeCompare(b.symbol),
+      account: (a: DividendRow, b: DividendRow) =>
+        a.account.localeCompare(b.account),
+      country: (a: DividendRow, b: DividendRow) =>
+        a.country.localeCompare(b.country),
+      gross: (a: DividendRow, b: DividendRow) =>
+        a.grossAmountRon - b.grossAmountRon,
+      fee: (a: DividendRow, b: DividendRow) => a.feeRon - b.feeRon,
+      net: (a: DividendRow, b: DividendRow) => a.netAmountRon - b.netAmountRon,
+    }),
+    []
+  );
+  const divSort = useTableSort(
+    dividendRows,
+    divComparators as Record<
+      DivSortKey,
+      (a: DividendRow, b: DividendRow) => number
+    >,
+    "date" as DivSortKey
+  );
 
   // --- Interest table sorting ---
   type IntSortKey = "date" | "account" | "country" | "gross" | "fee" | "net";
-  const intComparators = useMemo(() => ({
-    date: (a: InterestRow, b: InterestRow) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
-    account: (a: InterestRow, b: InterestRow) => a.account.localeCompare(b.account),
-    country: (a: InterestRow, b: InterestRow) => a.country.localeCompare(b.country),
-    gross: (a: InterestRow, b: InterestRow) => a.grossAmountRon - b.grossAmountRon,
-    fee: (a: InterestRow, b: InterestRow) => a.feeRon - b.feeRon,
-    net: (a: InterestRow, b: InterestRow) => a.netAmountRon - b.netAmountRon,
-  }), []);
-  const intSort = useTableSort(interestRows, intComparators as Record<IntSortKey, (a: InterestRow, b: InterestRow) => number>, "date" as IntSortKey);
+  const intComparators = useMemo(
+    () => ({
+      date: (a: InterestRow, b: InterestRow) =>
+        parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+      account: (a: InterestRow, b: InterestRow) =>
+        a.account.localeCompare(b.account),
+      country: (a: InterestRow, b: InterestRow) =>
+        a.country.localeCompare(b.country),
+      gross: (a: InterestRow, b: InterestRow) =>
+        a.grossAmountRon - b.grossAmountRon,
+      fee: (a: InterestRow, b: InterestRow) => a.feeRon - b.feeRon,
+      net: (a: InterestRow, b: InterestRow) => a.netAmountRon - b.netAmountRon,
+    }),
+    []
+  );
+  const intSort = useTableSort(
+    interestRows,
+    intComparators as Record<
+      IntSortKey,
+      (a: InterestRow, b: InterestRow) => number
+    >,
+    "date" as IntSortKey
+  );
 
   // --- W-8BEN table sorting ---
-  type W8benSortKey = "year" | "preTreatyGross" | "postTreatyGross" | "taxSaved";
-  const w8benComparators = useMemo(() => ({
-    year: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.year - b.year,
-    preTreatyGross: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.preTreatyGrossRon - b.preTreatyGrossRon,
-    postTreatyGross: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.postTreatyGrossRon - b.postTreatyGrossRon,
-    taxSaved: (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => a.taxSavedRon - b.taxSavedRon,
-  }), []);
-  const w8benSort = useTableSort(w8benYearlyImpact, w8benComparators as Record<W8benSortKey, (a: typeof w8benYearlyImpact[0], b: typeof w8benYearlyImpact[0]) => number>, "year" as W8benSortKey, true);
+  type W8benSortKey =
+    "year" | "preTreatyGross" | "postTreatyGross" | "taxSaved";
+  const w8benComparators = useMemo(
+    () => ({
+      year: (
+        a: (typeof w8benYearlyImpact)[0],
+        b: (typeof w8benYearlyImpact)[0]
+      ) => a.year - b.year,
+      preTreatyGross: (
+        a: (typeof w8benYearlyImpact)[0],
+        b: (typeof w8benYearlyImpact)[0]
+      ) => a.preTreatyGrossRon - b.preTreatyGrossRon,
+      postTreatyGross: (
+        a: (typeof w8benYearlyImpact)[0],
+        b: (typeof w8benYearlyImpact)[0]
+      ) => a.postTreatyGrossRon - b.postTreatyGrossRon,
+      taxSaved: (
+        a: (typeof w8benYearlyImpact)[0],
+        b: (typeof w8benYearlyImpact)[0]
+      ) => a.taxSavedRon - b.taxSavedRon,
+    }),
+    []
+  );
+  const w8benSort = useTableSort(
+    w8benYearlyImpact,
+    w8benComparators as Record<
+      W8benSortKey,
+      (
+        a: (typeof w8benYearlyImpact)[0],
+        b: (typeof w8benYearlyImpact)[0]
+      ) => number
+    >,
+    "year" as W8benSortKey,
+    true
+  );
 
-  const thSortable = "py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none";
+  const thSortable =
+    "py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none";
 
   const fmtRon = (value: number): string => formatCurrency(value, "RON");
   const fmtPnl = (value: number): string => formatCurrency(value, pnlCurrency);
@@ -694,7 +824,9 @@ export default function TaxesPage() {
               Currency
               <select
                 value={pnlCurrency}
-                onChange={(e) => setPnlCurrency(e.target.value as CurrencySymbol)}
+                onChange={(e) =>
+                  setPnlCurrency(e.target.value as CurrencySymbol)
+                }
                 className="bg-card border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {(["RON", "$", "€"] as const).map((c) => (
@@ -726,10 +858,7 @@ export default function TaxesPage() {
             label="Sell Transactions (incl. losses)"
             value={filteredSells.length.toString()}
           />
-          <StatsCard
-            label="Income Tax Paid"
-            value={fmtPnl(pnlTotals.fees)}
-          />
+          <StatsCard label="Income Tax Paid" value={fmtPnl(pnlTotals.fees)} />
           <StatsCard
             label="Gross Profit"
             value={fmtPnl(pnlTotals.gross)}
@@ -746,34 +875,61 @@ export default function TaxesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className={thSortable} onClick={() => sellSort.handleSort("date")}>
+                <th
+                  className={thSortable}
+                  onClick={() => sellSort.handleSort("date")}
+                >
                   Date{sellSort.arrow("date")}
                 </th>
-                <th className={thSortable} onClick={() => sellSort.handleSort("symbol")}>
+                <th
+                  className={thSortable}
+                  onClick={() => sellSort.handleSort("symbol")}
+                >
                   Symbol{sellSort.arrow("symbol")}
                 </th>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                   Name
                 </th>
-                <th className={thSortable} onClick={() => sellSort.handleSort("account")}>
+                <th
+                  className={thSortable}
+                  onClick={() => sellSort.handleSort("account")}
+                >
                   Account{sellSort.arrow("account")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("shares")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => sellSort.handleSort("shares")}
+                >
                   Shares{sellSort.arrow("shares")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("sellValue")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => sellSort.handleSort("sellValue")}
+                >
                   Sell Value{sellSort.arrow("sellValue")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("costBasis")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => sellSort.handleSort("costBasis")}
+                >
                   Cost Basis{sellSort.arrow("costBasis")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("fee")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => sellSort.handleSort("fee")}
+                >
                   Income Tax{sellSort.arrow("fee")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("grossProfit")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => sellSort.handleSort("grossProfit")}
+                >
                   Gross Profit{sellSort.arrow("grossProfit")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => sellSort.handleSort("netProfit")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => sellSort.handleSort("netProfit")}
+                >
                   Net Profit{sellSort.arrow("netProfit")}
                 </th>
               </tr>
@@ -800,27 +956,59 @@ export default function TaxesPage() {
                     {formatShares(s.shares)}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
-                    {fmtPnl(convertCurrency(s.sellValue, s.currency, pnlCurrency, rates))}
+                    {fmtPnl(
+                      convertCurrency(
+                        s.sellValue,
+                        s.currency,
+                        pnlCurrency,
+                        rates
+                      )
+                    )}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
-                    {fmtPnl(convertCurrency(s.costBasis, s.currency, pnlCurrency, rates))}
+                    {fmtPnl(
+                      convertCurrency(
+                        s.costBasis,
+                        s.currency,
+                        pnlCurrency,
+                        rates
+                      )
+                    )}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
-                    {s.fee > 0 ? fmtPnl(convertCurrency(s.fee, s.currency, pnlCurrency, rates)) : "-"}
+                    {s.fee > 0
+                      ? fmtPnl(
+                          convertCurrency(s.fee, s.currency, pnlCurrency, rates)
+                        )
+                      : "-"}
                   </td>
                   <td
                     className={`py-2.5 px-3 text-sm text-right font-medium ${
                       s.grossProfit >= 0 ? "text-gain" : "text-loss"
                     }`}
                   >
-                    {fmtPnl(convertCurrency(s.grossProfit, s.currency, pnlCurrency, rates))}
+                    {fmtPnl(
+                      convertCurrency(
+                        s.grossProfit,
+                        s.currency,
+                        pnlCurrency,
+                        rates
+                      )
+                    )}
                   </td>
                   <td
                     className={`py-2.5 px-3 text-sm text-right font-medium ${
                       s.netProfit >= 0 ? "text-gain" : "text-loss"
                     }`}
                   >
-                    {fmtPnl(convertCurrency(s.netProfit, s.currency, pnlCurrency, rates))}
+                    {fmtPnl(
+                      convertCurrency(
+                        s.netProfit,
+                        s.currency,
+                        pnlCurrency,
+                        rates
+                      )
+                    )}
                   </td>
                 </tr>
               ))}
@@ -904,22 +1092,35 @@ export default function TaxesPage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/10">
-                    <th className={thSortable} onClick={() => w8benSort.handleSort("year")}>
+                    <th
+                      className={thSortable}
+                      onClick={() => w8benSort.handleSort("year")}
+                    >
                       Year{w8benSort.arrow("year")}
                     </th>
-                    <th className={`${thSortable} text-right`} onClick={() => w8benSort.handleSort("preTreatyGross")}>
+                    <th
+                      className={`${thSortable} text-right`}
+                      onClick={() => w8benSort.handleSort("preTreatyGross")}
+                    >
                       Pre-Treaty Gross (RON){w8benSort.arrow("preTreatyGross")}
                     </th>
                     <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                       Pre-Treaty Withheld (30%)
                     </th>
-                    <th className={`${thSortable} text-right`} onClick={() => w8benSort.handleSort("postTreatyGross")}>
-                      Post-Treaty Gross (RON){w8benSort.arrow("postTreatyGross")}
+                    <th
+                      className={`${thSortable} text-right`}
+                      onClick={() => w8benSort.handleSort("postTreatyGross")}
+                    >
+                      Post-Treaty Gross (RON)
+                      {w8benSort.arrow("postTreatyGross")}
                     </th>
                     <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                       Post-Treaty Withheld (10%)
                     </th>
-                    <th className={`${thSortable} text-right`} onClick={() => w8benSort.handleSort("taxSaved")}>
+                    <th
+                      className={`${thSortable} text-right`}
+                      onClick={() => w8benSort.handleSort("taxSaved")}
+                    >
                       Tax Saved (RON){w8benSort.arrow("taxSaved")}
                     </th>
                   </tr>
@@ -934,7 +1135,9 @@ export default function TaxesPage() {
                         {row.year}
                       </td>
                       <td className="py-2.5 px-3 text-sm text-right text-muted">
-                        {row.preTreatyGrossRon > 0 ? fmtRon(row.preTreatyGrossRon) : "—"}
+                        {row.preTreatyGrossRon > 0
+                          ? fmtRon(row.preTreatyGrossRon)
+                          : "—"}
                       </td>
                       <td className="py-2.5 px-3 text-sm text-right text-loss">
                         {row.preTreatyGrossRon > 0
@@ -947,10 +1150,14 @@ export default function TaxesPage() {
                           : "—"}
                       </td>
                       <td className="py-2.5 px-3 text-sm text-right text-loss">
-                        {row.postTreatyGrossRon > 0 ? fmtRon(row.postTreatyFeeRon) : "—"}
+                        {row.postTreatyGrossRon > 0
+                          ? fmtRon(row.postTreatyFeeRon)
+                          : "—"}
                       </td>
                       <td className="py-2.5 px-3 text-sm text-right text-gain font-medium">
-                        {row.postTreatyGrossRon > 0 ? fmtRon(row.taxSavedRon) : "—"}
+                        {row.postTreatyGrossRon > 0
+                          ? fmtRon(row.taxSavedRon)
+                          : "—"}
                       </td>
                     </tr>
                   ))}
@@ -971,13 +1178,19 @@ export default function TaxesPage() {
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">
-              Dividend Taxes
-            </h2>
+            <h2 className="text-lg font-semibold text-white">Dividend Taxes</h2>
             <p className="text-sm text-muted mt-1">
-              Dividend income received in {divTaxPrevYear}, to be declared for {divTaxYear} taxes.
+              Dividend income received in {divTaxPrevYear}, to be declared for{" "}
+              {divTaxYear} taxes.
               {DIVIDEND_TAX[divTaxPrevYear] !== undefined && (
-                <> Applicable dividend tax rate: <span className="text-white">{(DIVIDEND_TAX[divTaxPrevYear]! * 100).toFixed(0)}%</span>.</>
+                <>
+                  {" "}
+                  Applicable dividend tax rate:{" "}
+                  <span className="text-white">
+                    {(DIVIDEND_TAX[divTaxPrevYear]! * 100).toFixed(0)}%
+                  </span>
+                  .
+                </>
               )}
             </p>
           </div>
@@ -1002,28 +1215,49 @@ export default function TaxesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className={thSortable} onClick={() => divSort.handleSort("date")}>
+                <th
+                  className={thSortable}
+                  onClick={() => divSort.handleSort("date")}
+                >
                   Date{divSort.arrow("date")}
                 </th>
-                <th className={thSortable} onClick={() => divSort.handleSort("symbol")}>
+                <th
+                  className={thSortable}
+                  onClick={() => divSort.handleSort("symbol")}
+                >
                   Symbol{divSort.arrow("symbol")}
                 </th>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                   Name
                 </th>
-                <th className={thSortable} onClick={() => divSort.handleSort("account")}>
+                <th
+                  className={thSortable}
+                  onClick={() => divSort.handleSort("account")}
+                >
                   Account{divSort.arrow("account")}
                 </th>
-                <th className={thSortable} onClick={() => divSort.handleSort("country")}>
+                <th
+                  className={thSortable}
+                  onClick={() => divSort.handleSort("country")}
+                >
                   Country{divSort.arrow("country")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => divSort.handleSort("gross")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => divSort.handleSort("gross")}
+                >
                   Gross{divSort.arrow("gross")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => divSort.handleSort("fee")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => divSort.handleSort("fee")}
+                >
                   Tax Withheld{divSort.arrow("fee")}
                 </th>
-                <th className={`${thSortable} text-right`} onClick={() => divSort.handleSort("net")}>
+                <th
+                  className={`${thSortable} text-right`}
+                  onClick={() => divSort.handleSort("net")}
+                >
                   Net{divSort.arrow("net")}
                 </th>
               </tr>
@@ -1098,10 +1332,15 @@ export default function TaxesPage() {
             </h3>
             <div className="space-y-4">
               {countryBreakdown.map((cs) => (
-                <div key={cs.country} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                <div
+                  key={cs.country}
+                  className="border-b border-white/5 pb-4 last:border-0 last:pb-0"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-white font-medium">{cs.country}</span>
-                    <span className="text-white font-semibold">{fmtRon(cs.grossRon)} gross</span>
+                    <span className="text-white font-semibold">
+                      {fmtRon(cs.grossRon)} gross
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                     <div>
@@ -1122,17 +1361,25 @@ export default function TaxesPage() {
                       {cs.preW8benGrossRon > 0 && (
                         <div className="text-sm">
                           <span className="text-muted">Pre W-8BEN:</span>{" "}
-                          <span className="text-white">{fmtRon(cs.preW8benGrossRon)} gross</span>
+                          <span className="text-white">
+                            {fmtRon(cs.preW8benGrossRon)} gross
+                          </span>
                           <span className="text-muted mx-2">·</span>
-                          <span className="text-loss">{fmtRon(cs.preW8benFeeRon)} withheld</span>
+                          <span className="text-loss">
+                            {fmtRon(cs.preW8benFeeRon)} withheld
+                          </span>
                         </div>
                       )}
                       {cs.postW8benGrossRon > 0 && (
                         <div className="text-sm">
                           <span className="text-muted">Post W-8BEN:</span>{" "}
-                          <span className="text-white">{fmtRon(cs.postW8benGrossRon)} gross</span>
+                          <span className="text-white">
+                            {fmtRon(cs.postW8benGrossRon)} gross
+                          </span>
                           <span className="text-muted mx-2">·</span>
-                          <span className="text-loss">{fmtRon(cs.postW8benFeeRon)} withheld</span>
+                          <span className="text-loss">
+                            {fmtRon(cs.postW8benFeeRon)} withheld
+                          </span>
                         </div>
                       )}
                     </div>
@@ -1156,8 +1403,12 @@ export default function TaxesPage() {
                   className="flex items-start justify-between p-3 rounded-lg bg-white/5 gap-4"
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="text-white font-medium text-sm">{d.country}</div>
-                    <div className="text-xs text-muted mt-0.5">{d.description}</div>
+                    <div className="text-white font-medium text-sm">
+                      {d.country}
+                    </div>
+                    <div className="text-xs text-muted mt-0.5">
+                      {d.description}
+                    </div>
                     <div className="text-xs text-muted mt-1">
                       <span className="text-white">{d.declaration}</span>
                       <span className="mx-2">·</span>
@@ -1347,8 +1598,10 @@ export default function TaxesPage() {
                 Interest Income Taxes
               </h2>
               <p className="text-sm text-muted mt-1">
-                Interest income received in {interestTaxPrevYear}, to be declared for {interestTaxYear} taxes.
-                Income tax rate: <span className="text-white">10%</span> (waived when tax &le; 0.5 currency units per payment).
+                Interest income received in {interestTaxPrevYear}, to be
+                declared for {interestTaxYear} taxes. Income tax rate:{" "}
+                <span className="text-white">10%</span> (waived when tax &le;
+                0.5 currency units per payment).
               </p>
             </div>
             <label className="flex items-center gap-2 text-sm text-muted">
@@ -1372,25 +1625,43 @@ export default function TaxesPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className={thSortable} onClick={() => intSort.handleSort("date")}>
+                  <th
+                    className={thSortable}
+                    onClick={() => intSort.handleSort("date")}
+                  >
                     Date{intSort.arrow("date")}
                   </th>
-                  <th className={thSortable} onClick={() => intSort.handleSort("account")}>
+                  <th
+                    className={thSortable}
+                    onClick={() => intSort.handleSort("account")}
+                  >
                     Account{intSort.arrow("account")}
                   </th>
-                  <th className={thSortable} onClick={() => intSort.handleSort("country")}>
+                  <th
+                    className={thSortable}
+                    onClick={() => intSort.handleSort("country")}
+                  >
                     Country{intSort.arrow("country")}
                   </th>
                   <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                     Note
                   </th>
-                  <th className={`${thSortable} text-right`} onClick={() => intSort.handleSort("gross")}>
+                  <th
+                    className={`${thSortable} text-right`}
+                    onClick={() => intSort.handleSort("gross")}
+                  >
                     Gross{intSort.arrow("gross")}
                   </th>
-                  <th className={`${thSortable} text-right`} onClick={() => intSort.handleSort("fee")}>
+                  <th
+                    className={`${thSortable} text-right`}
+                    onClick={() => intSort.handleSort("fee")}
+                  >
                     Income Tax{intSort.arrow("fee")}
                   </th>
-                  <th className={`${thSortable} text-right`} onClick={() => intSort.handleSort("net")}>
+                  <th
+                    className={`${thSortable} text-right`}
+                    onClick={() => intSort.handleSort("net")}
+                  >
                     Net{intSort.arrow("net")}
                   </th>
                 </tr>
@@ -1421,7 +1692,10 @@ export default function TaxesPage() {
                       </td>
                       <td className="py-2.5 px-3 text-sm text-right text-loss">
                         {taxWaived ? (
-                          <span className="text-muted" title="Tax waived (≤ 0.5 currency units)">
+                          <span
+                            className="text-muted"
+                            title="Tax waived (≤ 0.5 currency units)"
+                          >
                             waived
                           </span>
                         ) : (
@@ -1472,10 +1746,17 @@ export default function TaxesPage() {
               </h3>
               <div className="space-y-4">
                 {interestCountryBreakdown.map((cs) => (
-                  <div key={cs.country} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                  <div
+                    key={cs.country}
+                    className="border-b border-white/5 pb-4 last:border-0 last:pb-0"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-white font-medium">{cs.country}</span>
-                      <span className="text-white font-semibold">{fmtRon(cs.grossRon)} gross</span>
+                      <span className="text-white font-medium">
+                        {cs.country}
+                      </span>
+                      <span className="text-white font-semibold">
+                        {fmtRon(cs.grossRon)} gross
+                      </span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
@@ -1484,7 +1765,9 @@ export default function TaxesPage() {
                       </div>
                       <div>
                         <span className="text-muted">Gross:</span>{" "}
-                        <span className="text-white">{fmtRon(cs.grossRon)}</span>
+                        <span className="text-white">
+                          {fmtRon(cs.grossRon)}
+                        </span>
                       </div>
                       <div>
                         <span className="text-muted">Tax paid:</span>{" "}
@@ -1509,10 +1792,13 @@ export default function TaxesPage() {
             <div className="space-y-3">
               <div className="flex items-start justify-between p-3 rounded-lg bg-white/5 gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="text-white font-medium text-sm">Income tax on interest (10%)</div>
+                  <div className="text-white font-medium text-sm">
+                    Income tax on interest (10%)
+                  </div>
                   <div className="text-xs text-muted mt-0.5">
-                    Applied to each interest payment where 10% exceeds 0.5 currency units.
-                    Payments below this threshold are tax-exempt.
+                    Applied to each interest payment where 10% exceeds 0.5
+                    currency units. Payments below this threshold are
+                    tax-exempt.
                   </div>
                   <div className="text-xs text-muted mt-1">
                     <span className="text-white">Must declare</span>
@@ -1531,7 +1817,9 @@ export default function TaxesPage() {
                     {interestTaxDue > 0 ? fmtRon(interestTaxDue) : "—"}
                   </div>
                   <div className="text-xs text-muted">
-                    {interestTaxDue > 0 ? "total tax" : "nothing additional to pay"}
+                    {interestTaxDue > 0
+                      ? "total tax"
+                      : "nothing additional to pay"}
                   </div>
                 </div>
               </div>
@@ -1559,8 +1847,8 @@ export default function TaxesPage() {
             </h2>
             <p className="text-sm text-muted mt-1">
               Romanian health contribution on investment income. Computed from
-              the previous year's income and the minimum wage in force on
-              1 January of that year.
+              the previous year's income and the minimum wage in force on 1
+              January of that year.
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -1588,7 +1876,8 @@ export default function TaxesPage() {
                 value={proportion}
                 onChange={(e) => {
                   const v = Number(e.target.value);
-                  if (!Number.isNaN(v)) setProportion(Math.min(1, Math.max(0, v)));
+                  if (!Number.isNaN(v))
+                    setProportion(Math.min(1, Math.max(0, v)));
                 }}
                 className="bg-card border border-white/10 text-white text-sm rounded-lg px-3 py-2 w-24 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
@@ -1605,8 +1894,8 @@ export default function TaxesPage() {
 
             {prevYearWage === undefined ? (
               <div className="text-sm text-muted py-6 text-center">
-                No minimum wage recorded for {prevYear}. CASS cannot be
-                computed for {cassYear}.
+                No minimum wage recorded for {prevYear}. CASS cannot be computed
+                for {cassYear}.
               </div>
             ) : cassResult ? (
               <div className="space-y-4 text-sm">

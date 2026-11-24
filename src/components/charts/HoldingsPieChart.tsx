@@ -1,10 +1,4 @@
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import type { Holding, CurrencySymbol, ExchangeRates } from "../../types";
 import { convertCurrency, formatCurrency } from "../../utils/currency";
 
@@ -60,7 +54,6 @@ export default function HoldingsPieChart({
 
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
-
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[280px] text-muted text-sm">
@@ -85,7 +78,9 @@ export default function HoldingsPieChart({
             outerRadius={100}
             innerRadius={50}
             label={({ name, percent }) =>
-              percent > 0.04 ? `${name.split(" ")[0]} ${(percent * 100).toFixed(0)}%` : ""
+              percent > 0.04
+                ? `${name.split(" ")[0]} ${(percent * 100).toFixed(0)}%`
+                : ""
             }
             labelLine={false}
             fontSize={11}

@@ -43,9 +43,8 @@ function trimToRange(data: OhlcData[], range: TimeRange): OhlcData[] {
   const cutoff = now - days * 24 * 60 * 60 * 1000;
 
   return data.filter((d) => {
-    const t = typeof d.time === "number"
-      ? d.time * 1000
-      : new Date(d.time).getTime();
+    const t =
+      typeof d.time === "number" ? d.time * 1000 : new Date(d.time).getTime();
     return t >= cutoff;
   });
 }
@@ -160,7 +159,8 @@ export async function fetchHistoricalCloses(
     if (!result) return [];
 
     const timestamps: number[] = result.timestamp ?? [];
-    const closes: (number | null)[] = result.indicators?.quote?.[0]?.close ?? [];
+    const closes: (number | null)[] =
+      result.indicators?.quote?.[0]?.close ?? [];
 
     const data: Array<{ time: string; close: number }> = [];
     for (let i = 0; i < timestamps.length; i++) {
@@ -218,7 +218,8 @@ export async function fetchBenchmarkCloses(
       if (!result) continue;
 
       const timestamps: number[] = result.timestamp ?? [];
-      const closes: (number | null)[] = result.indicators?.quote?.[0]?.close ?? [];
+      const closes: (number | null)[] =
+        result.indicators?.quote?.[0]?.close ?? [];
       const data: Array<{ time: string; close: number }> = [];
 
       for (let i = 0; i < timestamps.length; i++) {

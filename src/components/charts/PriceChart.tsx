@@ -17,7 +17,18 @@ import { formatPercent } from "../../utils/numbers";
 import StatsCard from "../common/StatsCard";
 
 const DEFAULT_TIME_RANGES: TimeRange[] = [
-  "1D", "1W", "2W", "1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "ALL",
+  "1D",
+  "1W",
+  "2W",
+  "1M",
+  "2M",
+  "3M",
+  "6M",
+  "1Y",
+  "2Y",
+  "3Y",
+  "5Y",
+  "ALL",
 ];
 
 interface PriceChartProps {
@@ -26,7 +37,11 @@ interface PriceChartProps {
   timeRanges?: TimeRange[];
 }
 
-export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT_TIME_RANGES }: PriceChartProps) {
+export default function PriceChart({
+  holding,
+  currentPrice,
+  timeRanges = DEFAULT_TIME_RANGES,
+}: PriceChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -132,11 +147,10 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
 
           chart.priceScale("liquidation").applyOptions({ visible: false });
 
-          const liqData = liquidationDates
-            .map((d) => ({
-              time: snapToBar(d, chartTimes, isIntraday) as Time,
-              value: 1,
-            }));
+          const liqData = liquidationDates.map((d) => ({
+            time: snapToBar(d, chartTimes, isIntraday) as Time,
+            value: 1,
+          }));
 
           liqSeries.setData(liqData);
           liqSeriesRef.current = liqSeries;
@@ -164,9 +178,7 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
     <div>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-white">
-            {holding.symbol}
-          </h2>
+          <h2 className="text-lg font-semibold text-white">{holding.symbol}</h2>
           <p className="text-sm text-muted">{holding.name}</p>
         </div>
         {currentPrice != null && (
@@ -218,10 +230,7 @@ export default function PriceChart({ holding, currentPrice, timeRanges = DEFAULT
           subValue={formatPercent(unrealizedPct)}
           trend={unrealizedPnL >= 0 ? "up" : "down"}
         />
-        <StatsCard
-          label="Transactions"
-          value={txCount.toString()}
-        />
+        <StatsCard label="Transactions" value={txCount.toString()} />
       </div>
     </div>
   );

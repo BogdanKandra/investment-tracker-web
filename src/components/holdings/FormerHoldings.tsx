@@ -22,11 +22,23 @@ export default function FormerHoldings({
   const [expanded, setExpanded] = useState(false);
 
   type FormerSortKey = "symbol" | "pnl";
-  const formerComparators = useMemo(() => ({
-    symbol: (a: Holding, b: Holding) => a.symbol.localeCompare(b.symbol),
-    pnl: (a: Holding, b: Holding) => convertCurrency(a.realizedPnL, a.currency, displayCurrency, rates) - convertCurrency(b.realizedPnL, b.currency, displayCurrency, rates),
-  }), [displayCurrency, rates]);
-  const formerSort = useTableSort(holdings, formerComparators as Record<FormerSortKey, (a: Holding, b: Holding) => number>, "pnl" as FormerSortKey);
+  const formerComparators = useMemo(
+    () => ({
+      symbol: (a: Holding, b: Holding) => a.symbol.localeCompare(b.symbol),
+      pnl: (a: Holding, b: Holding) =>
+        convertCurrency(a.realizedPnL, a.currency, displayCurrency, rates) -
+        convertCurrency(b.realizedPnL, b.currency, displayCurrency, rates),
+    }),
+    [displayCurrency, rates]
+  );
+  const formerSort = useTableSort(
+    holdings,
+    formerComparators as Record<
+      FormerSortKey,
+      (a: Holding, b: Holding) => number
+    >,
+    "pnl" as FormerSortKey
+  );
 
   if (holdings.length === 0) return null;
 
@@ -36,9 +48,7 @@ export default function FormerHoldings({
         onClick={() => setExpanded(!expanded)}
         className="flex items-center gap-2 text-sm font-medium text-muted hover:text-white transition-colors"
       >
-        <span
-          className={`transition-transform ${expanded ? "rotate-90" : ""}`}
-        >
+        <span className={`transition-transform ${expanded ? "rotate-90" : ""}`}>
           ▶
         </span>
         Former Holdings ({holdings.length})
@@ -49,10 +59,16 @@ export default function FormerHoldings({
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none" onClick={() => formerSort.handleSort("symbol")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
+                  onClick={() => formerSort.handleSort("symbol")}
+                >
                   Asset{formerSort.arrow("symbol")}
                 </th>
-                <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none" onClick={() => formerSort.handleSort("pnl")}>
+                <th
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
+                  onClick={() => formerSort.handleSort("pnl")}
+                >
                   Realized P&L{formerSort.arrow("pnl")}
                 </th>
               </tr>
@@ -69,9 +85,7 @@ export default function FormerHoldings({
                   .filter((t) => t.type === "Buy")
                   .reduce((s, t) => s + t.shares * t.price, 0);
                 const pct =
-                  totalBuys > 0
-                    ? (h.realizedPnL / totalBuys) * 100
-                    : 0;
+                  totalBuys > 0 ? (h.realizedPnL / totalBuys) * 100 : 0;
                 const color = h.realizedPnL >= 0 ? "text-gain" : "text-loss";
 
                 return (

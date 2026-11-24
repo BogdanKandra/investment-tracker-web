@@ -71,7 +71,10 @@ type ComparisonChartPoint = {
   nasdaq100Hypothetical: number | null;
 };
 
-const BENCHMARK_HYPOTHETICAL_KEYS: Record<BenchmarkId, keyof ComparisonChartPoint> = {
+const BENCHMARK_HYPOTHETICAL_KEYS: Record<
+  BenchmarkId,
+  keyof ComparisonChartPoint
+> = {
   sp500: "sp500Hypothetical",
   nasdaq100: "nasdaq100Hypothetical",
 };
@@ -150,7 +153,9 @@ function findComparisonStart(
 
 type ShareLedgerEntry = { date: string; cumShares: number };
 
-function buildShareLedger(accounts: Account[]): Map<string, ShareLedgerEntry[]> {
+function buildShareLedger(
+  accounts: Account[]
+): Map<string, ShareLedgerEntry[]> {
   const increments = new Map<string, Array<{ date: string; delta: number }>>();
 
   for (const acct of accounts) {
@@ -159,7 +164,10 @@ function buildShareLedger(accounts: Account[]): Map<string, ShareLedgerEntry[]> 
       if (!tx.symbol || tx.shares == null) continue;
       const isoDate = toIsoDate(parseDate(tx.date));
       const arr = increments.get(tx.symbol) ?? [];
-      arr.push({ date: isoDate, delta: tx.type === "Buy" ? tx.shares : -tx.shares });
+      arr.push({
+        date: isoDate,
+        delta: tx.type === "Buy" ? tx.shares : -tx.shares,
+      });
       increments.set(tx.symbol, arr);
     }
   }
@@ -203,7 +211,12 @@ function getLastKnownClose(
 
 function formatPortfolioDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00Z");
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit", timeZone: "UTC" });
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "2-digit",
+    timeZone: "UTC",
+  });
 }
 
 /** Scale portfolio baseline by benchmark price return (ratio is currency-neutral). */
@@ -235,8 +248,13 @@ interface YearlyReturn {
 }
 
 export default function PerformancePage() {
-  const { portfolio, selectedAccount, currentHoldings, displayCurrency, rates } =
-    usePortfolio();
+  const {
+    portfolio,
+    selectedAccount,
+    currentHoldings,
+    displayCurrency,
+    rates,
+  } = usePortfolio();
   const [prices, setPrices] = useState<Map<string, number>>(new Map());
   const [sortField, setSortField] = useState<SortField>("pnlPct");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -248,7 +266,9 @@ export default function PerformancePage() {
 
   useEffect(() => {
     if (symbols.length === 0) return;
-    fetchCurrentPrices(symbols).then(setPrices).catch(() => {});
+    fetchCurrentPrices(symbols)
+      .then(setPrices)
+      .catch(() => {});
   }, [symbols]);
 
   const filteredAccounts = useMemo(
@@ -259,14 +279,22 @@ export default function PerformancePage() {
     [portfolio.accounts, selectedAccount]
   );
 
-  const [comparisonChartData, setComparisonChartData] = useState<ComparisonChartPoint[]>([]);
-  const [resolvedBenchmarks, setResolvedBenchmarks] = useState<ResolvedBenchmark[]>([]);
+  const [comparisonChartData, setComparisonChartData] = useState<
+    ComparisonChartPoint[]
+  >([]);
+  const [resolvedBenchmarks, setResolvedBenchmarks] = useState<
+    ResolvedBenchmark[]
+  >([]);
   const [portfolioValueLoading, setPortfolioValueLoading] = useState(false);
-  const [benchmarkVisibility, setBenchmarkVisibility] = useState<Record<BenchmarkId, boolean>>({
+  const [benchmarkVisibility, setBenchmarkVisibility] = useState<
+    Record<BenchmarkId, boolean>
+  >({
     sp500: true,
     nasdaq100: true,
   });
-  const [comparisonStartTime, setComparisonStartTime] = useState<string | null>(null);
+  const [comparisonStartTime, setComparisonStartTime] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const symbolCurrencies = new Map<string, CurrencySymbol>();
@@ -294,17 +322,25 @@ export default function PerformancePage() {
       fetchHistoricalCloses(sym, "1wk").then((data) => ({ sym, data }))
     );
     const benchmarkFetches = BENCHMARK_CONFIG.map((bench) =>
-      fetchBenchmarkCloses([...bench.symbolCandidates], "1wk").then((result) => ({
-        config: bench,
-        result,
-      }))
+      fetchBenchmarkCloses([...bench.symbolCandidates], "1wk").then(
+        (result) => ({
+          config: bench,
+          result,
+        })
+      )
     );
 
-    Promise.all([Promise.allSettled(holdingFetches), Promise.all(benchmarkFetches)])
+    Promise.all([
+      Promise.allSettled(holdingFetches),
+      Promise.all(benchmarkFetches),
+    ])
       .then(([holdingResults, benchmarkResults]) => {
         if (cancelled) return;
 
-        const priceHistories = new Map<string, Array<{ time: string; close: number }>>();
+        const priceHistories = new Map<
+          string,
+          Array<{ time: string; close: number }>
+        >();
         for (const r of holdingResults) {
           if (r.status === "fulfilled" && r.value.data.length > 0) {
             priceHistories.set(r.value.sym, r.value.data);
@@ -357,7 +393,8 @@ export default function PerformancePage() {
         const benchmarkStartCloses = new Map<BenchmarkId, number>();
         for (const bench of benchmarks) {
           const startClose = getLastKnownClose(bench.history, startPoint.time);
-          if (startClose != null) benchmarkStartCloses.set(bench.id, startClose);
+          if (startClose != null)
+            benchmarkStartCloses.set(bench.id, startClose);
         }
 
         const comparisonTimeline: ComparisonChartPoint[] = [];
@@ -388,7 +425,11 @@ export default function PerformancePage() {
             if (startClose == null) continue;
 
             const close = getLastKnownClose(bench.history, timeKey);
-            const scaled = scaledBenchmarkValue(close, startClose, baselineAmount);
+            const scaled = scaledBenchmarkValue(
+              close,
+              startClose,
+              baselineAmount
+            );
             if (bench.id === "sp500") {
               row.sp500Hypothetical = scaled;
             } else {
@@ -424,7 +465,12 @@ export default function PerformancePage() {
       return {
         symbol: h.symbol,
         name: h.name,
-        invested: convertCurrency(h.totalInvested, h.currency, displayCurrency, rates),
+        invested: convertCurrency(
+          h.totalInvested,
+          h.currency,
+          displayCurrency,
+          rates
+        ),
         value: convertCurrency(value, h.currency, displayCurrency, rates),
         pnl: convertCurrency(pnl, h.currency, displayCurrency, rates),
         pnlPct,
@@ -475,24 +521,53 @@ export default function PerformancePage() {
     let winCount = 0;
     let lossCount = 0;
     for (const s of sellPnLData) {
-      const gross = convertCurrency(s.grossProfit, s.currency, displayCurrency, rates);
+      const gross = convertCurrency(
+        s.grossProfit,
+        s.currency,
+        displayCurrency,
+        rates
+      );
       totalGross += gross;
-      totalNet += convertCurrency(s.netProfit, s.currency, displayCurrency, rates);
+      totalNet += convertCurrency(
+        s.netProfit,
+        s.currency,
+        displayCurrency,
+        rates
+      );
       if (s.grossProfit >= 0) winCount++;
       else lossCount++;
     }
-    return { totalGross, totalNet, winCount, lossCount, total: sellPnLData.length };
+    return {
+      totalGross,
+      totalNet,
+      winCount,
+      lossCount,
+      total: sellPnLData.length,
+    };
   }, [sellPnLData, rates, displayCurrency]);
 
   const yearlyReturns = useMemo<YearlyReturn[]>(() => {
-    const byYear = new Map<number, { invested: number; sold: number; dividends: number; realizedPnl: number }>();
+    const byYear = new Map<
+      number,
+      { invested: number; sold: number; dividends: number; realizedPnl: number }
+    >();
 
     for (const acct of filteredAccounts) {
       for (const tx of acct.transactions) {
         if (tx.type === "Interest") continue;
         const year = parseDate(tx.date).getFullYear();
-        const entry = byYear.get(year) ?? { invested: 0, sold: 0, dividends: 0, realizedPnl: 0 };
-        const val = convertCurrency(tx.shares * tx.price, tx.currency, displayCurrency, rates);
+        const entry = byYear.get(year) ?? {
+          invested: 0,
+          sold: 0,
+          dividends: 0,
+          realizedPnl: 0,
+        };
+        const val = convertCurrency(
+          tx.shares * tx.price,
+          tx.currency,
+          displayCurrency,
+          rates
+        );
         if (tx.type === "Buy") entry.invested += val;
         else if (tx.type === "Sell") entry.sold += val;
         else if (tx.type === "Dividend") entry.dividends += val;
@@ -502,8 +577,18 @@ export default function PerformancePage() {
 
     for (const s of sellPnLData) {
       const year = s.year;
-      const entry = byYear.get(year) ?? { invested: 0, sold: 0, dividends: 0, realizedPnl: 0 };
-      entry.realizedPnl += convertCurrency(s.grossProfit, s.currency, displayCurrency, rates);
+      const entry = byYear.get(year) ?? {
+        invested: 0,
+        sold: 0,
+        dividends: 0,
+        realizedPnl: 0,
+      };
+      entry.realizedPnl += convertCurrency(
+        s.grossProfit,
+        s.currency,
+        displayCurrency,
+        rates
+      );
       byYear.set(year, entry);
     }
 
@@ -519,7 +604,12 @@ export default function PerformancePage() {
   }, [filteredAccounts, displayCurrency, rates, sellPnLData]);
 
   const portfolioTimeline = useMemo(() => {
-    const events: { date: Date; invested: number; value: number; currency: string }[] = [];
+    const events: {
+      date: Date;
+      invested: number;
+      value: number;
+      currency: string;
+    }[] = [];
     for (const acct of filteredAccounts) {
       for (const tx of acct.transactions) {
         if (tx.type === "Buy") {
@@ -544,8 +634,16 @@ export default function PerformancePage() {
     let cumInvested = 0;
     const timeline: { date: string; invested: number }[] = [];
     for (const ev of events) {
-      cumInvested += convertCurrency(ev.invested, ev.currency as CurrencySymbol, displayCurrency, rates);
-      timeline.push({ date: toIsoDate(ev.date), invested: +cumInvested.toFixed(2) });
+      cumInvested += convertCurrency(
+        ev.invested,
+        ev.currency as CurrencySymbol,
+        displayCurrency,
+        rates
+      );
+      timeline.push({
+        date: toIsoDate(ev.date),
+        invested: +cumInvested.toFixed(2),
+      });
     }
 
     if (timeline.length > 0) {
@@ -561,7 +659,12 @@ export default function PerformancePage() {
   }, [filteredAccounts, displayCurrency, rates, holdingPerformance]);
 
   const totalGrowthTimeline = useMemo(() => {
-    type RawEvent = { date: Date; cashFlow: number; realizedPnl: number; dividend: number };
+    type RawEvent = {
+      date: Date;
+      cashFlow: number;
+      realizedPnl: number;
+      dividend: number;
+    };
     const rawEvents: RawEvent[] = [];
 
     for (const acct of filteredAccounts) {
@@ -570,14 +673,24 @@ export default function PerformancePage() {
         if (tx.type === "Buy") {
           rawEvents.push({
             date: d,
-            cashFlow: convertCurrency(tx.shares * tx.price, tx.currency as CurrencySymbol, displayCurrency, rates),
+            cashFlow: convertCurrency(
+              tx.shares * tx.price,
+              tx.currency as CurrencySymbol,
+              displayCurrency,
+              rates
+            ),
             realizedPnl: 0,
             dividend: 0,
           });
         } else if (tx.type === "Sell") {
           rawEvents.push({
             date: d,
-            cashFlow: -convertCurrency(tx.shares * tx.price, tx.currency as CurrencySymbol, displayCurrency, rates),
+            cashFlow: -convertCurrency(
+              tx.shares * tx.price,
+              tx.currency as CurrencySymbol,
+              displayCurrency,
+              rates
+            ),
             realizedPnl: 0,
             dividend: 0,
           });
@@ -586,7 +699,12 @@ export default function PerformancePage() {
             date: d,
             cashFlow: 0,
             realizedPnl: 0,
-            dividend: convertCurrency(tx.shares * tx.price, tx.currency as CurrencySymbol, displayCurrency, rates),
+            dividend: convertCurrency(
+              tx.shares * tx.price,
+              tx.currency as CurrencySymbol,
+              displayCurrency,
+              rates
+            ),
           });
         }
       }
@@ -596,7 +714,12 @@ export default function PerformancePage() {
       rawEvents.push({
         date: parseDate(s.date),
         cashFlow: 0,
-        realizedPnl: convertCurrency(s.grossProfit, s.currency, displayCurrency, rates),
+        realizedPnl: convertCurrency(
+          s.grossProfit,
+          s.currency,
+          displayCurrency,
+          rates
+        ),
         dividend: 0,
       });
     }
@@ -607,7 +730,12 @@ export default function PerformancePage() {
     let cumRealizedPnl = 0;
     let cumDividends = 0;
 
-    const timeline: { date: string; netInvested: number; realizedPnl: number; dividends: number }[] = [];
+    const timeline: {
+      date: string;
+      netInvested: number;
+      realizedPnl: number;
+      dividends: number;
+    }[] = [];
 
     for (const ev of rawEvents) {
       cumNetInvested += ev.cashFlow;
@@ -633,13 +761,19 @@ export default function PerformancePage() {
       }
     }
 
-    return { timeline, totalNetInvested: cumNetInvested, totalRealizedPnl: cumRealizedPnl, totalDividends: cumDividends };
+    return {
+      timeline,
+      totalNetInvested: cumNetInvested,
+      totalRealizedPnl: cumRealizedPnl,
+      totalDividends: cumDividends,
+    };
   }, [filteredAccounts, displayCurrency, rates, sellPnLData]);
 
   const totalInvested = holdingPerformance.reduce((s, h) => s + h.invested, 0);
   const totalValue = holdingPerformance.reduce((s, h) => s + h.value, 0);
   const totalUnrealizedPnL = totalValue - totalInvested;
-  const totalReturn = totalInvested > 0 ? (totalUnrealizedPnL / totalInvested) * 100 : 0;
+  const totalReturn =
+    totalInvested > 0 ? (totalUnrealizedPnL / totalInvested) * 100 : 0;
   const combinedPnL = totalUnrealizedPnL + realizedPnL.totalGross;
   const accountLabel = selectedAccount ?? "All Accounts";
 
@@ -734,7 +868,10 @@ export default function PerformancePage() {
           {yearlyReturns.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={yearlyReturns}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="year"
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -746,9 +883,24 @@ export default function PerformancePage() {
                 />
                 <Tooltip {...tooltipStyle} />
                 <Legend wrapperStyle={{ color: "#9ca3af", fontSize: 12 }} />
-                <Bar dataKey="invested" name="Bought" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="sold" name="Sold" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="dividends" name="Dividends" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="invested"
+                  name="Bought"
+                  fill="#3b82f6"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="sold"
+                  name="Sold"
+                  fill="#f59e0b"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="dividends"
+                  name="Dividends"
+                  fill="#10b981"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -766,7 +918,10 @@ export default function PerformancePage() {
           {yearlyReturns.filter((y) => y.realizedPnl !== 0).length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={yearlyReturns}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="year"
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -777,7 +932,11 @@ export default function PerformancePage() {
                   stroke="rgba(255,255,255,0.1)"
                 />
                 <Tooltip {...tooltipStyle} />
-                <Bar dataKey="realizedPnl" name="Realized P&L" radius={[4, 4, 0, 0]}>
+                <Bar
+                  dataKey="realizedPnl"
+                  name="Realized P&L"
+                  radius={[4, 4, 0, 0]}
+                >
                   {yearlyReturns.map((entry, i) => (
                     <Cell
                       key={i}
@@ -811,7 +970,10 @@ export default function PerformancePage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-0.5 w-6 bg-emerald-500" style={{ borderTop: "2px dashed #10b981" }} />
+                <div
+                  className="w-3 h-0.5 w-6 bg-emerald-500"
+                  style={{ borderTop: "2px dashed #10b981" }}
+                />
                 <span className="text-muted">Current Value</span>
                 <span className="text-white font-medium">
                   {formatCurrency(totalValue, displayCurrency)}
@@ -819,14 +981,20 @@ export default function PerformancePage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-muted">Difference</span>
-                <span className={`font-medium ${totalUnrealizedPnL >= 0 ? "text-gain" : "text-loss"}`}>
-                  {formatCurrency(totalUnrealizedPnL, displayCurrency)} ({formatPercent(totalReturn)})
+                <span
+                  className={`font-medium ${totalUnrealizedPnL >= 0 ? "text-gain" : "text-loss"}`}
+                >
+                  {formatCurrency(totalUnrealizedPnL, displayCurrency)} (
+                  {formatPercent(totalReturn)})
                 </span>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={portfolioTimeline.timeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="date"
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -873,7 +1041,8 @@ export default function PerformancePage() {
           Total Investment Growth
         </h2>
         <p className="text-xs text-muted mb-4">
-          Includes net capital deployed, realized P&amp;L from closed positions, and dividends received.
+          Includes net capital deployed, realized P&amp;L from closed positions,
+          and dividends received.
         </p>
         {totalGrowthTimeline.timeline.length > 0 ? (
           <div>
@@ -882,21 +1051,32 @@ export default function PerformancePage() {
                 <div className="w-3 h-3 rounded-full bg-blue-500" />
                 <span className="text-muted">Net Invested</span>
                 <span className="text-white font-medium">
-                  {formatCurrency(totalGrowthTimeline.totalNetInvested, displayCurrency)}
+                  {formatCurrency(
+                    totalGrowthTimeline.totalNetInvested,
+                    displayCurrency
+                  )}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-yellow-400" />
                 <span className="text-muted">Closed P&amp;L</span>
-                <span className={`font-medium ${totalGrowthTimeline.totalRealizedPnl >= 0 ? "text-gain" : "text-loss"}`}>
-                  {formatCurrency(totalGrowthTimeline.totalRealizedPnl, displayCurrency)}
+                <span
+                  className={`font-medium ${totalGrowthTimeline.totalRealizedPnl >= 0 ? "text-gain" : "text-loss"}`}
+                >
+                  {formatCurrency(
+                    totalGrowthTimeline.totalRealizedPnl,
+                    displayCurrency
+                  )}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-pink-500" />
                 <span className="text-muted">Dividends</span>
                 <span className="text-white font-medium">
-                  {formatCurrency(totalGrowthTimeline.totalDividends, displayCurrency)}
+                  {formatCurrency(
+                    totalGrowthTimeline.totalDividends,
+                    displayCurrency
+                  )}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -913,7 +1093,10 @@ export default function PerformancePage() {
             </div>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={totalGrowthTimeline.timeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="date"
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -979,21 +1162,27 @@ export default function PerformancePage() {
               Portfolio vs Benchmarks
             </h2>
             <p className="text-xs text-muted mt-0.5">
-              Total market value of all holdings from the selected account, sampled weekly.
+              Total market value of all holdings from the selected account,
+              sampled weekly.
             </p>
             <p className="text-xs text-muted/70 mt-1">
-              Portfolio value includes deposits and withdrawals over time, so benchmark comparison is indicative rather than a formal time-weighted return.
+              Portfolio value includes deposits and withdrawals over time, so
+              benchmark comparison is indicative rather than a formal
+              time-weighted return.
             </p>
             {comparisonStartTime && comparisonChartData.length > 0 && (
               <p className="text-xs text-muted/70 mt-1">
                 Comparison starts {formatPortfolioDate(comparisonStartTime)} at{" "}
-                {formatCurrency(comparisonChartData[0]!.value, displayCurrency)} (first week with full portfolio valuation and benchmark data).
+                {formatCurrency(comparisonChartData[0]!.value, displayCurrency)}{" "}
+                (first week with full portfolio valuation and benchmark data).
               </p>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {BENCHMARK_CONFIG.map((config) => {
-              const resolved = resolvedBenchmarks.find((b) => b.id === config.id);
+              const resolved = resolvedBenchmarks.find(
+                (b) => b.id === config.id
+              );
               return (
                 <label
                   key={config.id}
@@ -1024,7 +1213,14 @@ export default function PerformancePage() {
 
         <div className="mb-4 rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3 text-xs text-muted/80">
           <p>
-            Portfolio shows your actual weekly market value. Each benchmark line shows what your portfolio would be worth if it had grown at the benchmark&apos;s price return since the comparison start: starting portfolio value × (benchmark price this week ÷ benchmark price at start). Example: if your portfolio was {formatCurrency(10000, displayCurrency)} at the start and the benchmark rose 20%, that line reads {formatCurrency(12000, displayCurrency)}.
+            Portfolio shows your actual weekly market value. Each benchmark line
+            shows what your portfolio would be worth if it had grown at the
+            benchmark&apos;s price return since the comparison start: starting
+            portfolio value × (benchmark price this week ÷ benchmark price at
+            start). Example: if your portfolio was{" "}
+            {formatCurrency(10000, displayCurrency)} at the start and the
+            benchmark rose 20%, that line reads{" "}
+            {formatCurrency(12000, displayCurrency)}.
           </p>
         </div>
 
@@ -1034,12 +1230,17 @@ export default function PerformancePage() {
             Loading price history…
           </div>
         ) : comparisonChartData.length === 0 ? (
-          <div className="text-muted text-sm text-center py-10">No data available</div>
+          <div className="text-muted text-sm text-center py-10">
+            No data available
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <div
               style={{
-                width: Math.max(600, comparisonChartData.length * PORTFOLIO_VALUE_PIXELS_PER_POINT),
+                width: Math.max(
+                  600,
+                  comparisonChartData.length * PORTFOLIO_VALUE_PIXELS_PER_POINT
+                ),
                 minWidth: "100%",
               }}
             >
@@ -1048,7 +1249,10 @@ export default function PerformancePage() {
                   data={comparisonChartData}
                   margin={{ top: 8, right: 12, left: 4, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.05)"
+                  />
                   <XAxis
                     dataKey="time"
                     tick={{ fill: "#9ca3af", fontSize: 11 }}
@@ -1062,8 +1266,10 @@ export default function PerformancePage() {
                     width={80}
                     domain={["auto", "auto"]}
                     tickFormatter={(v: number) => {
-                      if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-                      if (Math.abs(v) >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+                      if (Math.abs(v) >= 1_000_000)
+                        return `${(v / 1_000_000).toFixed(1)}M`;
+                      if (Math.abs(v) >= 1_000)
+                        return `${(v / 1_000).toFixed(0)}K`;
                       return String(Math.round(v));
                     }}
                   />
@@ -1073,7 +1279,9 @@ export default function PerformancePage() {
                       if (v == null || Number.isNaN(v)) return ["—", name];
                       return [formatCurrency(v, displayCurrency), name];
                     }}
-                    labelFormatter={(label: string) => formatPortfolioDate(label)}
+                    labelFormatter={(label: string) =>
+                      formatPortfolioDate(label)
+                    }
                   />
                   <Legend wrapperStyle={{ color: "#9ca3af", fontSize: 12 }} />
                   <Line
@@ -1170,7 +1378,10 @@ export default function PerformancePage() {
             {holdingPerformance.length > 0 && (
               <tfoot>
                 <tr className="bg-white/5">
-                  <td colSpan={2} className="py-2.5 px-5 text-sm font-semibold text-white">
+                  <td
+                    colSpan={2}
+                    className="py-2.5 px-5 text-sm font-semibold text-white"
+                  >
                     Total
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right font-medium text-white">
@@ -1179,10 +1390,14 @@ export default function PerformancePage() {
                   <td className="py-2.5 px-3 text-sm text-right font-medium text-white">
                     {formatCurrency(totalValue, displayCurrency)}
                   </td>
-                  <td className={`py-2.5 px-3 text-sm text-right font-semibold ${totalUnrealizedPnL >= 0 ? "text-gain" : "text-loss"}`}>
+                  <td
+                    className={`py-2.5 px-3 text-sm text-right font-semibold ${totalUnrealizedPnL >= 0 ? "text-gain" : "text-loss"}`}
+                  >
                     {formatCurrency(totalUnrealizedPnL, displayCurrency)}
                   </td>
-                  <td className={`py-2.5 px-3 text-sm text-right font-semibold ${totalReturn >= 0 ? "text-gain" : "text-loss"}`}>
+                  <td
+                    className={`py-2.5 px-3 text-sm text-right font-semibold ${totalReturn >= 0 ? "text-gain" : "text-loss"}`}
+                  >
                     {formatPercent(totalReturn)}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
@@ -1213,9 +1428,7 @@ function HoldingRow({
   const color = h.pnl >= 0 ? "text-gain" : "text-loss";
   return (
     <tr className="border-b border-white/5 hover:bg-white/5">
-      <td className="py-2.5 px-5 text-sm font-medium text-white">
-        {h.symbol}
-      </td>
+      <td className="py-2.5 px-5 text-sm font-medium text-white">{h.symbol}</td>
       <td className="py-2.5 px-3 text-sm text-muted">{h.name}</td>
       <td className="py-2.5 px-3 text-sm text-right">
         {formatCurrency(h.invested, displayCurrency)}

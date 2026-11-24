@@ -134,7 +134,10 @@ async function lookupBatch(jobs: FigiJob[]): Promise<FigiResult[]> {
   return (await resp.json()) as FigiResult[];
 }
 
-function resolveCountry(result: FigiResult, exchCodeHint: string | null): string | null {
+function resolveCountry(
+  result: FigiResult,
+  exchCodeHint: string | null
+): string | null {
   if (!result.data || result.data.length === 0) return null;
 
   const entry = result.data[0]!;
@@ -162,7 +165,10 @@ async function main() {
       continue;
     }
 
-    const symbolsInfo = new Map<string, { exchCodes: string[]; currency: string }>();
+    const symbolsInfo = new Map<
+      string,
+      { exchCodes: string[]; currency: string }
+    >();
     for (const account of portfolio.accounts) {
       for (const tx of account.transactions) {
         if (!isCrypto(tx.symbol) && !tx.country) {
@@ -177,7 +183,9 @@ async function main() {
     }
 
     if (symbolsInfo.size === 0) {
-      console.log("  All transactions already have country (or are crypto). Skipping.");
+      console.log(
+        "  All transactions already have country (or are crypto). Skipping."
+      );
       continue;
     }
 
@@ -203,7 +211,11 @@ async function main() {
 
       const results = await lookupBatch(jobs);
 
-      const retryList: Array<{ idx: number; symbol: string; info: { exchCodes: string[]; currency: string } }> = [];
+      const retryList: Array<{
+        idx: number;
+        symbol: string;
+        info: { exchCodes: string[]; currency: string };
+      }> = [];
 
       for (let j = 0; j < batch.length; j++) {
         const [symbol, info] = batch[j]!;

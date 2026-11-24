@@ -8,8 +8,8 @@ const FALLBACK: ExchangeRates = {
   EUR_USD: 1.09,
   EUR_DKK: 7.46,
   RON_USD: 0.22,
-  RON_EUR: 0.20,
-  RON_DKK: 1.50,
+  RON_EUR: 0.2,
+  RON_DKK: 1.5,
   DKK_USD: 0.146,
   DKK_EUR: 0.134,
   DKK_RON: 0.67,
@@ -17,9 +17,7 @@ const FALLBACK: ExchangeRates = {
 
 export async function fetchExchangeRates(): Promise<ExchangeRates> {
   try {
-    const res = await fetch(
-      "https://api.exchangerate-api.com/v4/latest/USD"
-    );
+    const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
     if (!res.ok) return FALLBACK;
     const data = await res.json();
     const eur = data.rates?.EUR ?? FALLBACK.USD_EUR;

@@ -63,9 +63,7 @@ export default function HoldingRow({
     <tr
       onClick={onClick}
       className={`cursor-pointer transition-colors border-b border-white/5 ${
-        isSelected
-          ? "bg-blue-500/10"
-          : "hover:bg-white/5"
+        isSelected ? "bg-blue-500/10" : "hover:bg-white/5"
       }`}
     >
       <td className="py-3 px-3">
