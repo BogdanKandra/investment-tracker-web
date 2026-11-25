@@ -5,6 +5,7 @@ export default function AccountSelect() {
 
   return (
     <select
+      aria-label="Account"
       value={selectedAccount ?? "__all__"}
       onChange={(e) =>
         setSelectedAccount(

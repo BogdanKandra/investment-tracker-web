@@ -48,6 +48,7 @@ export default function PriceChart({
   const liqSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const [range, setRange] = useState<TimeRange>("6M");
   const [loading, setLoading] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -109,9 +110,11 @@ export default function PriceChart({
     let cancelled = false;
     setLoading(true);
 
-    fetchHistoricalData(holding.symbol, range).then((data) => {
+    fetchHistoricalData(holding.symbol, range).then((result) => {
       if (cancelled || !seriesRef.current) return;
       setLoading(false);
+      setUnavailable(result === null);
+      const data = result ?? [];
 
       const chartData: CandlestickData<Time>[] = data.map((d: OhlcData) => ({
         time: d.time as Time,
@@ -212,6 +215,16 @@ export default function PriceChart({
             <div className="text-muted text-sm">Loading chart...</div>
           </div>
         )}
+        {!loading && unavailable && (
+          <div
+            role="status"
+            className="absolute inset-0 flex items-center justify-center bg-surface/50 z-10"
+          >
+            <div className="text-muted text-sm">
+              Price history unavailable (Yahoo Finance could not be reached)
+            </div>
+          </div>
+        )}
         <div ref={chartContainerRef} />
       </div>
 
@@ -223,6 +236,7 @@ export default function PriceChart({
         <StatsCard
           label="Market Value"
           value={formatCurrency(marketValue, holding.currency)}
+          subValue={currentPrice == null ? "At cost: no live price" : undefined}
         />
         <StatsCard
           label="Unrealized P&L"

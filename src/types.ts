@@ -1,21 +1,26 @@
 export type SecurityTransactionType = "Buy" | "Sell" | "Dividend";
 export type TransactionType = SecurityTransactionType | "Interest";
-export type CurrencySymbol = "$" | "€" | "RON" | "DKK";
+/** Every supported currency. Adding one here (plus its ISO code in
+ *  utils/currency.ts and a fallback rate) is all a new currency needs. */
+export const CURRENCY_SYMBOLS = ["$", "€", "RON", "DKK"] as const;
+export type CurrencySymbol = (typeof CURRENCY_SYMBOLS)[number];
+
+/*
+ * In data/portfolio.json every transaction has a single `fee` field. Its
+ * meaning depends on the type, so the loader (data/validatePortfolio.ts)
+ * maps it to a named field:
+ *   Buy                     -> commission  (broker fee, money paid out)
+ *   Sell, Dividend, Interest -> taxWithheld (income tax kept at source)
+ */
 
 interface TransactionBase {
   date: string; // DD-MM-YYYY
   currency: CurrencySymbol;
-  fee: number;
   note: string;
   country?: string; // Country of incorporation/domicile
 }
 
-/**
- * A transaction on a security. For Dividend, `shares` is the number of shares
- * held and `price` the dividend per share.
- */
-export interface SecurityTransaction extends TransactionBase {
-  type: SecurityTransactionType;
+interface SecurityFields {
   symbol: string;
   name: string;
   shares: number;
@@ -23,14 +28,49 @@ export interface SecurityTransaction extends TransactionBase {
   isin?: string; // ISO 6166, e.g. "US0378331005"
 }
 
+export interface BuyTransaction extends TransactionBase, SecurityFields {
+  type: "Buy";
+  /** Broker commission paid on top of shares * price. */
+  commission: number;
+}
+
+export interface SellTransaction extends TransactionBase, SecurityFields {
+  type: "Sell";
+  /** Income tax on the gain, withheld by the broker. */
+  taxWithheld: number;
+}
+
+/** `shares` is the number of shares held, `price` the dividend per share. */
+export interface DividendTransaction extends TransactionBase, SecurityFields {
+  type: "Dividend";
+  /** Dividend tax withheld at source. */
+  taxWithheld: number;
+}
+
+/** A transaction on a security. */
+export type SecurityTransaction =
+  BuyTransaction | SellTransaction | DividendTransaction;
+
 /** Interest paid on cash held at the broker. */
 export interface InterestTransaction extends TransactionBase {
   type: "Interest";
   amount: number;
+  /** Income tax withheld at source. */
+  taxWithheld: number;
 }
 
 /** Narrow on `type` to get the matching fields. */
 export type Transaction = SecurityTransaction | InterestTransaction;
+
+/** Commission paid (Buy) or tax withheld (others), for generic displays. */
+export function transactionCharges(tx: Transaction): {
+  commission: number;
+  taxWithheld: number;
+} {
+  return tx.type === "Buy"
+    ? { commission: tx.commission, taxWithheld: 0 }
+    : { commission: 0, taxWithheld: tx.taxWithheld };
+}
 
 export function isSecurityTransaction(
   tx: Transaction
@@ -65,7 +105,7 @@ export interface FifoLot {
   date: string;
   shares: number;
   price: number;
-  fee: number;
+  commission: number;
 }
 
 export interface Holding {
@@ -76,26 +116,27 @@ export interface Holding {
   totalShares: number;
   averageCost: number;
   totalInvested: number;
-  totalFees: number;
+  /** Commissions paid on buys. */
+  totalCommission: number;
+  /** Income tax withheld on sells. */
+  totalTaxWithheld: number;
   lots: FifoLot[];
   transactions: SecurityTransaction[];
   isClosed: boolean;
   realizedPnL: number;
 }
 
-export interface ExchangeRates {
-  USD_EUR: number;
-  USD_RON: number;
-  USD_DKK: number;
-  EUR_RON: number;
-  EUR_USD: number;
-  EUR_DKK: number;
-  RON_USD: number;
-  RON_EUR: number;
-  RON_DKK: number;
-  DKK_USD: number;
-  DKK_EUR: number;
-  DKK_RON: number;
+/**
+ * How many units of each currency one US dollar buys ("$" is always 1).
+ * Any pair converts through USD, so a new currency needs one entry here.
+ */
+export type ExchangeRates = Record<CurrencySymbol, number>;
+
+/** Where the current exchange rates came from. */
+export interface RatesStatus {
+  source: "loading" | "live" | "fallback";
+  /** Date the rates apply to (YYYY-MM-DD), when known. */
+  asOf: string | null;
 }
 
 export type TimeRange =

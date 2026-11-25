@@ -1,6 +1,11 @@
-import type { CurrencySymbol, PortfolioData, TransactionType } from "../types";
+import {
+  CURRENCY_SYMBOLS,
+  type CurrencySymbol,
+  type PortfolioData,
+  type TransactionType,
+} from "../types";
 
-const CURRENCIES: readonly CurrencySymbol[] = ["$", "€", "RON", "DKK"];
+const CURRENCIES: readonly CurrencySymbol[] = CURRENCY_SYMBOLS;
 const TRANSACTION_TYPES: readonly TransactionType[] = [
   "Buy",
   "Sell",
@@ -45,7 +50,8 @@ function isValidDate(v: unknown): boolean {
 /**
  * Checks that parsed JSON matches PortfolioData, collecting every problem with
  * its path (e.g. "accounts[1].transactions[7].price: expected a number").
- * Returns the data typed as PortfolioData, or throws PortfolioValidationError.
+ * Returns a converted copy (see normalizePortfolio), or throws
+ * PortfolioValidationError.
  */
 export function validatePortfolio(data: unknown): PortfolioData {
   const problems: string[] = [];
@@ -143,5 +149,23 @@ export function validatePortfolio(data: unknown): PortfolioData {
   }
 
   if (problems.length > 0) throw new PortfolioValidationError(problems);
-  return data as unknown as PortfolioData;
+  return normalizePortfolio(data);
+}
+
+/**
+ * Maps the file's single `fee` field to the named field for each type:
+ * Buy -> commission, Sell/Dividend/Interest -> taxWithheld. Returns a copy;
+ * the input is assumed valid.
+ */
+function normalizePortfolio(data: Json): PortfolioData {
+  const accounts = (data.accounts as Json[]).map((acct) => ({
+    ...acct,
+    transactions: (acct.transactions as Json[]).map((tx) => {
+      const { fee, ...rest } = tx;
+      return tx.type === "Buy"
+        ? { ...rest, commission: fee }
+        : { ...rest, taxWithheld: fee };
+    }),
+  }));
+  return { ...data, accounts } as unknown as PortfolioData;
 }

@@ -5,7 +5,13 @@ import { formatCurrency, convertCurrency } from "../utils/currency";
 import { formatShares } from "../utils/numbers";
 import StatsCard from "../components/common/StatsCard";
 import CurrencySelect from "../components/common/CurrencySelect";
-import type { Transaction, TransactionType } from "../types";
+import SortableTh from "../components/common/SortableTh";
+import { useTableSort } from "../hooks/useTableSort";
+import {
+  transactionCharges,
+  type Transaction,
+  type TransactionType,
+} from "../types";
 
 /**
  * One table row. The table mixes all transaction types, so the per-type
@@ -16,13 +22,17 @@ interface EnrichedTx {
   date: string;
   type: TransactionType;
   currency: Transaction["currency"];
-  fee: number;
+  /** Broker commission (Buy only). */
+  commission: number;
+  /** Tax withheld at source (Sell, Dividend, Interest). */
+  taxWithheld: number;
   note: string;
   symbol?: string;
   name?: string;
   shares?: number;
   price?: number;
   amount?: number;
+  /** Cash moved: paid out for a buy, received for everything else. */
   total: number;
 }
 
@@ -32,24 +42,47 @@ function toRow(tx: Transaction, account: string): EnrichedTx {
     date: tx.date,
     type: tx.type,
     currency: tx.currency,
-    fee: tx.fee,
     note: tx.note,
+    ...transactionCharges(tx),
   };
   if (tx.type === "Interest") {
-    return { ...base, amount: tx.amount, total: tx.amount + tx.fee };
+    return {
+      ...base,
+      amount: tx.amount,
+      total: tx.amount - tx.taxWithheld,
+    };
   }
+  const value = tx.shares * tx.price;
   return {
     ...base,
     symbol: tx.symbol,
     name: tx.name,
     shares: tx.shares,
     price: tx.price,
-    total: tx.shares * tx.price + tx.fee,
+    total: tx.type === "Buy" ? value + tx.commission : value - tx.taxWithheld,
   };
 }
 
 type SortKey =
-  "date" | "type" | "symbol" | "shares" | "price" | "fee" | "total";
+  | "date"
+  | "type"
+  | "symbol"
+  | "shares"
+  | "price"
+  | "commission"
+  | "tax"
+  | "total";
+
+const COMPARATORS: Record<SortKey, (a: EnrichedTx, b: EnrichedTx) => number> = {
+  date: (a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+  type: (a, b) => a.type.localeCompare(b.type),
+  symbol: (a, b) => (a.symbol ?? "").localeCompare(b.symbol ?? ""),
+  shares: (a, b) => (a.shares ?? 0) - (b.shares ?? 0),
+  price: (a, b) => (a.price ?? a.amount ?? 0) - (b.price ?? b.amount ?? 0),
+  commission: (a, b) => a.commission - b.commission,
+  tax: (a, b) => a.taxWithheld - b.taxWithheld,
+  total: (a, b) => a.total - b.total,
+};
 
 export default function TransactionsPage() {
   const { portfolio, displayCurrency, rates } = usePortfolio();
@@ -59,8 +92,6 @@ export default function TransactionsPage() {
     "__all__"
   );
   const [filterSymbol, setFilterSymbol] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("date");
-  const [sortAsc, setSortAsc] = useState(false);
 
   const allTransactions = useMemo<EnrichedTx[]>(() => {
     const txs: EnrichedTx[] = [];
@@ -90,49 +121,28 @@ export default function TransactionsPage() {
       );
     }
 
-    list.sort((a, b) => {
-      let cmp = 0;
-      switch (sortKey) {
-        case "date":
-          cmp = parseDate(a.date).getTime() - parseDate(b.date).getTime();
-          break;
-        case "type":
-          cmp = a.type.localeCompare(b.type);
-          break;
-        case "symbol":
-          cmp = (a.symbol ?? "").localeCompare(b.symbol ?? "");
-          break;
-        case "shares":
-          cmp = (a.shares ?? 0) - (b.shares ?? 0);
-          break;
-        case "price":
-          cmp = (a.price ?? a.amount ?? 0) - (b.price ?? b.amount ?? 0);
-          break;
-        case "fee":
-          cmp = a.fee - b.fee;
-          break;
-        case "total":
-          cmp = a.total - b.total;
-          break;
-      }
-      return sortAsc ? cmp : -cmp;
-    });
-
     return list;
-  }, [
-    allTransactions,
-    filterAccount,
-    filterType,
-    filterSymbol,
-    sortKey,
-    sortAsc,
-  ]);
+  }, [allTransactions, filterAccount, filterType, filterSymbol]);
+
+  const sort = useTableSort(filtered, COMPARATORS, "date");
 
   const stats = useMemo(() => {
     let totalInvested = 0;
-    let totalFees = 0;
+    let totalCommission = 0;
+    let totalTaxWithheld = 0;
     for (const tx of filtered) {
-      totalFees += convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
+      totalCommission += convertCurrency(
+        tx.commission,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
+      totalTaxWithheld += convertCurrency(
+        tx.taxWithheld,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
       if (tx.type === "Buy") {
         totalInvested += convertCurrency(
           (tx.shares ?? 0) * (tx.price ?? 0),
@@ -142,21 +152,20 @@ export default function TransactionsPage() {
         );
       }
     }
-    return { totalInvested, totalFees, count: filtered.length };
+    return {
+      totalInvested,
+      totalCommission,
+      totalTaxWithheld,
+      count: filtered.length,
+    };
   }, [filtered, displayCurrency, rates]);
 
-  function handleSort(key: SortKey) {
-    if (sortKey === key) setSortAsc(!sortAsc);
-    else {
-      setSortKey(key);
-      setSortAsc(false);
-    }
-  }
-
-  const col =
-    "py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none";
-  const arrow = (key: SortKey) =>
-    sortKey === key ? (sortAsc ? " ↑" : " ↓") : "";
+  const col = "py-2 px-3 text-xs text-muted uppercase tracking-wide";
+  const money = (amount: number, currency: EnrichedTx["currency"]) =>
+    formatCurrency(
+      convertCurrency(amount, currency, displayCurrency, rates),
+      displayCurrency
+    );
 
   return (
     <div>
@@ -166,14 +175,18 @@ export default function TransactionsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatsCard
           label="Total Invested"
           value={formatCurrency(stats.totalInvested, displayCurrency)}
         />
         <StatsCard
-          label="Total Fees"
-          value={formatCurrency(stats.totalFees, displayCurrency)}
+          label="Commissions"
+          value={formatCurrency(stats.totalCommission, displayCurrency)}
+        />
+        <StatsCard
+          label="Tax Withheld"
+          value={formatCurrency(stats.totalTaxWithheld, displayCurrency)}
         />
         <StatsCard label="Transaction Count" value={stats.count.toString()} />
       </div>
@@ -181,6 +194,7 @@ export default function TransactionsPage() {
       {/* Filters */}
       <div className="flex gap-3 mb-4 flex-wrap">
         <select
+          aria-label="Filter by account"
           value={filterAccount}
           onChange={(e) => setFilterAccount(e.target.value)}
           className="bg-card border border-white/10 text-white text-sm rounded-lg px-3 py-2"
@@ -194,6 +208,7 @@ export default function TransactionsPage() {
         </select>
 
         <select
+          aria-label="Filter by type"
           value={filterType}
           onChange={(e) =>
             setFilterType(e.target.value as TransactionType | "__all__")
@@ -209,6 +224,7 @@ export default function TransactionsPage() {
 
         <input
           type="text"
+          aria-label="Search symbol or name"
           placeholder="Search symbol..."
           value={filterSymbol}
           onChange={(e) => setFilterSymbol(e.target.value)}
@@ -221,45 +237,56 @@ export default function TransactionsPage() {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/10">
-              <th className={col} onClick={() => handleSort("date")}>
-                Date{arrow("date")}
-              </th>
-              <th className={col} onClick={() => handleSort("type")}>
-                Type{arrow("type")}
-              </th>
-              <th className={col} onClick={() => handleSort("symbol")}>
-                Symbol{arrow("symbol")}
-              </th>
+              <SortableTh sort={sort} sortKey="date" className={col}>
+                Date
+              </SortableTh>
+              <SortableTh sort={sort} sortKey="type" className={col}>
+                Type
+              </SortableTh>
+              <SortableTh sort={sort} sortKey="symbol" className={col}>
+                Symbol
+              </SortableTh>
               <th className={col}>Name</th>
-              <th
+              <SortableTh
+                sort={sort}
+                sortKey="shares"
                 className={`${col} text-right`}
-                onClick={() => handleSort("shares")}
               >
-                Shares{arrow("shares")}
-              </th>
-              <th
+                Shares
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="price"
                 className={`${col} text-right`}
-                onClick={() => handleSort("price")}
               >
-                Price{arrow("price")}
-              </th>
-              <th
+                Price
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="commission"
                 className={`${col} text-right`}
-                onClick={() => handleSort("fee")}
               >
-                Fee{arrow("fee")}
-              </th>
-              <th
+                Commission
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="tax"
                 className={`${col} text-right`}
-                onClick={() => handleSort("total")}
               >
-                Total{arrow("total")}
-              </th>
+                Tax Withheld
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="total"
+                className={`${col} text-right`}
+              >
+                Total
+              </SortableTh>
               <th className={col}>Note</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((tx, i) => {
+            {sort.sorted.map((tx, i) => {
               const typeColor =
                 tx.type === "Buy"
                   ? "text-gain"
@@ -292,50 +319,23 @@ export default function TransactionsPage() {
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
                     {tx.price != null
-                      ? formatCurrency(
-                          convertCurrency(
-                            tx.price,
-                            tx.currency,
-                            displayCurrency,
-                            rates
-                          ),
-                          displayCurrency
-                        )
+                      ? money(tx.price, tx.currency)
                       : tx.amount != null
-                        ? formatCurrency(
-                            convertCurrency(
-                              tx.amount,
-                              tx.currency,
-                              displayCurrency,
-                              rates
-                            ),
-                            displayCurrency
-                          )
+                        ? money(tx.amount, tx.currency)
                         : "—"}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right text-muted">
-                    {tx.fee > 0
-                      ? formatCurrency(
-                          convertCurrency(
-                            tx.fee,
-                            tx.currency,
-                            displayCurrency,
-                            rates
-                          ),
-                          displayCurrency
-                        )
+                    {tx.commission > 0
+                      ? money(tx.commission, tx.currency)
+                      : "-"}
+                  </td>
+                  <td className="py-2.5 px-3 text-sm text-right text-muted">
+                    {tx.taxWithheld > 0
+                      ? money(tx.taxWithheld, tx.currency)
                       : "-"}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-right">
-                    {formatCurrency(
-                      convertCurrency(
-                        tx.total,
-                        tx.currency,
-                        displayCurrency,
-                        rates
-                      ),
-                      displayCurrency
-                    )}
+                    {money(tx.total, tx.currency)}
                   </td>
                   <td className="py-2.5 px-3 text-sm text-muted truncate max-w-[150px]">
                     {tx.note || "-"}

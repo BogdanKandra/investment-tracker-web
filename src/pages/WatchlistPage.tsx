@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePortfolio } from "../context/usePortfolio";
-import { fetchCurrentPrices } from "../api/marketData";
+import { useCurrentPrices } from "../hooks/useCurrentPrices";
 import { formatCurrency } from "../utils/currency";
 import PriceChart from "../components/charts/PriceChart";
 import type { Holding, TimeRange, WatchlistItem } from "../types";
 import { useTableSort } from "../hooks/useTableSort";
+import SortableTh from "../components/common/SortableTh";
 
 const WATCHLIST_TIME_RANGES: TimeRange[] = [
   "1D",
@@ -23,20 +24,13 @@ const WATCHLIST_TIME_RANGES: TimeRange[] = [
 
 export default function WatchlistPage() {
   const { portfolio } = usePortfolio();
-  const [prices, setPrices] = useState<Map<string, number>>(new Map());
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
 
   const symbols = useMemo(
     () => portfolio.watchlist.map((w) => w.symbol),
     [portfolio.watchlist]
   );
-
-  useEffect(() => {
-    if (symbols.length === 0) return;
-    fetchCurrentPrices(symbols)
-      .then(setPrices)
-      .catch(() => {});
-  }, [symbols]);
+  const { prices, loading: pricesLoading } = useCurrentPrices(symbols);
 
   type WatchSortKey = "symbol" | "currency" | "price";
   const watchComparators = useMemo(
@@ -77,7 +71,8 @@ export default function WatchlistPage() {
         totalShares: 0,
         averageCost: 0,
         totalInvested: 0,
-        totalFees: 0,
+        totalCommission: 0,
+        totalTaxWithheld: 0,
         lots: [],
         transactions: [],
         isClosed: false,
@@ -95,24 +90,27 @@ export default function WatchlistPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th
-                  className="py-2 px-4 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
-                  onClick={() => watchSort.handleSort("symbol")}
+                <SortableTh
+                  sort={watchSort}
+                  sortKey="symbol"
+                  className="py-2 px-4 text-xs text-muted uppercase tracking-wide"
                 >
-                  Symbol{watchSort.arrow("symbol")}
-                </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
-                  onClick={() => watchSort.handleSort("currency")}
+                  Symbol
+                </SortableTh>
+                <SortableTh
+                  sort={watchSort}
+                  sortKey="currency"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide"
                 >
-                  Currency{watchSort.arrow("currency")}
-                </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                  onClick={() => watchSort.handleSort("price")}
+                  Currency
+                </SortableTh>
+                <SortableTh
+                  sort={watchSort}
+                  sortKey="price"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                 >
-                  Price{watchSort.arrow("price")}
-                </th>
+                  Price
+                </SortableTh>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                   Note
                 </th>
@@ -138,9 +136,18 @@ export default function WatchlistPage() {
                       {item.currency}
                     </td>
                     <td className="py-3 px-3 text-sm text-right">
-                      {price != null
-                        ? formatCurrency(price, item.currency)
-                        : "..."}
+                      {price != null ? (
+                        formatCurrency(price, item.currency)
+                      ) : pricesLoading ? (
+                        "…"
+                      ) : (
+                        <span
+                          className="text-amber-300"
+                          title="Live price unavailable"
+                        >
+                          n/a
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-3 text-sm text-muted truncate max-w-[200px]">
                       {item.note}

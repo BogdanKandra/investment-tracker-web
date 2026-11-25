@@ -1,15 +1,12 @@
 import { useMemo, useState } from "react";
 import { usePortfolio } from "../../context/usePortfolio";
-import {
-  formatCurrency,
-  convertCurrency,
-  currencyLabel,
-} from "../../utils/currency";
+import { formatCurrency } from "../../utils/currency";
 import { formatDateStr, parseDate } from "../../utils/dates";
-import { AVERAGE_YEARLY_RATES_TO_RON } from "../../data/taxCalculator";
+import { toRonAtYearlyRate } from "../../data/taxCalculator";
 import type { CurrencySymbol } from "../../types";
 import { useTableSort } from "../../hooks/useTableSort";
 import { thSortable, fmtRon } from "./shared";
+import SortableTh from "../../components/common/SortableTh";
 
 export default function InterestTaxesSection() {
   const { portfolio, rates } = usePortfolio();
@@ -59,27 +56,22 @@ export default function InterestTaxesSection() {
         const txYear = parseDate(tx.date).getFullYear();
         if (txYear !== interestTaxPrevYear) continue;
         const gross = tx.amount;
-        const net = gross - tx.fee;
+        const net = gross - tx.taxWithheld;
         const country = tx.country ?? "Other";
 
-        const rateKey = `${currencyLabel(tx.currency)}_${interestTaxPrevYear}`;
-        const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
-        const toRon = (amount: number): number => {
-          if (tx.currency === "RON") return amount;
-          if (yearlyRate) return amount * yearlyRate;
-          return convertCurrency(amount, tx.currency, "RON", rates);
-        };
+        const toRon = (amount: number): number =>
+          toRonAtYearlyRate(amount, tx.currency, interestTaxPrevYear, rates);
 
         rows.push({
           date: tx.date,
           account: account.account_name,
           country,
           grossAmount: gross,
-          fee: tx.fee,
+          fee: tx.taxWithheld,
           netAmount: net,
           currency: tx.currency,
           grossAmountRon: toRon(gross),
-          feeRon: toRon(tx.fee),
+          feeRon: toRon(tx.taxWithheld),
           netAmountRon: toRon(net),
           note: tx.note,
         });
@@ -206,45 +198,47 @@ export default function InterestTaxesSection() {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/10">
-              <th
+              <SortableTh sort={intSort} sortKey="date" className={thSortable}>
+                Date
+              </SortableTh>
+              <SortableTh
+                sort={intSort}
+                sortKey="account"
                 className={thSortable}
-                onClick={() => intSort.handleSort("date")}
               >
-                Date{intSort.arrow("date")}
-              </th>
-              <th
+                Account
+              </SortableTh>
+              <SortableTh
+                sort={intSort}
+                sortKey="country"
                 className={thSortable}
-                onClick={() => intSort.handleSort("account")}
               >
-                Account{intSort.arrow("account")}
-              </th>
-              <th
-                className={thSortable}
-                onClick={() => intSort.handleSort("country")}
-              >
-                Country{intSort.arrow("country")}
-              </th>
+                Country
+              </SortableTh>
               <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                 Note
               </th>
-              <th
+              <SortableTh
+                sort={intSort}
+                sortKey="gross"
                 className={`${thSortable} text-right`}
-                onClick={() => intSort.handleSort("gross")}
               >
-                Gross{intSort.arrow("gross")}
-              </th>
-              <th
+                Gross
+              </SortableTh>
+              <SortableTh
+                sort={intSort}
+                sortKey="fee"
                 className={`${thSortable} text-right`}
-                onClick={() => intSort.handleSort("fee")}
               >
-                Income Tax{intSort.arrow("fee")}
-              </th>
-              <th
+                Income Tax
+              </SortableTh>
+              <SortableTh
+                sort={intSort}
+                sortKey="net"
                 className={`${thSortable} text-right`}
-                onClick={() => intSort.handleSort("net")}
               >
-                Net{intSort.arrow("net")}
-              </th>
+                Net
+              </SortableTh>
             </tr>
           </thead>
           <tbody>

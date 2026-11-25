@@ -23,7 +23,8 @@ import {
   type CassBracket,
   type SellPnL,
 } from "../../data/taxCalculator";
-import { tooltipStyle, fmtRon } from "./shared";
+import { fmtRon } from "./shared";
+import { tooltipStyle } from "../../components/charts/chartStyles";
 
 const BRACKET_LABEL: Record<CassBracket, string> = {
   below6: "Under 6 × minimum wage — no CASS due",

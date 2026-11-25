@@ -6,6 +6,7 @@ export default function CurrencySelect() {
 
   return (
     <select
+      aria-label="Display currency"
       value={displayCurrency}
       onChange={(e) =>
         setDisplayCurrency(e.target.value as typeof displayCurrency)

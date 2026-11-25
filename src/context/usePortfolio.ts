@@ -1,9 +1,11 @@
 import { createContext, useContext } from "react";
 import type {
+  Account,
   PortfolioData,
   CurrencySymbol,
   ExchangeRates,
   Holding,
+  RatesStatus,
 } from "../types";
 
 // Kept apart from PortfolioContext.tsx so that file exports only a component,
@@ -13,9 +15,12 @@ export interface PortfolioState {
   portfolio: PortfolioData;
   selectedAccount: string | undefined;
   setSelectedAccount: (name: string | undefined) => void;
+  /** The selected account, or all accounts when none is selected. */
+  filteredAccounts: Account[];
   displayCurrency: CurrencySymbol;
   setDisplayCurrency: (c: CurrencySymbol) => void;
   rates: ExchangeRates;
+  ratesStatus: RatesStatus;
   currentHoldings: Holding[];
   formerHoldings: Holding[];
   allCurrencies: CurrencySymbol[];

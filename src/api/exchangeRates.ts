@@ -1,43 +1,56 @@
-import type { ExchangeRates } from "../types";
+import { CURRENCY_SYMBOLS, type ExchangeRates } from "../types";
+import { currencyLabel } from "../utils/currency";
 
-const FALLBACK: ExchangeRates = {
-  USD_EUR: 0.92,
-  USD_RON: 4.57,
-  USD_DKK: 6.87,
-  EUR_RON: 4.97,
-  EUR_USD: 1.09,
-  EUR_DKK: 7.46,
-  RON_USD: 0.22,
-  RON_EUR: 0.2,
-  RON_DKK: 1.5,
-  DKK_USD: 0.146,
-  DKK_EUR: 0.134,
-  DKK_RON: 0.67,
+/**
+ * Built-in rates (units per 1 USD, roughly mid-2024), used until live rates
+ * load and whenever the rates API is unreachable. The UI flags when these
+ * are in use, since they go stale.
+ */
+export const FALLBACK_RATES: ExchangeRates = {
+  $: 1,
+  "€": 0.92,
+  RON: 4.57,
+  DKK: 6.87,
 };
 
-export async function fetchExchangeRates(): Promise<ExchangeRates> {
+export interface RatesResult {
+  rates: ExchangeRates;
+  source: "live" | "fallback";
+  /** Date the rates apply to (YYYY-MM-DD), when known. */
+  asOf: string | null;
+}
+
+const RATES_URL = "https://api.exchangerate-api.com/v4/latest/USD";
+
+/**
+ * Fetches current rates for every supported currency. Never throws: on any
+ * failure, or if a currency is missing from the response, it returns the
+ * fallback rates with source "fallback".
+ */
+export async function fetchExchangeRates(): Promise<RatesResult> {
+  const fallback: RatesResult = {
+    rates: FALLBACK_RATES,
+    source: "fallback",
+    asOf: null,
+  };
   try {
-    const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
-    if (!res.ok) return FALLBACK;
-    const data = await res.json();
-    const eur = data.rates?.EUR ?? FALLBACK.USD_EUR;
-    const ron = data.rates?.RON ?? FALLBACK.USD_RON;
-    const dkk = data.rates?.DKK ?? FALLBACK.USD_DKK;
+    const res = await fetch(RATES_URL);
+    if (!res.ok) return fallback;
+    const data: { date?: unknown; rates?: Record<string, unknown> } =
+      await res.json();
+
+    const rates = {} as ExchangeRates;
+    for (const c of CURRENCY_SYMBOLS) {
+      const v = data.rates?.[currencyLabel(c)];
+      if (typeof v !== "number" || !(v > 0)) return fallback;
+      rates[c] = v;
+    }
     return {
-      USD_EUR: eur,
-      USD_RON: ron,
-      USD_DKK: dkk,
-      EUR_RON: ron / eur,
-      EUR_USD: 1 / eur,
-      EUR_DKK: dkk / eur,
-      RON_USD: 1 / ron,
-      RON_EUR: eur / ron,
-      RON_DKK: dkk / ron,
-      DKK_USD: 1 / dkk,
-      DKK_EUR: eur / dkk,
-      DKK_RON: ron / dkk,
+      rates,
+      source: "live",
+      asOf: typeof data.date === "string" ? data.date : null,
     };
   } catch {
-    return FALLBACK;
+    return fallback;
   }
 }

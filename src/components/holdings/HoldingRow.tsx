@@ -10,6 +10,8 @@ interface HoldingRowProps {
   isSelected: boolean;
   onClick: () => void;
   totalPortfolioValue: number;
+  /** True while live prices are still loading. */
+  pricesLoading?: boolean;
 }
 
 export default function HoldingRow({
@@ -20,6 +22,7 @@ export default function HoldingRow({
   isSelected,
   onClick,
   totalPortfolioValue,
+  pricesLoading = false,
 }: HoldingRowProps) {
   const price = currentPrice ?? holding.averageCost;
   const marketValue = holding.totalShares * price;
@@ -79,9 +82,18 @@ export default function HoldingRow({
         {formatCurrency(displayAvgCost, displayCurrency)}
       </td>
       <td className="py-3 px-3 text-right text-sm">
-        {currentPrice != null
-          ? formatCurrency(displayPrice, displayCurrency)
-          : "..."}
+        {currentPrice != null ? (
+          formatCurrency(displayPrice, displayCurrency)
+        ) : pricesLoading ? (
+          "…"
+        ) : (
+          <span
+            className="text-amber-300"
+            title="No live price; valued at average cost"
+          >
+            n/a
+          </span>
+        )}
       </td>
       <td className="py-3 px-3 text-right text-sm">
         {formatCurrency(displayValue, displayCurrency)}

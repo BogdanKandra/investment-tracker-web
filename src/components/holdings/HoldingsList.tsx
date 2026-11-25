@@ -3,6 +3,8 @@ import { convertCurrency, formatCurrency } from "../../utils/currency";
 import { formatPercent } from "../../utils/numbers";
 import HoldingRow from "./HoldingRow";
 import { useState, useMemo } from "react";
+import { useTableSort } from "../../hooks/useTableSort";
+import SortableTh from "../common/SortableTh";
 
 type SortKey =
   "symbol" | "shares" | "avgCost" | "price" | "value" | "pnl" | "weight";
@@ -15,6 +17,7 @@ interface HoldingsListProps {
   selectedSymbol: string | null;
   onSelect: (symbol: string) => void;
   totalCash: number;
+  pricesLoading?: boolean;
 }
 
 export default function HoldingsList({
@@ -25,9 +28,8 @@ export default function HoldingsList({
   selectedSymbol,
   onSelect,
   totalCash,
+  pricesLoading = false,
 }: HoldingsListProps) {
-  const [sortKey, setSortKey] = useState<SortKey>("value");
-  const [sortAsc, setSortAsc] = useState(false);
   const [filter, setFilter] = useState("");
 
   const { totalPortfolioValue, totalInvested, totalPnL } = useMemo(() => {
@@ -57,77 +59,43 @@ export default function HoldingsList({
 
   const totalPnLPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
 
-  const sorted = useMemo(() => {
-    let list = [...holdings];
+  const filtered = useMemo(() => {
+    if (!filter) return holdings;
+    const q = filter.toLowerCase();
+    return holdings.filter(
+      (h) =>
+        h.symbol.toLowerCase().includes(q) || h.name.toLowerCase().includes(q)
+    );
+  }, [holdings, filter]);
 
-    if (filter) {
-      const q = filter.toLowerCase();
-      list = list.filter(
-        (h) =>
-          h.symbol.toLowerCase().includes(q) || h.name.toLowerCase().includes(q)
-      );
-    }
+  const comparators = useMemo((): Record<
+    SortKey,
+    (a: Holding, b: Holding) => number
+  > => {
+    // Compare in the display currency, as the rows show, so holdings in
+    // different currencies sort correctly.
+    const inDisplay = (amount: number, h: Holding) =>
+      convertCurrency(amount, h.currency, displayCurrency, rates);
+    const price = (h: Holding) =>
+      inDisplay(prices.get(h.symbol) ?? h.averageCost, h);
+    const value = (h: Holding) => h.totalShares * price(h);
+    const pnl = (h: Holding) => value(h) - inDisplay(h.totalInvested, h);
+    return {
+      symbol: (a, b) => a.symbol.localeCompare(b.symbol),
+      shares: (a, b) => a.totalShares - b.totalShares,
+      avgCost: (a, b) =>
+        inDisplay(a.averageCost, a) - inDisplay(b.averageCost, b),
+      price: (a, b) => price(a) - price(b),
+      value: (a, b) => value(a) - value(b),
+      weight: (a, b) => value(a) - value(b),
+      pnl: (a, b) => pnl(a) - pnl(b),
+    };
+  }, [prices, displayCurrency, rates]);
 
-    list.sort((a, b) => {
-      const priceA = prices.get(a.symbol) ?? a.averageCost;
-      const priceB = prices.get(b.symbol) ?? b.averageCost;
-      let cmp = 0;
+  const sort = useTableSort(filtered, comparators, "value");
+  const sorted = sort.sorted;
 
-      switch (sortKey) {
-        case "symbol":
-          cmp = a.symbol.localeCompare(b.symbol);
-          break;
-        case "shares":
-          cmp = a.totalShares - b.totalShares;
-          break;
-        case "avgCost":
-          cmp = a.averageCost - b.averageCost;
-          break;
-        case "price":
-          cmp = priceA - priceB;
-          break;
-        case "value":
-        case "weight":
-          cmp =
-            convertCurrency(
-              a.totalShares * priceA,
-              a.currency,
-              displayCurrency,
-              rates
-            ) -
-            convertCurrency(
-              b.totalShares * priceB,
-              b.currency,
-              displayCurrency,
-              rates
-            );
-          break;
-        case "pnl": {
-          const pnlA = a.totalShares * priceA - a.totalInvested;
-          const pnlB = b.totalShares * priceB - b.totalInvested;
-          cmp = pnlA - pnlB;
-          break;
-        }
-      }
-      return sortAsc ? cmp : -cmp;
-    });
-
-    return list;
-  }, [holdings, sortKey, sortAsc, filter, prices, displayCurrency, rates]);
-
-  function handleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortAsc(!sortAsc);
-    } else {
-      setSortKey(key);
-      setSortAsc(false);
-    }
-  }
-
-  const colClass =
-    "py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none";
-  const arrow = (key: SortKey) =>
-    sortKey === key ? (sortAsc ? " ↑" : " ↓") : "";
+  const colClass = "py-2 px-3 text-xs text-muted uppercase tracking-wide";
 
   return (
     <div>
@@ -182,45 +150,51 @@ export default function HoldingsList({
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/10">
-              <th className={colClass} onClick={() => handleSort("symbol")}>
-                Asset{arrow("symbol")}
-              </th>
-              <th
+              <SortableTh sort={sort} sortKey="symbol" className={colClass}>
+                Asset
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="shares"
                 className={`${colClass} text-right`}
-                onClick={() => handleSort("shares")}
               >
-                Shares{arrow("shares")}
-              </th>
-              <th
+                Shares
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="avgCost"
                 className={`${colClass} text-right`}
-                onClick={() => handleSort("avgCost")}
               >
-                Avg Cost{arrow("avgCost")}
-              </th>
-              <th
+                Avg Cost
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="price"
                 className={`${colClass} text-right`}
-                onClick={() => handleSort("price")}
               >
-                Price{arrow("price")}
-              </th>
-              <th
+                Price
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="value"
                 className={`${colClass} text-right`}
-                onClick={() => handleSort("value")}
               >
-                Value{arrow("value")}
-              </th>
-              <th
+                Value
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="pnl"
                 className={`${colClass} text-right`}
-                onClick={() => handleSort("pnl")}
               >
-                P&L{arrow("pnl")}
-              </th>
-              <th
+                P&L
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="weight"
                 className={`${colClass} text-right`}
-                onClick={() => handleSort("weight")}
               >
-                Weight{arrow("weight")}
-              </th>
+                Weight
+              </SortableTh>
             </tr>
           </thead>
           <tbody>
@@ -234,6 +208,7 @@ export default function HoldingsList({
                 isSelected={selectedSymbol === h.symbol}
                 onClick={() => onSelect(h.symbol)}
                 totalPortfolioValue={totalPortfolioValue}
+                pricesLoading={pricesLoading}
               />
             ))}
           </tbody>

@@ -10,20 +10,18 @@ import {
   Legend,
 } from "recharts";
 import { usePortfolio } from "../../context/usePortfolio";
-import {
-  formatCurrency,
-  convertCurrency,
-  currencyLabel,
-} from "../../utils/currency";
+import { formatCurrency } from "../../utils/currency";
 import { formatDateStr, parseDate } from "../../utils/dates";
 import {
   DIVIDEND_TAX,
-  AVERAGE_YEARLY_RATES_TO_RON,
+  toRonAtYearlyRate,
   getCountryFromSymbol,
 } from "../../data/taxCalculator";
 import type { CurrencySymbol } from "../../types";
 import { useTableSort } from "../../hooks/useTableSort";
-import { tooltipStyle, thSortable, fmtRon } from "./shared";
+import { thSortable, fmtRon } from "./shared";
+import { tooltipStyle } from "../../components/charts/chartStyles";
+import SortableTh from "../../components/common/SortableTh";
 
 export default function DividendTaxesSection({
   w8benDate,
@@ -81,7 +79,7 @@ export default function DividendTaxesSection({
         const txYear = parseDate(tx.date).getFullYear();
         if (txYear !== divTaxPrevYear) continue;
         const gross = tx.shares * tx.price;
-        const net = gross - tx.fee;
+        const net = gross - tx.taxWithheld;
         const country = getCountryFromSymbol(
           tx.symbol,
           tx.currency,
@@ -89,13 +87,8 @@ export default function DividendTaxesSection({
           tx.country
         );
 
-        const rateKey = `${currencyLabel(tx.currency)}_${divTaxPrevYear}`;
-        const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
-        const toRon = (amount: number): number => {
-          if (tx.currency === "RON") return amount;
-          if (yearlyRate) return amount * yearlyRate;
-          return convertCurrency(amount, tx.currency, "RON", rates);
-        };
+        const toRon = (amount: number): number =>
+          toRonAtYearlyRate(amount, tx.currency, divTaxPrevYear, rates);
 
         const isPostW8ben = w8benDate
           ? tx.currency === "$" && parseDate(tx.date) >= w8benDate
@@ -110,11 +103,11 @@ export default function DividendTaxesSection({
           shares: tx.shares,
           pricePerShare: tx.price,
           grossAmount: gross,
-          fee: tx.fee,
+          fee: tx.taxWithheld,
           netAmount: net,
           currency: tx.currency,
           grossAmountRon: toRon(gross),
-          feeRon: toRon(tx.fee),
+          feeRon: toRon(tx.taxWithheld),
           netAmountRon: toRon(net),
           isPostW8ben,
         });
@@ -196,14 +189,18 @@ export default function DividendTaxesSection({
       if (cs.country === "Romania") {
         items.push({
           country: "Romania",
-          description: "Dividend tax already retained by TradeVille broker",
+          description:
+            "Dividend tax already withheld at source by the Romanian broker",
           grossRon: cs.grossRon,
           taxRate: 0,
           taxDue: 0,
           declaration: "No declaration needed",
         });
       } else if (cs.country === "USA") {
-        if (cs.preW8benGrossRon > 0) {
+        // Without a W-8BEN date every USA dividend counts as "pre" (see
+        // isPostW8ben); the `!w8benDate` item below covers them instead, so
+        // only split pre/post when a date is on file.
+        if (w8benDate && cs.preW8benGrossRon > 0) {
           items.push({
             country: "USA (pre W-8BEN)",
             description: `Dividends received before W-8BEN activation — ${(taxRate * 100).toFixed(0)}% tax applies`,
@@ -304,17 +301,12 @@ export default function DividendTaxesSection({
         if (tx.type !== "Dividend") continue;
         const year = parseDate(tx.date).getFullYear();
         const entry = byYear.get(year) ?? { gross: 0, withheld: 0, net: 0 };
-        const rateKey = `${currencyLabel(tx.currency)}_${year}`;
-        const yearlyRate = AVERAGE_YEARLY_RATES_TO_RON[rateKey];
-        const toRon = (amount: number): number => {
-          if (tx.currency === "RON") return amount;
-          if (yearlyRate) return amount * yearlyRate;
-          return convertCurrency(amount, tx.currency, "RON", rates);
-        };
+        const toRon = (amount: number): number =>
+          toRonAtYearlyRate(amount, tx.currency, year, rates);
         const gross = tx.shares * tx.price;
         entry.gross += toRon(gross);
-        entry.withheld += toRon(tx.fee);
-        entry.net += toRon(gross - tx.fee);
+        entry.withheld += toRon(tx.taxWithheld);
+        entry.net += toRon(gross - tx.taxWithheld);
         byYear.set(year, entry);
       }
     }
@@ -398,51 +390,54 @@ export default function DividendTaxesSection({
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/10">
-              <th
+              <SortableTh sort={divSort} sortKey="date" className={thSortable}>
+                Date
+              </SortableTh>
+              <SortableTh
+                sort={divSort}
+                sortKey="symbol"
                 className={thSortable}
-                onClick={() => divSort.handleSort("date")}
               >
-                Date{divSort.arrow("date")}
-              </th>
-              <th
-                className={thSortable}
-                onClick={() => divSort.handleSort("symbol")}
-              >
-                Symbol{divSort.arrow("symbol")}
-              </th>
+                Symbol
+              </SortableTh>
               <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                 Name
               </th>
-              <th
+              <SortableTh
+                sort={divSort}
+                sortKey="account"
                 className={thSortable}
-                onClick={() => divSort.handleSort("account")}
               >
-                Account{divSort.arrow("account")}
-              </th>
-              <th
+                Account
+              </SortableTh>
+              <SortableTh
+                sort={divSort}
+                sortKey="country"
                 className={thSortable}
-                onClick={() => divSort.handleSort("country")}
               >
-                Country{divSort.arrow("country")}
-              </th>
-              <th
+                Country
+              </SortableTh>
+              <SortableTh
+                sort={divSort}
+                sortKey="gross"
                 className={`${thSortable} text-right`}
-                onClick={() => divSort.handleSort("gross")}
               >
-                Gross{divSort.arrow("gross")}
-              </th>
-              <th
+                Gross
+              </SortableTh>
+              <SortableTh
+                sort={divSort}
+                sortKey="fee"
                 className={`${thSortable} text-right`}
-                onClick={() => divSort.handleSort("fee")}
               >
-                Tax Withheld{divSort.arrow("fee")}
-              </th>
-              <th
+                Tax Withheld
+              </SortableTh>
+              <SortableTh
+                sort={divSort}
+                sortKey="net"
                 className={`${thSortable} text-right`}
-                onClick={() => divSort.handleSort("net")}
               >
-                Net{divSort.arrow("net")}
-              </th>
+                Net
+              </SortableTh>
             </tr>
           </thead>
           <tbody>

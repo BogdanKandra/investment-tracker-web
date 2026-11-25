@@ -16,10 +16,13 @@ import AccountSelect from "../components/common/AccountSelect";
 import CurrencySelect from "../components/common/CurrencySelect";
 import { formatCurrency, convertCurrency } from "../utils/currency";
 import { parseDate, formatDateStr } from "../utils/dates";
-import type { Transaction, SecurityTransaction } from "../types";
-
-const W8BEN_PRE_TREATY_RATE = 0.3;
-const W8BEN_POST_TREATY_RATE = 0.1;
+import type { Transaction, DividendTransaction } from "../types";
+import SortableTh from "../components/common/SortableTh";
+import { tooltipStyle } from "../components/charts/chartStyles";
+import {
+  W8BEN_PRE_TREATY_RATE,
+  W8BEN_POST_TREATY_RATE,
+} from "../data/taxCalculator";
 
 /** USD payments on or after the W-8BEN activation date get the treaty rate. */
 function isPostTreaty(tx: Transaction, w8benDate: Date): boolean {
@@ -53,19 +56,11 @@ interface YearlyDividend {
 export default function DividendsPage() {
   const {
     portfolio,
-    selectedAccount,
+    filteredAccounts,
     currentHoldings,
     displayCurrency,
     rates,
   } = usePortfolio();
-
-  const filteredAccounts = useMemo(
-    () =>
-      selectedAccount
-        ? portfolio.accounts.filter((a) => a.account_name === selectedAccount)
-        : portfolio.accounts,
-    [portfolio.accounts, selectedAccount]
-  );
 
   const w8benDate = useMemo(() => {
     if (!portfolio.w_8ben_activated_at) return null;
@@ -73,7 +68,7 @@ export default function DividendsPage() {
   }, [portfolio.w_8ben_activated_at]);
 
   const dividendTxs = useMemo(() => {
-    const txs: (SecurityTransaction & { account: string })[] = [];
+    const txs: (DividendTransaction & { account: string })[] = [];
     for (const acct of filteredAccounts) {
       for (const tx of acct.transactions) {
         if (tx.type === "Dividend") {
@@ -104,7 +99,8 @@ export default function DividendsPage() {
     () =>
       dividendTxs.reduce(
         (s, t) =>
-          s + convertCurrency(t.fee, t.currency, displayCurrency, rates),
+          s +
+          convertCurrency(t.taxWithheld, t.currency, displayCurrency, rates),
         0
       ),
     [dividendTxs, displayCurrency, rates]
@@ -146,7 +142,12 @@ export default function DividendsPage() {
         displayCurrency,
         rates
       );
-      const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
+      const fee = convertCurrency(
+        tx.taxWithheld,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
       if (isPostTreaty(tx, w8benDate)) {
         postTreatyGross += gross;
         postTreatyFee += fee;
@@ -199,7 +200,12 @@ export default function DividendsPage() {
         displayCurrency,
         rates
       );
-      const fee = convertCurrency(tx.fee, tx.currency, displayCurrency, rates);
+      const fee = convertCurrency(
+        tx.taxWithheld,
+        tx.currency,
+        displayCurrency,
+        rates
+      );
       if (existing) {
         existing.grossAmount += gross;
         existing.fees += fee;
@@ -262,7 +268,7 @@ export default function DividendsPage() {
       const date = parseDate(tx.date);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       const net = convertCurrency(
-        tx.shares * tx.price - tx.fee,
+        tx.shares * tx.price - tx.taxWithheld,
         tx.currency,
         displayCurrency,
         rates
@@ -286,7 +292,7 @@ export default function DividendsPage() {
         rates
       );
       entry.net += convertCurrency(
-        tx.shares * tx.price - tx.fee,
+        tx.shares * tx.price - tx.taxWithheld,
         tx.currency,
         displayCurrency,
         rates
@@ -322,15 +328,6 @@ export default function DividendsPage() {
       .sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime())
       .slice(0, 15);
   }, [dividendTxs]);
-
-  const tooltipStyle = {
-    contentStyle: {
-      backgroundColor: "#1f2937",
-      border: "1px solid rgba(255,255,255,0.1)",
-      borderRadius: "8px",
-      color: "#f1f5f9",
-    },
-  };
 
   const fmtPct = (rate: number) => `${(rate * 100).toFixed(1)}%`;
 
@@ -688,48 +685,54 @@ export default function DividendsPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
-                  onClick={() => divHoldingSort.handleSort("symbol")}
+                <SortableTh
+                  sort={divHoldingSort}
+                  sortKey="symbol"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide"
                 >
-                  Symbol{divHoldingSort.arrow("symbol")}
-                </th>
+                  Symbol
+                </SortableTh>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                   Name
                 </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                  onClick={() => divHoldingSort.handleSort("net")}
+                <SortableTh
+                  sort={divHoldingSort}
+                  sortKey="net"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                 >
-                  Net{divHoldingSort.arrow("net")}
-                </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                  onClick={() => divHoldingSort.handleSort("tax")}
+                  Net
+                </SortableTh>
+                <SortableTh
+                  sort={divHoldingSort}
+                  sortKey="tax"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                 >
-                  Tax{divHoldingSort.arrow("tax")}
-                </th>
+                  Tax
+                </SortableTh>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                   Eff. Rate
                 </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                  onClick={() => divHoldingSort.handleSort("yieldOnCost")}
+                <SortableTh
+                  sort={divHoldingSort}
+                  sortKey="yieldOnCost"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                 >
-                  Yield on Cost{divHoldingSort.arrow("yieldOnCost")}
-                </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                  onClick={() => divHoldingSort.handleSort("payments")}
+                  Yield on Cost
+                </SortableTh>
+                <SortableTh
+                  sort={divHoldingSort}
+                  sortKey="payments"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                 >
-                  Payments{divHoldingSort.arrow("payments")}
-                </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                  onClick={() => divHoldingSort.handleSort("lastPayment")}
+                  Payments
+                </SortableTh>
+                <SortableTh
+                  sort={divHoldingSort}
+                  sortKey="lastPayment"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                 >
-                  Last Payment{divHoldingSort.arrow("lastPayment")}
-                </th>
+                  Last Payment
+                </SortableTh>
               </tr>
             </thead>
             <tbody>
@@ -762,7 +765,7 @@ export default function DividendsPage() {
                           {d.yieldOnCost.toFixed(2)}%
                         </span>
                       ) : (
-                        <span className="text-muted">\u2014</span>
+                        <span className="text-muted">—</span>
                       )}
                     </td>
                     <td className="py-2.5 px-3 text-sm text-right text-muted">
@@ -794,7 +797,7 @@ export default function DividendsPage() {
             {recentPayments.length > 0 ? (
               recentPayments.map((tx, i) => {
                 const net = convertCurrency(
-                  tx.shares * tx.price - tx.fee,
+                  tx.shares * tx.price - tx.taxWithheld,
                   tx.currency,
                   displayCurrency,
                   rates

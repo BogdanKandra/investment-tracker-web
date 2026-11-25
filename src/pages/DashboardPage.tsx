@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -14,7 +14,8 @@ import { usePortfolio } from "../context/usePortfolio";
 import StatsCard from "../components/common/StatsCard";
 import CurrencySelect from "../components/common/CurrencySelect";
 import AllocationChart from "../components/charts/AllocationChart";
-import { fetchCurrentPrices } from "../api/marketData";
+import PriceStatusNotice from "../components/common/PriceStatusNotice";
+import { useCurrentPrices } from "../hooks/useCurrentPrices";
 import { formatCurrency, convertCurrency } from "../utils/currency";
 import { formatPercent } from "../utils/numbers";
 import { formatDateStr, parseDate, toIsoDate } from "../utils/dates";
@@ -22,6 +23,7 @@ import { computeSellPnL } from "../data/taxCalculator";
 import { getCurrentHoldings as getPerAccountHoldings } from "../data/holdingAggregator";
 import type { Transaction, CurrencySymbol } from "../types";
 import { useTableSort } from "../hooks/useTableSort";
+import SortableTh from "../components/common/SortableTh";
 
 function getAssetClass(holding: {
   symbol: string;
@@ -55,19 +57,12 @@ const TOOLTIP_STYLE = {
 export default function DashboardPage() {
   const { portfolio, currentHoldings, displayCurrency, rates } = usePortfolio();
 
-  const [prices, setPrices] = useState<Map<string, number>>(new Map());
-
   const symbols = useMemo(
     () => currentHoldings.map((h) => h.symbol),
     [currentHoldings]
   );
-
-  useEffect(() => {
-    if (symbols.length === 0) return;
-    fetchCurrentPrices(symbols)
-      .then(setPrices)
-      .catch(() => {});
-  }, [symbols]);
+  const priceState = useCurrentPrices(symbols);
+  const { prices } = priceState;
 
   /* ── Core portfolio metrics ── */
 
@@ -143,7 +138,7 @@ export default function DashboardPage() {
     for (const acct of portfolio.accounts) {
       for (const tx of acct.transactions) {
         if (tx.type !== "Dividend") continue;
-        const net = tx.shares * tx.price - tx.fee;
+        const net = tx.shares * tx.price - tx.taxWithheld;
         totalNet += convertCurrency(net, tx.currency, displayCurrency, rates);
         dates.push(parseDate(tx.date).getTime());
         count += 1;
@@ -326,7 +321,7 @@ export default function DashboardPage() {
         const date = parseDate(tx.date);
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
         const net = convertCurrency(
-          tx.shares * tx.price - tx.fee,
+          tx.shares * tx.price - tx.taxWithheld,
           tx.currency,
           displayCurrency,
           rates
@@ -347,6 +342,8 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <CurrencySelect />
       </div>
+
+      <PriceStatusNotice {...priceState} />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
@@ -401,36 +398,41 @@ export default function DashboardPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th
-                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
-                    onClick={() => acctSort.handleSort("name")}
+                  <SortableTh
+                    sort={acctSort}
+                    sortKey="name"
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide"
                   >
-                    Account{acctSort.arrow("name")}
-                  </th>
-                  <th
-                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                    onClick={() => acctSort.handleSort("holdings")}
+                    Account
+                  </SortableTh>
+                  <SortableTh
+                    sort={acctSort}
+                    sortKey="holdings"
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                   >
-                    Holdings{acctSort.arrow("holdings")}
-                  </th>
-                  <th
-                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                    onClick={() => acctSort.handleSort("cash")}
+                    Holdings
+                  </SortableTh>
+                  <SortableTh
+                    sort={acctSort}
+                    sortKey="cash"
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                   >
-                    Cash{acctSort.arrow("cash")}
-                  </th>
-                  <th
-                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                    onClick={() => acctSort.handleSort("total")}
+                    Cash
+                  </SortableTh>
+                  <SortableTh
+                    sort={acctSort}
+                    sortKey="total"
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                   >
-                    Total{acctSort.arrow("total")}
-                  </th>
-                  <th
-                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                    onClick={() => acctSort.handleSort("weight")}
+                    Total
+                  </SortableTh>
+                  <SortableTh
+                    sort={acctSort}
+                    sortKey="weight"
+                    className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                   >
-                    Weight{acctSort.arrow("weight")}
-                  </th>
+                    Weight
+                  </SortableTh>
                 </tr>
               </thead>
               <tbody>

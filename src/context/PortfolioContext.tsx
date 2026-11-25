@@ -1,27 +1,20 @@
 import { useState, useEffect, useMemo, type ReactNode } from "react";
-import type { PortfolioData, CurrencySymbol, ExchangeRates } from "../types";
+import type {
+  PortfolioData,
+  CurrencySymbol,
+  ExchangeRates,
+  RatesStatus,
+} from "../types";
 import { loadPortfolio } from "../data/portfolioLoader";
 import {
   getCurrentHoldings,
   getFormerHoldings,
 } from "../data/holdingAggregator";
-import { fetchExchangeRates } from "../api/exchangeRates";
+import { fetchExchangeRates, FALLBACK_RATES } from "../api/exchangeRates";
 import { PortfolioContext, type PortfolioState } from "./usePortfolio";
 
-const DEFAULT_RATES: ExchangeRates = {
-  USD_EUR: 0.92,
-  USD_RON: 4.57,
-  USD_DKK: 6.87,
-  EUR_RON: 4.97,
-  EUR_USD: 1.09,
-  EUR_DKK: 7.46,
-  RON_USD: 0.22,
-  RON_EUR: 0.2,
-  RON_DKK: 1.5,
-  DKK_USD: 0.146,
-  DKK_EUR: 0.134,
-  DKK_RON: 0.67,
-};
+/** Currencies offered in the display-currency selector. */
+const DISPLAY_CURRENCIES: CurrencySymbol[] = ["€", "$", "RON", "DKK"];
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
@@ -29,7 +22,11 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     undefined
   );
   const [displayCurrency, setDisplayCurrency] = useState<CurrencySymbol>("$");
-  const [rates, setRates] = useState<ExchangeRates>(DEFAULT_RATES);
+  const [rates, setRates] = useState<ExchangeRates>(FALLBACK_RATES);
+  const [ratesStatus, setRatesStatus] = useState<RatesStatus>({
+    source: "loading",
+    asOf: null,
+  });
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,10 +39,22 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetchExchangeRates()
-      .then(setRates)
-      .catch(() => {});
+    // fetchExchangeRates never rejects; it reports fallback use instead.
+    fetchExchangeRates().then((r) => {
+      setRates(r.rates);
+      setRatesStatus({ source: r.source, asOf: r.asOf });
+    });
   }, []);
+
+  const filteredAccounts = useMemo(
+    () =>
+      !portfolio
+        ? []
+        : selectedAccount
+          ? portfolio.accounts.filter((a) => a.account_name === selectedAccount)
+          : portfolio.accounts,
+    [portfolio, selectedAccount]
+  );
 
   const currentHoldings = useMemo(
     () =>
@@ -57,11 +66,6 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     () =>
       portfolio ? getFormerHoldings(portfolio.accounts, selectedAccount) : [],
     [portfolio, selectedAccount]
-  );
-
-  const allCurrencies = useMemo<CurrencySymbol[]>(
-    () => ["€", "$", "RON"] as CurrencySymbol[],
-    []
   );
 
   if (loadError) {
@@ -81,12 +85,14 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     portfolio,
     selectedAccount,
     setSelectedAccount,
+    filteredAccounts,
     displayCurrency,
     setDisplayCurrency,
     rates,
+    ratesStatus,
     currentHoldings,
     formerHoldings,
-    allCurrencies,
+    allCurrencies: DISPLAY_CURRENCIES,
   };
 
   return (

@@ -14,7 +14,7 @@ import { formatCurrency, convertCurrency } from "../../utils/currency";
 import { formatPercent } from "../../utils/numbers";
 import { parseDate, toIsoDate } from "../../utils/dates";
 import type { Account, CurrencySymbol } from "../../types";
-import { tooltipStyle } from "./chartUtils";
+import { tooltipStyle } from "../../components/charts/chartStyles";
 import type { HoldingPerf, HoldingTotals } from "./types";
 
 interface InvestmentGrowthProps {

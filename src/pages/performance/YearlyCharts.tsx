@@ -15,7 +15,7 @@ import { convertCurrency } from "../../utils/currency";
 import { parseDate } from "../../utils/dates";
 import type { SellPnL } from "../../data/taxCalculator";
 import type { Account } from "../../types";
-import { tooltipStyle } from "./chartUtils";
+import { tooltipStyle } from "../../components/charts/chartStyles";
 import type { YearlyReturn } from "./types";
 
 interface YearlyChartsProps {

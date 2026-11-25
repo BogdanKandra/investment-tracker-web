@@ -34,7 +34,8 @@ function aggregateAccount(account: Account): Holding[] {
       totalShares: fifo.totalShares,
       averageCost: fifo.averageCost,
       totalInvested: fifo.totalCost,
-      totalFees: fifo.totalFees,
+      totalCommission: fifo.totalCommission,
+      totalTaxWithheld: fifo.totalTaxWithheld,
       lots: fifo.remainingLots,
       transactions: txs,
       isClosed: fifo.totalShares < 1e-9,
@@ -86,7 +87,11 @@ function mergeHoldingsAcrossAccounts(holdings: Holding[]): Holding[] {
 
     const totalShares = group.reduce((s, h) => s + h.totalShares, 0);
     const totalInvested = group.reduce((s, h) => s + h.totalInvested, 0);
-    const totalFees = group.reduce((s, h) => s + h.totalFees, 0);
+    const totalCommission = group.reduce((s, h) => s + h.totalCommission, 0);
+    const totalTaxWithheld = group.reduce(
+      (s, h) => s + h.totalTaxWithheld,
+      0
+    );
     const realizedPnL = group.reduce((s, h) => s + h.realizedPnL, 0);
     const allTxs = group.flatMap((h) => h.transactions);
     const allLots = group.flatMap((h) => h.lots);
@@ -100,7 +105,8 @@ function mergeHoldingsAcrossAccounts(holdings: Holding[]): Holding[] {
       totalShares,
       averageCost: totalShares > 0 ? totalInvested / totalShares : 0,
       totalInvested,
-      totalFees,
+      totalCommission,
+      totalTaxWithheld,
       lots: allLots,
       transactions: allTxs,
       isClosed,

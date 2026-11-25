@@ -23,7 +23,8 @@ import {
   type ComparisonChartPoint,
   type ResolvedBenchmark,
 } from "./benchmarks";
-import { formatPortfolioDate, tooltipStyle } from "./chartUtils";
+import { formatPortfolioDate } from "./chartUtils";
+import { tooltipStyle } from "../../components/charts/chartStyles";
 import {
   buildShareLedger,
   computePortfolioValueAt,

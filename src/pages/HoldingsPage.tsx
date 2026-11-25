@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { usePortfolio } from "../context/usePortfolio";
 import AccountSelect from "../components/common/AccountSelect";
 import CurrencySelect from "../components/common/CurrencySelect";
+import PriceStatusNotice from "../components/common/PriceStatusNotice";
 import HoldingsList from "../components/holdings/HoldingsList";
 import FormerHoldings from "../components/holdings/FormerHoldings";
 import PriceChart from "../components/charts/PriceChart";
 import HoldingsPieChart from "../components/charts/HoldingsPieChart";
-import { fetchCurrentPrices } from "../api/marketData";
+import { useCurrentPrices } from "../hooks/useCurrentPrices";
 import { convertCurrency } from "../utils/currency";
 import type { TimeRange } from "../types";
 
@@ -27,41 +28,37 @@ const HOLDINGS_TIME_RANGES: TimeRange[] = [
 
 export default function HoldingsPage() {
   const {
-    portfolio,
-    selectedAccount,
+    filteredAccounts,
     currentHoldings,
     formerHoldings,
     displayCurrency,
     rates,
   } = usePortfolio();
 
-  const totalCash = useMemo(() => {
-    const accounts = selectedAccount
-      ? portfolio.accounts.filter((a) => a.account_name === selectedAccount)
-      : portfolio.accounts;
-    return accounts.reduce(
-      (sum, a) =>
-        sum + convertCurrency(a.cash, a.currency, displayCurrency, rates),
-      0
-    );
-  }, [portfolio.accounts, selectedAccount, displayCurrency, rates]);
+  const totalCash = useMemo(
+    () =>
+      filteredAccounts.reduce(
+        (sum, a) =>
+          sum + convertCurrency(a.cash, a.currency, displayCurrency, rates),
+        0
+      ),
+    [filteredAccounts, displayCurrency, rates]
+  );
 
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-  const [prices, setPrices] = useState<Map<string, number>>(new Map());
-
   const allSymbols = useMemo(() => {
     const set = new Set<string>();
     for (const h of currentHoldings) set.add(h.symbol);
     for (const h of formerHoldings) set.add(h.symbol);
     return Array.from(set);
   }, [currentHoldings, formerHoldings]);
-
-  useEffect(() => {
-    if (allSymbols.length === 0) return;
-    fetchCurrentPrices(allSymbols)
-      .then(setPrices)
-      .catch(() => {});
-  }, [allSymbols]);
+  const { prices, loading, missing } = useCurrentPrices(allSymbols);
+  // Former holdings have no shares, so a missing price only matters for
+  // current ones (they would be valued at cost).
+  const missingHeld = useMemo(() => {
+    const held = new Set(currentHoldings.map((h) => h.symbol));
+    return missing.filter((s) => held.has(s));
+  }, [missing, currentHoldings]);
 
   const selectedHolding = useMemo(() => {
     if (!selectedSymbol) return null;
@@ -84,6 +81,7 @@ export default function HoldingsPage() {
           </div>
         </div>
 
+        <PriceStatusNotice loading={loading} missing={missingHeld} />
         <HoldingsList
           holdings={currentHoldings}
           prices={prices}
@@ -92,6 +90,7 @@ export default function HoldingsPage() {
           selectedSymbol={selectedSymbol}
           onSelect={setSelectedSymbol}
           totalCash={totalCash}
+          pricesLoading={loading}
         />
 
         <FormerHoldings

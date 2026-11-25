@@ -14,7 +14,7 @@ import { formatCurrency, convertCurrency } from "../../utils/currency";
 import { parseDate, toIsoDate } from "../../utils/dates";
 import type { SellPnL } from "../../data/taxCalculator";
 import type { Account, CurrencySymbol } from "../../types";
-import { tooltipStyle } from "./chartUtils";
+import { tooltipStyle } from "../../components/charts/chartStyles";
 
 interface TotalInvestmentGrowthProps {
   filteredAccounts: Account[];

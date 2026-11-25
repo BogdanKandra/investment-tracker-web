@@ -3,8 +3,8 @@
  * Uses the OpenFIGI API (free, no key required) to resolve ticker → exchange country.
  *
  * Usage:
- *   npx tsx scripts/populate-isins.ts
- *   npx tsx scripts/populate-isins.ts data/portfolio_test.json
+ *   npx tsx scripts/populate-countries.ts
+ *   npx tsx scripts/populate-countries.ts data/portfolio_test.json
  */
 import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";

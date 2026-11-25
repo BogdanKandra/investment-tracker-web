@@ -12,6 +12,7 @@ import type { SellPnL } from "../../data/taxCalculator";
 import type { CurrencySymbol } from "../../types";
 import { useTableSort } from "../../hooks/useTableSort";
 import { thSortable } from "./shared";
+import SortableTh from "../../components/common/SortableTh";
 
 export default function SellPnlSection({ sells }: { sells: SellPnL[] }) {
   const { rates } = usePortfolio();
@@ -42,7 +43,7 @@ export default function SellPnlSection({ sells }: { sells: SellPnL[] }) {
     for (const s of filteredSells) {
       gross += convertCurrency(s.grossProfit, s.currency, pnlCurrency, rates);
       net += convertCurrency(s.netProfit, s.currency, pnlCurrency, rates);
-      fees += convertCurrency(s.fee, s.currency, pnlCurrency, rates);
+      fees += convertCurrency(s.taxWithheld, s.currency, pnlCurrency, rates);
     }
     return { gross, net, fees };
   }, [filteredSells, pnlCurrency, rates]);
@@ -73,7 +74,7 @@ export default function SellPnlSection({ sells }: { sells: SellPnL[] }) {
       costBasis: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
         a.costBasisRon - b.costBasisRon,
       fee: (a: (typeof filteredSells)[0], b: (typeof filteredSells)[0]) =>
-        a.feeRon - b.feeRon,
+        a.taxWithheldRon - b.taxWithheldRon,
       grossProfit: (
         a: (typeof filteredSells)[0],
         b: (typeof filteredSells)[0]
@@ -159,63 +160,68 @@ export default function SellPnlSection({ sells }: { sells: SellPnL[] }) {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/10">
-              <th
+              <SortableTh sort={sellSort} sortKey="date" className={thSortable}>
+                Date
+              </SortableTh>
+              <SortableTh
+                sort={sellSort}
+                sortKey="symbol"
                 className={thSortable}
-                onClick={() => sellSort.handleSort("date")}
               >
-                Date{sellSort.arrow("date")}
-              </th>
-              <th
-                className={thSortable}
-                onClick={() => sellSort.handleSort("symbol")}
-              >
-                Symbol{sellSort.arrow("symbol")}
-              </th>
+                Symbol
+              </SortableTh>
               <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                 Name
               </th>
-              <th
+              <SortableTh
+                sort={sellSort}
+                sortKey="account"
                 className={thSortable}
-                onClick={() => sellSort.handleSort("account")}
               >
-                Account{sellSort.arrow("account")}
-              </th>
-              <th
+                Account
+              </SortableTh>
+              <SortableTh
+                sort={sellSort}
+                sortKey="shares"
                 className={`${thSortable} text-right`}
-                onClick={() => sellSort.handleSort("shares")}
               >
-                Shares{sellSort.arrow("shares")}
-              </th>
-              <th
+                Shares
+              </SortableTh>
+              <SortableTh
+                sort={sellSort}
+                sortKey="sellValue"
                 className={`${thSortable} text-right`}
-                onClick={() => sellSort.handleSort("sellValue")}
               >
-                Sell Value{sellSort.arrow("sellValue")}
-              </th>
-              <th
+                Sell Value
+              </SortableTh>
+              <SortableTh
+                sort={sellSort}
+                sortKey="costBasis"
                 className={`${thSortable} text-right`}
-                onClick={() => sellSort.handleSort("costBasis")}
               >
-                Cost Basis{sellSort.arrow("costBasis")}
-              </th>
-              <th
+                Cost Basis
+              </SortableTh>
+              <SortableTh
+                sort={sellSort}
+                sortKey="fee"
                 className={`${thSortable} text-right`}
-                onClick={() => sellSort.handleSort("fee")}
               >
-                Income Tax{sellSort.arrow("fee")}
-              </th>
-              <th
+                Income Tax
+              </SortableTh>
+              <SortableTh
+                sort={sellSort}
+                sortKey="grossProfit"
                 className={`${thSortable} text-right`}
-                onClick={() => sellSort.handleSort("grossProfit")}
               >
-                Gross Profit{sellSort.arrow("grossProfit")}
-              </th>
-              <th
+                Gross Profit
+              </SortableTh>
+              <SortableTh
+                sort={sellSort}
+                sortKey="netProfit"
                 className={`${thSortable} text-right`}
-                onClick={() => sellSort.handleSort("netProfit")}
               >
-                Net Profit{sellSort.arrow("netProfit")}
-              </th>
+                Net Profit
+              </SortableTh>
             </tr>
           </thead>
           <tbody>
@@ -248,9 +254,14 @@ export default function SellPnlSection({ sells }: { sells: SellPnL[] }) {
                   )}
                 </td>
                 <td className="py-2.5 px-3 text-sm text-right text-muted">
-                  {s.fee > 0
+                  {s.taxWithheld > 0
                     ? fmtPnl(
-                        convertCurrency(s.fee, s.currency, pnlCurrency, rates)
+                        convertCurrency(
+                          s.taxWithheld,
+                          s.currency,
+                          pnlCurrency,
+                          rates
+                        )
                       )
                     : "-"}
                 </td>

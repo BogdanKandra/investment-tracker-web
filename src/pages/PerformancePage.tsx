@@ -1,9 +1,10 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { usePortfolio } from "../context/usePortfolio";
 import AccountSelect from "../components/common/AccountSelect";
 import CurrencySelect from "../components/common/CurrencySelect";
+import PriceStatusNotice from "../components/common/PriceStatusNotice";
 import { convertCurrency } from "../utils/currency";
-import { fetchCurrentPrices } from "../api/marketData";
+import { useCurrentPrices } from "../hooks/useCurrentPrices";
 import { computeSellPnL } from "../data/taxCalculator";
 import ReturnsSummary from "./performance/ReturnsSummary";
 import YearlyCharts from "./performance/YearlyCharts";
@@ -19,34 +20,15 @@ import type { HoldingTotals } from "./performance/types";
  * computes the rest itself.
  */
 export default function PerformancePage() {
-  const {
-    portfolio,
-    selectedAccount,
-    currentHoldings,
-    displayCurrency,
-    rates,
-  } = usePortfolio();
-  const [prices, setPrices] = useState<Map<string, number>>(new Map());
+  const { filteredAccounts, currentHoldings, displayCurrency, rates } =
+    usePortfolio();
 
   const symbols = useMemo(
     () => currentHoldings.map((h) => h.symbol),
     [currentHoldings]
   );
-
-  useEffect(() => {
-    if (symbols.length === 0) return;
-    fetchCurrentPrices(symbols)
-      .then(setPrices)
-      .catch(() => {});
-  }, [symbols]);
-
-  const filteredAccounts = useMemo(
-    () =>
-      selectedAccount
-        ? portfolio.accounts.filter((a) => a.account_name === selectedAccount)
-        : portfolio.accounts,
-    [portfolio.accounts, selectedAccount]
-  );
+  const priceState = useCurrentPrices(symbols);
+  const { prices } = priceState;
 
   const holdingPerformance = useMemo(() => {
     const items = currentHoldings.map((h) => {
@@ -103,6 +85,7 @@ export default function PerformancePage() {
         </div>
       </div>
 
+      <PriceStatusNotice {...priceState} />
       <ReturnsSummary
         holdingPerformance={holdingPerformance}
         totals={totals}

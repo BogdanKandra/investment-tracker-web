@@ -31,16 +31,9 @@ export function convertCurrency(
   rates: ExchangeRates
 ): number {
   if (from === to) return amount;
-
-  const key =
-    `${currencyLabel(from)}_${currencyLabel(to)}` as keyof ExchangeRates;
-  const rate = rates[key];
-  if (rate) return amount * rate;
-
-  const reverseKey =
-    `${currencyLabel(to)}_${currencyLabel(from)}` as keyof ExchangeRates;
-  const reverseRate = rates[reverseKey];
-  if (reverseRate) return amount / reverseRate;
-
-  return amount;
+  const perUsdFrom = rates[from];
+  const perUsdTo = rates[to];
+  // Unknown rate: leave the amount unconverted rather than produce NaN.
+  if (!perUsdFrom || !perUsdTo) return amount;
+  return (amount / perUsdFrom) * perUsdTo;
 }

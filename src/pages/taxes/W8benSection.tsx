@@ -4,12 +4,12 @@ import StatsCard from "../../components/common/StatsCard";
 import { convertCurrency } from "../../utils/currency";
 import { formatDateStr, parseDate } from "../../utils/dates";
 import { useTableSort } from "../../hooks/useTableSort";
+import { thSortable, fmtRon } from "./shared";
 import {
-  thSortable,
-  fmtRon,
   W8BEN_PRE_TREATY_RATE,
   W8BEN_POST_TREATY_RATE,
-} from "./shared";
+} from "../../data/taxCalculator";
+import SortableTh from "../../components/common/SortableTh";
 
 export default function W8benSection({
   w8benDate,
@@ -49,7 +49,12 @@ export default function W8benSection({
           "RON",
           rates
         );
-        const feeRon = convertCurrency(tx.fee, tx.currency, "RON", rates);
+        const feeRon = convertCurrency(
+          tx.taxWithheld,
+          tx.currency,
+          "RON",
+          rates
+        );
         if (parseDate(tx.date) >= w8benDate) {
           entry.postTreatyGrossRon += grossRon;
           entry.postTreatyFeeRon += feeRon;
@@ -156,37 +161,40 @@ export default function W8benSection({
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th
+                <SortableTh
+                  sort={w8benSort}
+                  sortKey="year"
                   className={thSortable}
-                  onClick={() => w8benSort.handleSort("year")}
                 >
-                  Year{w8benSort.arrow("year")}
-                </th>
-                <th
+                  Year
+                </SortableTh>
+                <SortableTh
+                  sort={w8benSort}
+                  sortKey="preTreatyGross"
                   className={`${thSortable} text-right`}
-                  onClick={() => w8benSort.handleSort("preTreatyGross")}
                 >
-                  Pre-Treaty Gross (RON){w8benSort.arrow("preTreatyGross")}
-                </th>
+                  Pre-Treaty Gross (RON)
+                </SortableTh>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                   Pre-Treaty Withheld (30%)
                 </th>
-                <th
+                <SortableTh
+                  sort={w8benSort}
+                  sortKey="postTreatyGross"
                   className={`${thSortable} text-right`}
-                  onClick={() => w8benSort.handleSort("postTreatyGross")}
                 >
                   Post-Treaty Gross (RON)
-                  {w8benSort.arrow("postTreatyGross")}
-                </th>
+                </SortableTh>
                 <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                   Post-Treaty Withheld (10%)
                 </th>
-                <th
+                <SortableTh
+                  sort={w8benSort}
+                  sortKey="taxSaved"
                   className={`${thSortable} text-right`}
-                  onClick={() => w8benSort.handleSort("taxSaved")}
                 >
-                  Tax Saved (RON){w8benSort.arrow("taxSaved")}
-                </th>
+                  Tax Saved (RON)
+                </SortableTh>
               </tr>
             </thead>
             <tbody>

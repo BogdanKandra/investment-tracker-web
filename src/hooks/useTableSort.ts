@@ -1,26 +1,25 @@
 import { useMemo, useState, useCallback } from "react";
 
-export interface TableSortState<K extends string> {
-  key: K;
-  asc: boolean;
-}
-
 export interface UseTableSortReturn<T, K extends string> {
   sorted: T[];
   sortKey: K;
   sortAsc: boolean;
   handleSort: (key: K) => void;
-  arrow: (key: K) => string;
 }
 
 /**
  * Generic table sorting hook. Accepts items and a comparator map keyed by
- * sortable column names. Returns sorted items and UI helpers.
+ * sortable column names. Returns the sorted items plus the sort state, which
+ * SortableTh renders as accessible column headers.
+ *
+ * Clicking the active column flips the direction; a new column starts
+ * descending.
  */
 export function useTableSort<T, K extends string>(
   items: T[],
   comparators: Record<K, (a: T, b: T) => number>,
-  defaultKey: K,
+  // NoInfer: the column keys come from `comparators`, not the default.
+  defaultKey: NoInfer<K>,
   defaultAsc = false
 ): UseTableSortReturn<T, K> {
   const [sortKey, setSortKey] = useState<K>(defaultKey);
@@ -37,17 +36,13 @@ export function useTableSort<T, K extends string>(
     [sortKey]
   );
 
-  const arrow = useCallback(
-    (key: K) => (sortKey === key ? (sortAsc ? " ↑" : " ↓") : ""),
-    [sortKey, sortAsc]
-  );
-
   const sorted = useMemo(() => {
     const cmp = comparators[sortKey];
     if (!cmp) return items;
-    const result = [...items].sort(cmp);
-    return sortAsc ? result : result.reverse();
+    // Swapping arguments (rather than reversing the result) keeps ties in
+    // their original order in both directions.
+    return [...items].sort((a, b) => (sortAsc ? cmp(a, b) : cmp(b, a)));
   }, [items, comparators, sortKey, sortAsc]);
 
-  return { sorted, sortKey, sortAsc, handleSort, arrow };
+  return { sorted, sortKey, sortAsc, handleSort };
 }

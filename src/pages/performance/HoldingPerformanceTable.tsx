@@ -1,12 +1,23 @@
-import { useMemo, useState } from "react";
 import { usePortfolio } from "../../context/usePortfolio";
+import { useTableSort } from "../../hooks/useTableSort";
 import { formatCurrency } from "../../utils/currency";
 import { formatPercent } from "../../utils/numbers";
 import type { CurrencySymbol } from "../../types";
 import type { HoldingPerf, HoldingTotals } from "./types";
+import SortableTh from "../../components/common/SortableTh";
 
 type SortField = "symbol" | "invested" | "value" | "pnl" | "pnlPct";
-type SortDir = "asc" | "desc";
+
+const COMPARATORS: Record<
+  SortField,
+  (a: HoldingPerf, b: HoldingPerf) => number
+> = {
+  symbol: (a, b) => a.symbol.localeCompare(b.symbol),
+  invested: (a, b) => a.invested - b.invested,
+  value: (a, b) => a.value - b.value,
+  pnl: (a, b) => a.pnl - b.pnl,
+  pnlPct: (a, b) => a.pnlPct - b.pnlPct,
+};
 
 interface HoldingPerformanceTableProps {
   holdingPerformance: HoldingPerf[];
@@ -20,45 +31,8 @@ export default function HoldingPerformanceTable({
 }: HoldingPerformanceTableProps) {
   const { displayCurrency } = usePortfolio();
   const { totalInvested, totalValue, totalUnrealizedPnL, totalReturn } = totals;
-  const [sortField, setSortField] = useState<SortField>("pnlPct");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
-
-  const sortedHoldings = useMemo(() => {
-    const list = [...holdingPerformance];
-    list.sort((a, b) => {
-      let cmp = 0;
-      switch (sortField) {
-        case "symbol":
-          cmp = a.symbol.localeCompare(b.symbol);
-          break;
-        case "invested":
-          cmp = a.invested - b.invested;
-          break;
-        case "value":
-          cmp = a.value - b.value;
-          break;
-        case "pnl":
-          cmp = a.pnl - b.pnl;
-          break;
-        case "pnlPct":
-          cmp = a.pnlPct - b.pnlPct;
-          break;
-      }
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-    return list;
-  }, [holdingPerformance, sortField, sortDir]);
-
-  function handleSort(field: SortField) {
-    if (sortField === field) setSortDir(sortDir === "asc" ? "desc" : "asc");
-    else {
-      setSortField(field);
-      setSortDir("desc");
-    }
-  }
-
-  const arrow = (field: SortField) =>
-    sortField === field ? (sortDir === "asc" ? " ↑" : " ↓") : "";
+  const sort = useTableSort(holdingPerformance, COMPARATORS, "pnlPct");
+  const sortedHoldings = sort.sorted;
 
   return (
     <div className="bg-card rounded-xl border border-white/5">
@@ -71,39 +45,44 @@ export default function HoldingPerformanceTable({
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-white/10">
-              <th
-                className="py-2 px-5 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
-                onClick={() => handleSort("symbol")}
+              <SortableTh
+                sort={sort}
+                sortKey="symbol"
+                className="py-2 px-5 text-xs text-muted uppercase tracking-wide"
               >
-                Symbol{arrow("symbol")}
-              </th>
+                Symbol
+              </SortableTh>
               <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide">
                 Name
               </th>
-              <th
-                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                onClick={() => handleSort("invested")}
+              <SortableTh
+                sort={sort}
+                sortKey="invested"
+                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
               >
-                Invested{arrow("invested")}
-              </th>
-              <th
-                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                onClick={() => handleSort("value")}
+                Invested
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="value"
+                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
               >
-                Value{arrow("value")}
-              </th>
-              <th
-                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                onClick={() => handleSort("pnl")}
+                Value
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="pnl"
+                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
               >
-                P&L{arrow("pnl")}
-              </th>
-              <th
-                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                onClick={() => handleSort("pnlPct")}
+                P&L
+              </SortableTh>
+              <SortableTh
+                sort={sort}
+                sortKey="pnlPct"
+                className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
               >
-                Return{arrow("pnlPct")}
-              </th>
+                Return
+              </SortableTh>
               <th className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right">
                 Weight
               </th>

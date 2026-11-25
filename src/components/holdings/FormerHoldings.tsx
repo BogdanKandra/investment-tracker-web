@@ -3,6 +3,7 @@ import type { Holding, CurrencySymbol, ExchangeRates } from "../../types";
 import { formatCurrency, convertCurrency } from "../../utils/currency";
 import { formatPercent } from "../../utils/numbers";
 import { useTableSort } from "../../hooks/useTableSort";
+import SortableTh from "../common/SortableTh";
 
 interface FormerHoldingsProps {
   holdings: Holding[];
@@ -59,18 +60,20 @@ export default function FormerHoldings({
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide cursor-pointer hover:text-white select-none"
-                  onClick={() => formerSort.handleSort("symbol")}
+                <SortableTh
+                  sort={formerSort}
+                  sortKey="symbol"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide"
                 >
-                  Asset{formerSort.arrow("symbol")}
-                </th>
-                <th
-                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right cursor-pointer hover:text-white select-none"
-                  onClick={() => formerSort.handleSort("pnl")}
+                  Asset
+                </SortableTh>
+                <SortableTh
+                  sort={formerSort}
+                  sortKey="pnl"
+                  className="py-2 px-3 text-xs text-muted uppercase tracking-wide text-right"
                 >
-                  Realized P&L{formerSort.arrow("pnl")}
-                </th>
+                  Realized P&L
+                </SortableTh>
               </tr>
             </thead>
             <tbody>

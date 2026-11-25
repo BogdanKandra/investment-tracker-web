@@ -26,6 +26,11 @@ export default tseslint.config(
     },
   },
   {
+    // Test helpers mix components and functions; Fast Refresh doesn't apply.
+    files: ["src/test/**", "**/*.test.{ts,tsx}"],
+    rules: { "react-refresh/only-export-components": "off" },
+  },
+  {
     // Node-side files: build config and maintenance scripts.
     files: ["vite.config.ts", "scripts/**/*.ts"],
     languageOptions: { globals: globals.node },
